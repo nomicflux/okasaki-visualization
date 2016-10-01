@@ -1,0 +1,26 @@
+{
+  "name": "okasaki-visualization",
+  "version": "0.0.1",
+  "description": "Visualization for the data structures found in Okasaki's Purely Functional Data Structures",
+  "main": "index.html",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "d3": "^4.2.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nomicflux/okasaki-visualization.git"
+  },
+  "author": "Michael Anderson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nomicflux/okasaki-visualization/issues"
+  },
+  "homepage": "https://github.com/nomicflux/okasaki-visualization#readme"
+}
