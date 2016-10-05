@@ -68,7 +68,7 @@ update msg model =
                 ({ model | movement = mvmt}, Cmd.none)
         StartAnimation t ->
             let
-                anim = A.animation t |> A.from 1 |> A.to 0 |> A.duration (Time.second)
+                anim = A.animation t |> A.from 1 |> A.to 0 |> A.duration (500 * Time.millisecond)
             in
                 ({model|animation=Just anim}, Cmd.none)
         Empty ->
