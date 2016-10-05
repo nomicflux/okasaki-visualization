@@ -73,5 +73,11 @@ reverse stack =
     in
         go empty stack
 
+append : Stack a -> Stack a -> Stack a
+append stack1 stack2 =
+    case stack1 of
+        Nil -> stack2
+        Cons val rst -> Cons val (append rst stack2)
+
 toList : Stack a -> List a
 toList stack = foldr (::) [] stack

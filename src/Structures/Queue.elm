@@ -30,3 +30,9 @@ dequeue (Queue left right) =
         S.Nil -> case (S.reverse right) of
                      S.Nil -> Nothing
                      S.Cons _ rst -> Just (Queue rst S.empty)
+
+map : (a -> b) -> Queue a -> Queue b
+map f (Queue left right) = Queue (S.map f left) (S.map f right)
+
+foldr : (a -> b -> a) -> b -> Queue a -> b
+foldr f def (Queue left right) = S.foldr f def (S.append left (S.reverse right))

@@ -52,6 +52,7 @@ type Msg = Empty
          | Cons
          | Head
          | Tail
+         | Reverse
          | TakeTail
          | Failure String
          | StartAnimation Time.Time
@@ -125,6 +126,12 @@ update msg model =
                         updateStack {model | currId = model.currId + 1}
                             (Stack.cons newVal newStack)
                             (Just ("Added " ++ toString val))
+        Reverse ->
+            let
+                newStack = Stack.reverse model.currStack
+                notice = Just "Reversed"
+            in
+                updateStack model newStack notice
         Head ->
             let
                 newStack = clearClasses model.currStack
@@ -301,35 +308,33 @@ compNodes mvmt prev curr =
 view : Model -> H.Html Msg
 view model =
     let
-        -- prevTotal = Stack.count model.prevStack
-        -- currTotal = Stack.count model.currStack
-        -- prevPos = model.prevStack |> Stack.foldl (nodePositions prevTotal) (0, Nothing, IntDict.empty) |> \ (_, _, s) -> s
-        -- currPos = model.currStack |> Stack.foldl (nodePositions currTotal) (0, Nothing, IntDict.empty) |> \ (_, _, s) -> s
         svgDiv = svg [ SA.class "stack"
                      , SA.height ((toString maxHeight) ++ "px")
                      , SA.width ((toString maxWidth) ++ "px")
                      ] ( compNodes model.movement model.prevNodes model.currNodes )
-        emptyBtn = H.button [ HA.class "btn", HE.onClick Empty ] [ H.text "Empty" ]
-        insertBtn = H.span [ HA.class "input-btn-group" ]
-                           [ H.input [ HA.type' "number"
-                                     , HE.onInput UpdateInsert
-                                     ] []
-                           , H.button [ HA.class "btn"
+        emptyBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Empty ] [ H.text "Empty" ] ]
+        insertBtn = H.div [ HA.class "input-btn-group" ]
+                           [ H.button [ HA.class "btn"
                                       , HE.onClick Cons
                                       ] [ H.text "Cons"
                                         ]
+                           , H.input [ HA.type' "number"
+                                     , HE.onInput UpdateInsert
+                                     ] []
                            ]
-        headBtn = H.button [ HA.class "btn", HE.onClick Head ] [ H.text "View Head" ]
-        tailBtn = H.button [ HA.class "btn", HE.onClick Tail ] [ H.text "View Tail" ]
-        tailTakeBtn = H.button [ HA.class "btn", HE.onClick TakeTail ] [ H.text "Take Tail" ]
+        headBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Head ] [ H.text "View Head" ] ]
+        tailBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Tail ] [ H.text "View Tail" ] ]
+        tailTakeBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick TakeTail ] [ H.text "Take Tail" ] ]
+        revBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Reverse ] [ H.text "Reverse" ] ]
     in
         H.div [ SA.class "app"] [ svgDiv
-                                , H.div [ ] [ emptyBtn
-                                            , headBtn
-                                            , tailBtn
-                                            , tailTakeBtn
-                                            , insertBtn
-                                            ]
+                                , H.div [ HA.class "buttons" ] [ emptyBtn
+                                                               , headBtn
+                                                               , tailBtn
+                                                               , tailTakeBtn
+                                                               , revBtn
+                                                               , insertBtn
+                                                               ]
                                 ]
 
 subscriptions : Model -> Sub Msg
