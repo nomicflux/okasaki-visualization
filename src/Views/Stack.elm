@@ -1,6 +1,6 @@
 module Views.Stack exposing (..)
 
-import Html.App
+-- import Html.App
 import Html as H
 import Html.Attributes as HA
 import Svg exposing (..)
@@ -196,7 +196,7 @@ type alias Position = { x : Float
                       }
 
 initialPos : Int -> Position
-initialPos v = { x = toFloat maxWidth
+initialPos v = { x = toFloat maxWidth + 10.0
                , y = 0.0
                , r = 0.0
                , val = v
@@ -207,7 +207,7 @@ initialPos v = { x = toFloat maxWidth
 finalPos : Int -> Position
 finalPos v = { x = -10.0
              , y = toFloat maxHeight
-             , r = -1.0
+             , r = 0.0
              , val = v
              , prev = Nothing
              , classes = ""
@@ -341,11 +341,11 @@ subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.batch [ AF.times Tick
                             ]
 
-main : Program Never
-main =
-    Html.App.program
-        { init = (initialModel, Cmd.none)
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+-- main : Program Never
+-- main =
+--     Html.App.program
+--         { init = (initialModel, Cmd.none)
+--         , view = view
+--         , update = update
+--         , subscriptions = subscriptions
+--         }
