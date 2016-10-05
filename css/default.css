@@ -1,0 +1,23 @@
+svg .node {
+    stroke: black;
+    stroke-width: 1;
+    fill: white;
+    fill-opacity: 0.2;
+}
+
+svg .node.cons {
+    fill: green;
+}
+
+svg .node.head {
+    fill: blue;
+}
+
+svg .node.tail {
+    fill: red;
+}
+
+svg .edge {
+    stroke: grey;
+    stroke-width: 1;
+}

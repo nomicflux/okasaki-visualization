@@ -4,3 +4,7 @@
 /output/
 /.psci*
 /src/.webpack.js
+/src/elm-stuff
+/elm-stuff
+/elm.js
+/src/elm.js

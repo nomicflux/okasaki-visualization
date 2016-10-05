@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="elm.js"></script>
+    <link rel="stylesheet" href="css/default.css" />
+  </head>
+  <body>
+    <div id="elm-app">
+    </div>
+      <script type="text/javascript">
+            var elmDiv = document.getElementById('elm-app');
+            Elm.embed(Elm.Okasaki, elmDiv);
+      </script>
+  </body>
+</html>
