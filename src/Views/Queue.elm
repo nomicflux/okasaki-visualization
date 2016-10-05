@@ -1,4 +1,4 @@
-module Views.Stack exposing (..)
+module Views.Queue exposing (..)
 
 -- import Html.App
 import Html as H
@@ -16,6 +16,7 @@ import Task
 import IntDict
 import Debug
 
+import Structures.Queue as Queue
 import Structures.Stack as Stack
 
 type alias ClassNames = String
@@ -24,10 +25,9 @@ type alias ModelData = { nodeid : NodeID
                        , value : Int
                        , classes : ClassNames
                        }
-type alias Model = { currStack : Stack.Stack ModelData
+type alias Model = { currQueue : Queue.Queue ModelData
                    , currNodes : IntDict.IntDict Position
                    , prevNodes : IntDict.IntDict Position
-                   -- , prevStack : Stack.Stack ModelData
                    , currId : Int
                    , notice : Maybe String
                    , currInsert : String
@@ -36,10 +36,9 @@ type alias Model = { currStack : Stack.Stack ModelData
                    }
 
 initialModel : Model
-initialModel = { currStack = Stack.empty
+initialModel = { currQueue = Queue.empty
                , currNodes = IntDict.empty
                , prevNodes = IntDict.empty
-               -- , prevStack = Stack.empty
                , currId = 0
                , notice = Nothing
                , currInsert = ""
@@ -49,37 +48,41 @@ initialModel = { currStack = Stack.empty
 
 type Msg = Empty
          | IsEmpty
-         | Cons
-         | Head
-         | Tail
-         | Reverse
-         | TakeTail
+         | Top
+         | Push
+         | Pop
+         | Enqueue
+         | Dequeue
          | Failure String
          | StartAnimation Time.Time
          | Tick Time.Time
          | UpdateInsert String
 
-toClass : Stack.Stack ModelData -> ClassNames -> Stack.Stack ModelData
-toClass stack cl = Stack.map (\ md -> {md | classes = cl}) stack
+toClass : Queue.Queue ModelData -> ClassNames -> Queue.Queue ModelData
+toClass queue cl = Queue.map (\ md -> {md | classes = cl}) queue
 
-clearClasses : Stack.Stack ModelData -> Stack.Stack ModelData
-clearClasses stack = toClass stack ""
+clearClasses : Queue.Queue ModelData -> Queue.Queue ModelData
+clearClasses queue = toClass queue ""
 
-highlightClass : ClassNames
-highlightClass = "highlight"
-
-highlightStack : Stack.Stack ModelData -> Stack.Stack ModelData
-highlightStack stack = toClass stack highlightClass
-
-updateStack : Model -> Stack.Stack ModelData -> Maybe String -> (Model, Cmd Msg)
-updateStack model stack notice =
+updateQueue : Model -> Queue.Queue ModelData -> Maybe String -> (Model, Cmd Msg)
+updateQueue model queue notice =
     let
-        currTotal = Stack.count stack
-        currNodes = stack |> Stack.foldl (nodePositions currTotal) (0, Nothing, IntDict.empty) |> \ (_, _, s) -> s
+        quarterHeight = (toFloat maxHeight) / 4.0
+        currSize = max (Queue.countLeft queue) (Queue.countRight queue)
+        leftNodes = queue |>
+                    Queue.left |>
+                    Stack.foldl (nodePositions quarterHeight currSize)
+                        (0, Nothing, IntDict.empty) |>
+                    \ (_, _, s) -> s
+        rightNodes = queue |>
+                     Queue.right |>
+                     Stack.foldl (nodePositions (3.0 * quarterHeight) currSize)
+                         (0, Nothing, IntDict.empty) |>
+                     \ (_, _, s) -> s
     in
         ({ model | prevNodes = model.currNodes
-         , currNodes = currNodes
-         , currStack = stack
+         , currNodes = IntDict.union leftNodes rightNodes
+         , currQueue = queue
          , notice = notice
          , movement = Just 0
          , animation = Nothing }
@@ -109,62 +112,67 @@ update msg model =
             in
                 ({model|animation=Just anim}, Cmd.none)
         Empty ->
-            updateStack model Stack.empty (Just "Emptied")
+            updateQueue model Queue.empty (Just "Emptied")
         IsEmpty ->
             let
-                notice = if Stack.isEmpty model.currStack then "Empty" else "Not Empty"
+                notice = if Queue.isEmpty model.currQueue then "Empty" else "Not Empty"
             in
                 ({ model | notice = Just notice }, Cmd.none)
-        Cons ->
+        Enqueue ->
             case model.currInsert |> toInt |> toMaybe of
                 Nothing -> (model, Cmd.none)
                 Just val ->
                     let
                         newVal = mkNode model.currId val "cons"
-                        newStack = clearClasses model.currStack
+                        newQueue = clearClasses model.currQueue
                     in
-                        updateStack {model | currId = model.currId + 1}
-                            (Stack.cons newVal newStack)
+                        updateQueue {model | currId = model.currId + 1}
+                            (Queue.enqueue newVal newQueue)
                             (Just ("Added " ++ toString val))
-        Reverse ->
+        Push ->
+            case model.currInsert |> toInt |> toMaybe of
+                Nothing -> (model, Cmd.none)
+                Just val ->
+                    let
+                        newVal = mkNode model.currId val "cons"
+                        newQueue = clearClasses model.currQueue
+                    in
+                        updateQueue {model | currId = model.currId + 1}
+                            (Queue.push newVal newQueue)
+                            (Just ("Added " ++ toString val))
+        Top ->
             let
-                newStack = Stack.reverse model.currStack
-                notice = Just "Reversed"
-            in
-                updateStack model newStack notice
-        Head ->
-            let
-                newStack = clearClasses model.currStack
-                (notice, classedStack) =
-                    case (Stack.head model.currStack, Stack.tail model.currStack) of
-                        (Nothing, _) -> (Nothing, Stack.empty)
-                        (_, Nothing) -> (Nothing, Stack.empty)
+                newQueue = clearClasses model.currQueue
+                (notice, classedQueue) =
+                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
+                        (Nothing, _) -> (Nothing, Queue.empty)
+                        (_, Nothing) -> (Nothing, Queue.empty)
                         (Just h, Just t) -> ( Just ("Head is: " ++ toString h.value)
-                                            , Stack.cons { h | classes = "head" } (clearClasses t))
+                                            , Queue.push { h | classes = "head" } (clearClasses t))
             in
-                updateStack model classedStack notice
-        Tail ->
+                updateQueue model classedQueue notice
+        Dequeue ->
             let
-                newStack = clearClasses model.currStack
-                (notice, classedStack) =
-                    case (Stack.head model.currStack, Stack.tail model.currStack) of
-                        (Nothing, _) -> (Nothing, Stack.empty)
-                        (_, Nothing) -> (Nothing, Stack.empty)
+                newQueue = clearClasses model.currQueue
+                (notice, classedQueue) =
+                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
+                        (Nothing, _) -> (Nothing, Queue.empty)
+                        (_, Nothing) -> (Nothing, Queue.empty)
                         (Just h, Just t) -> ( Just ("Tail is: not implemented")
-                                                   , Stack.cons { h | classes = "" } (toClass t "tail"))
+                                                   , Queue.push { h | classes = "" } (toClass t "tail"))
             in
-                updateStack model classedStack notice
-        TakeTail ->
+                updateQueue model classedQueue notice
+        Pop ->
             let
-                newStack = clearClasses model.currStack
-                (notice, classedStack) =
-                    case (Stack.head model.currStack, Stack.tail model.currStack) of
-                        (Nothing, _) -> (Nothing, Stack.empty)
-                        (_, Nothing) -> (Nothing, Stack.empty)
+                newQueue = clearClasses model.currQueue
+                (notice, classedQueue) =
+                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
+                        (Nothing, _) -> (Nothing, Queue.empty)
+                        (_, Nothing) -> (Nothing, Queue.empty)
                         (Just _, Just t) -> ( Just ("Tail is: not implemented")
                                             , toClass t "tail")
             in
-                updateStack model classedStack notice
+                updateQueue model classedQueue notice
         UpdateInsert s ->
             ( { model | currInsert = s }, Cmd.none )
 
@@ -213,19 +221,19 @@ finalPos v = { x = -10.0
              , classes = ""
              }
 
-nodePositions : Int
+nodePositions : Float
+              -> Int
               -> (Int, Maybe NodeID, IntDict.IntDict Position)
               -> ModelData
               -> (Int, Maybe NodeID, IntDict.IntDict Position)
-nodePositions total (pos, prev, acc) currNode =
+nodePositions yplace total (pos, prev, acc) currNode =
     let
         fwidth = toFloat maxWidth
-        fheight = toFloat maxHeight
         r = min (toFloat circRadius) (fwidth / 3.0 / (toFloat total))
         offset x = x + (buffer |> toFloat) + r
         calcPos x = x * (toFloat maxWidth) |> offset
         circPos = { x = calcPercent pos total |> calcPos
-                  , y = (fheight / 2.0)
+                  , y = yplace
                   , r = r
                   , val = currNode.value
                   , prev = prev
@@ -313,27 +321,28 @@ view model =
                      , SA.width ((toString maxWidth) ++ "px")
                      ] ( compNodes model.movement model.prevNodes model.currNodes )
         emptyBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Empty ] [ H.text "Empty" ] ]
-        insertBtn = H.div [ HA.class "input-btn-group" ]
+        enqueueBtn = H.div [ HA.class "input-btn-group" ]
                            [ H.button [ HA.class "btn"
-                                      , HE.onClick Cons
-                                      ] [ H.text "Cons"
+                                      , HE.onClick Enqueue
+                                      ] [ H.text "Enqueue"
                                         ]
+                           , H.button [ HA.class "btn-large"
+                                      , HE.onClick Push
+                                      ] [ H.text "Push" ]
                            , H.input [ HA.type' "number"
                                      , HE.onInput UpdateInsert
                                      ] []
                            ]
-        headBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Head ] [ H.text "View Head" ] ]
-        tailBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Tail ] [ H.text "View Tail" ] ]
-        tailTakeBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick TakeTail ] [ H.text "Take Tail" ] ]
-        revBtn = H.div [] [ H.button [ HA.class "btn-large", HE.onClick Reverse ] [ H.text "Reverse" ] ]
+        topBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Top ] [ H.text "View Top" ] ]
+        dequeueBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Dequeue ] [ H.text "View Dequeue" ] ]
+        popBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Pop ] [ H.text "Perform Dequeue" ] ]
     in
         H.div [ SA.class "app"] [ svgDiv
                                 , H.div [ HA.class "buttons" ] [ emptyBtn
-                                                               , headBtn
-                                                               , tailBtn
-                                                               , tailTakeBtn
-                                                               , revBtn
-                                                               , insertBtn
+                                                               , topBtn
+                                                               , dequeueBtn
+                                                               , popBtn
+                                                               , enqueueBtn
                                                                ]
                                 ]
 

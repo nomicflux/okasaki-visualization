@@ -23,6 +23,9 @@ top (Queue left right) =
                      S.Nil -> Nothing
                      S.Cons val _ -> Just val
 
+push : a -> Queue a -> Queue a
+push val (Queue left right) = Queue (S.cons val left) right
+
 dequeue : Queue a -> Maybe (Queue a)
 dequeue (Queue left right) =
     case left of
@@ -34,5 +37,26 @@ dequeue (Queue left right) =
 map : (a -> b) -> Queue a -> Queue b
 map f (Queue left right) = Queue (S.map f left) (S.map f right)
 
-foldr : (a -> b -> a) -> b -> Queue a -> b
-foldr f def (Queue left right) = S.foldr f def (S.append left (S.reverse right))
+toStack : Queue a -> S.Stack a
+toStack (Queue left right) = S.append left (S.reverse right)
+
+foldr : (a -> b -> b) -> b -> Queue a -> b
+foldr f def queue = S.foldr f def (toStack queue)
+
+foldl : (b -> a -> b) -> b -> Queue a -> b
+foldl f def queue = S.foldl f def (toStack queue)
+
+countLeft : Queue a -> Int
+countLeft (Queue left _) = S.count left
+
+countRight : Queue a -> Int
+countRight (Queue _ right) = S.count right
+
+count : Queue a -> Int
+count queue = countLeft queue + countRight queue
+
+left : Queue a -> S.Stack a
+left (Queue left _) = left
+
+right : Queue a -> S.Stack a
+right (Queue _ right) = right
