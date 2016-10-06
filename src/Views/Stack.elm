@@ -284,12 +284,17 @@ compNodes mvmt prev curr =
                                 Just p -> Just (withDefault (initialPos a.val) (IntDict.get p nodes))
                 edged = case otherEdge of
                             Nothing -> acc
-                            Just e -> line [ SA.x1 (e.x + e.r |> toString)
-                                           , SA.y1 (e.y |> toString)
-                                           , SA.x2 (a.x - a.r |> toString)
-                                           , SA.y2 (a.y |> toString)
-                                           , SA.class "edge"
-                                           ] [] :: acc
+                            Just e ->
+                                let
+                                    tangent = (a.y - e.y) / (a.x - e.x)
+                                    invtan = atan tangent
+                                in
+                                    line [ SA.x1 (e.x + e.r*(cos invtan) |> toString)
+                                         , SA.y1 (e.y + e.r*(sin invtan) |> toString)
+                                         , SA.x2 (a.x - a.r*(cos invtan) |> toString)
+                                         , SA.y2 (a.y - a.r*(sin invtan) |> toString)
+                                         , SA.class "edge"
+                                         ] [] :: acc
                 circ = circle [ SA.cx (a.x |> toString)
                               , SA.cy (a.y |> toString)
                               , SA.r (a.r |> toString)
