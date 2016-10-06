@@ -288,11 +288,13 @@ compNodes mvmt prev curr =
                                 let
                                     tangent = (a.y - e.y) / (a.x - e.x)
                                     invtan = atan tangent
+                                    signX = if a.x > e.x then 1 else -1
+                                    signY = if a.y > e.y then 1 else -1
                                 in
-                                    line [ SA.x1 (e.x + e.r*(cos invtan) |> toString)
-                                         , SA.y1 (e.y + e.r*(sin invtan) |> toString)
-                                         , SA.x2 (a.x - a.r*(cos invtan) |> toString)
-                                         , SA.y2 (a.y - a.r*(sin invtan) |> toString)
+                                    line [ SA.x1 (e.x + signX*e.r*(cos invtan) |> toString)
+                                         , SA.y1 (e.y - signY*e.r*(sin invtan) |> toString)
+                                         , SA.x2 (a.x - signX*a.r*(cos invtan) |> toString)
+                                         , SA.y2 (a.y + signY*a.r*(sin invtan) |> toString)
                                          , SA.class "edge"
                                          ] [] :: acc
                 circ = circle [ SA.cx (a.x |> toString)
