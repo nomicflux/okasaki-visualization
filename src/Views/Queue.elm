@@ -48,9 +48,10 @@ initialModel = { currQueue = Queue.empty
 
 type Msg = Empty
          | IsEmpty
-         | Top
+         | Front
+         | Back
+         | Eject
          | Push
-         | Pop
          | Enqueue
          | Dequeue
          | Failure String
@@ -140,33 +141,44 @@ update msg model =
                         updateQueue {model | currId = model.currId + 1}
                             (Queue.push newVal newQueue)
                             (Just ("Added " ++ toString val))
-        Top ->
+        Front ->
             let
                 newQueue = clearClasses model.currQueue
                 (notice, classedQueue) =
-                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
+                    case (Queue.front model.currQueue, Queue.dequeue model.currQueue) of
                         (Nothing, _) -> (Nothing, Queue.empty)
                         (_, Nothing) -> (Nothing, Queue.empty)
                         (Just h, Just t) -> ( Just ("Head is: " ++ toString h.value)
                                             , Queue.push { h | classes = "head" } (clearClasses t))
             in
                 updateQueue model classedQueue notice
+        Back ->
+            let
+                newQueue = clearClasses model.currQueue
+                (notice, classedQueue) =
+                    case (Queue.back model.currQueue, Queue.eject model.currQueue) of
+                        (Nothing, _) -> (Nothing, Queue.empty)
+                        (_, Nothing) -> (Nothing, Queue.empty)
+                        (Just h, Just t) -> ( Just ("Head is: " ++ toString h.value)
+                                            , Queue.enqueue { h | classes = "head" } (clearClasses t))
+            in
+                updateQueue model classedQueue notice
+        Eject ->
+            let
+                newQueue = clearClasses model.currQueue
+                (notice, classedQueue) =
+                    case (Queue.back model.currQueue, Queue.eject model.currQueue) of
+                        (Nothing, _) -> (Nothing, Queue.empty)
+                        (_, Nothing) -> (Nothing, Queue.empty)
+                        (Just h, Just t) -> ( Just ("Tail is: not implemented")
+                                                   , (toClass t "tail"))
+            in
+                updateQueue model classedQueue notice
         Dequeue ->
             let
                 newQueue = clearClasses model.currQueue
                 (notice, classedQueue) =
-                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
-                        (Nothing, _) -> (Nothing, Queue.empty)
-                        (_, Nothing) -> (Nothing, Queue.empty)
-                        (Just h, Just t) -> ( Just ("Tail is: not implemented")
-                                                   , Queue.push { h | classes = "" } (toClass t "tail"))
-            in
-                updateQueue model classedQueue notice
-        Pop ->
-            let
-                newQueue = clearClasses model.currQueue
-                (notice, classedQueue) =
-                    case (Queue.top model.currQueue, Queue.dequeue model.currQueue) of
+                    case (Queue.front model.currQueue, Queue.dequeue model.currQueue) of
                         (Nothing, _) -> (Nothing, Queue.empty)
                         (_, Nothing) -> (Nothing, Queue.empty)
                         (Just _, Just t) -> ( Just ("Tail is: not implemented")
@@ -328,7 +340,7 @@ view model =
                      , SA.width ((toString maxWidth) ++ "px")
                      ] ( compNodes model.movement model.prevNodes model.currNodes )
         emptyBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Empty ] [ H.text "Empty" ] ]
-        enqueueBtn = H.div [ HA.class "input-btn-group" ]
+        insertBtn = H.div [ HA.class "input-btn-group" ]
                            [ H.button [ HA.class "btn"
                                       , HE.onClick Enqueue
                                       ] [ H.text "Enqueue"
@@ -340,16 +352,18 @@ view model =
                                      , HE.onInput UpdateInsert
                                      ] []
                            ]
-        topBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Top ] [ H.text "View Top" ] ]
-        dequeueBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Dequeue ] [ H.text "View Dequeue" ] ]
-        popBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Pop ] [ H.text "Perform Dequeue" ] ]
+        frontBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Front ] [ H.text "View Front" ] ]
+        backBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Back ] [ H.text "View Back" ] ]
+        dequeueBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Dequeue ] [ H.text "Dequeue" ] ]
+        ejectBtn = H.div [] [ H.button [ HA.class "btn", HE.onClick Eject ] [ H.text "Eject" ] ]
     in
         H.div [ SA.class "app"] [ svgDiv
                                 , H.div [ HA.class "buttons" ] [ emptyBtn
-                                                               , topBtn
+                                                               , frontBtn
+                                                               , backBtn
                                                                , dequeueBtn
-                                                               , popBtn
-                                                               , enqueueBtn
+                                                               , ejectBtn
+                                                               , insertBtn
                                                                ]
                                 ]
 
