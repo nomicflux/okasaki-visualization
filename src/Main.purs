@@ -1,9 +1,14 @@
 module Main where
 
-import Prelude
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
+import Views.Stack as Stack
+import Prelude (bind)
+import Pux (start, renderToDOM, fromSimple)
 
-main :: forall e. Eff (console :: CONSOLE | e) Unit
 main = do
-  log "Hello sailor!"
+  app <- start
+    { initialState: Stack.initModel
+    , update: fromSimple Stack.update
+    , view: Stack.view
+    , inputs: []
+    }
+  renderToDOM "#app" app.html

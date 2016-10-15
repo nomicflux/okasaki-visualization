@@ -5,6 +5,7 @@ import Data.Functor (class Functor, map)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid, mempty)
 import Data.Semigroup (class Semigroup, append)
+import Prelude ((+))
 
 data Stack a = Nil
              | Cons a (Stack a)
@@ -50,3 +51,6 @@ instance foldableStack :: Foldable Stack where
 
   foldMap _ Nil = mempty
   foldMap f (Cons x xs) = append (f x) (foldMap f xs)
+
+count :: forall a. Stack a -> Int
+count = foldr (\ _ acc -> acc + 1) 0

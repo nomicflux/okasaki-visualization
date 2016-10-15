@@ -25,3 +25,7 @@ svg .edge {
 .buttons {
     display: block;
 }
+
+button {
+    margin: 1px;
+}
