@@ -1,10 +1,10 @@
-module Views.Stack where
+module Views.Queue where
 
 import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Structures.Stack as S
+import Structures.Queue as Q
 import Control.Monad.Eff.Class (liftEff)
 -- import Control.Monad.Eff.Timer (TIMER)
 import Data.Array ((:), concatMap, fromFoldable)
@@ -12,14 +12,15 @@ import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
 import Data.Foldable (class Foldable, foldr)
 import Data.Function.Uncurried (runFn3)
-import Data.Functor (map)
+import Data.Functor (map, class Functor)
 import Data.Int (fromString, toNumber, round)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Ord (class Ord, compare)
 import Data.Show (show)
-import Data.Tuple (Tuple(..), snd)
+import Data.Tuple (Tuple(..), fst, snd)
 import Math (atan, sin, cos, pi)
-import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const
+               , min, max, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
@@ -48,7 +49,7 @@ instance eqNode :: Eq Node where
 instance ordNode :: Ord Node where
   compare (Node a) (Node b) = compare a.value b.value
 
-type Model = { stack :: S.Stack Node
+type Model = { queue :: Q.Queue Node
              , currId :: NodeID
              , currInput :: Maybe NodeValue
              , currNodes :: NodeMap
@@ -59,7 +60,7 @@ type Model = { stack :: S.Stack Node
              }
 
 initModel :: Model
-initModel = { stack : S.empty
+initModel = { queue : Q.empty
             , currId : 0
             , currInput : Nothing
             , currNodes : M.empty
@@ -69,13 +70,18 @@ initModel = { stack : S.empty
             , delay : 750.0 * millisecond
             }
 
-mkNode :: Model -> Maybe (Tuple Node Model)
-mkNode model =
+data Direction = Front | Back
+
+mkNode :: Direction -> Model -> Maybe (Tuple Node Model)
+mkNode dir model =
   case model.currInput of
     Nothing -> Nothing
     Just val ->
       let
-        mlastNode = S.head model.stack
+        mlastNode =
+          case dir of
+            Front -> Q.topHead model.queue
+            Back -> Q.backHead model.queue
         connections =
           case mlastNode of
             Nothing -> []
@@ -125,30 +131,34 @@ getNodeMap total stack = snd $ foldr (mkNodePos total) (Tuple 0 M.empty) stack
 changeClass :: Classes -> Node -> Node
 changeClass classes (Node node) = Node (node { classes = classes })
 
-changeAllClasses :: Classes -> S.Stack Node -> S.Stack Node
+changeAllClasses :: forall f. Functor f => Classes -> f Node -> f Node
 changeAllClasses classes = map (changeClass classes)
 
-wipeClasses :: S.Stack Node -> S.Stack Node
+wipeClasses :: forall f. Functor f => f Node -> f Node
 wipeClasses = changeAllClasses ""
 
 data Action = Empty
-            | Head
-            | Tail
+            | Top
+            | Bottom
             | Pop
-            | Insert
+            | Eject
+            | Push
+            | Inject
             | CurrentInput String
             | StartTimer Time
             | Tick Time
 
-updateStack :: Model -> S.Stack Node -> EffModel Model Action _
-updateStack model stack =
+updateQueue :: Model -> Q.Queue Node -> EffModel Model Action _
+updateQueue model queue =
   let
-    ct = S.count stack
-    newMap = getNodeMap ct stack
+    bict = Q.biCount queue
+    -- ct = max (fst bict) (snd bict)
+    ct = (fst bict) + (snd bict)
+    newMap = getNodeMap ct queue
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
-                  , stack = stack
+                  , queue = queue
                   , animationPhase = 0.0
                   }
    , effects: [ do
@@ -172,11 +182,11 @@ update (StartTimer time) model = noEffects $ model { startAnimation = Just time
                                                    , animationPhase = 0.0
                                                    }
 update Empty model =
-  updateStack model S.empty
-update Head model =
+  updateQueue model Q.empty
+update Top model =
   let
-    mhead = S.head model.stack
-    mtail = S.tail model.stack
+    mhead = Q.top model.queue
+    mtail = Q.pop model.queue
   in
    case Tuple mhead mtail of
      Tuple Nothing _ -> noEffects $ model
@@ -185,45 +195,66 @@ update Head model =
        let
          newHead = changeClass "head" h
          newTail = wipeClasses t
-         newStack = S.cons newHead newTail
+         newQ = Q.push newHead newTail
        in
-        updateStack model newStack
-update Tail model =
-  let
-    mhead = S.head model.stack
-    mtail = S.tail model.stack
-  in
-   case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ model
-     Tuple _ Nothing -> noEffects $ model
-     Tuple (Just h) (Just t) ->
-       let
-         newHead = changeClass "" h
-         newTail = changeAllClasses "tail" t
-         newStack = S.cons newHead newTail
-       in
-        updateStack model newStack
+        updateQueue model newQ
 update Pop model =
   let
-    mtail = S.tail model.stack
+    mtail = Q.pop model.queue
   in
    case mtail of
      Nothing -> noEffects $ model
      Just t ->
        let
          newTail = changeAllClasses "tail" t
-         newStack = newTail
+         newQ = newTail
        in
-        updateStack model newStack
-update Insert model =
+        updateQueue model newQ
+update Bottom model =
   let
-    mnode = mkNode model
-    cleanStack = wipeClasses model.stack
+    mhead = Q.back model.queue
+    mtail = Q.eject model.queue
+  in
+   case Tuple mhead mtail of
+     Tuple Nothing _ -> noEffects $ model
+     Tuple _ Nothing -> noEffects $ model
+     Tuple (Just h) (Just t) ->
+       let
+         newHead = changeClass "head" h
+         newTail = wipeClasses t
+         newQ = Q.inject newHead newTail
+       in
+        updateQueue model newQ
+update Eject model =
+  let
+    mtail = Q.eject model.queue
+  in
+   case mtail of
+     Nothing -> noEffects $ model
+     Just t ->
+       let
+         newTail = changeAllClasses "tail" t
+         newQ = newTail
+       in
+        updateQueue model newQ
+update Inject model =
+  let
+    mnode = mkNode Back model
+    cleanQueue = wipeClasses model.queue
   in
    case mnode of
      Nothing -> noEffects $ model
      Just (Tuple node newModel) ->
-       updateStack newModel (S.cons node cleanStack)
+       updateQueue newModel (Q.inject node cleanQueue)
+update Push model =
+  let
+    mnode = mkNode Front model
+    cleanQueue = wipeClasses model.queue
+  in
+   case mnode of
+     Nothing -> noEffects $ model
+     Just (Tuple node newModel) ->
+       updateQueue newModel (Q.push node cleanQueue)
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 
@@ -314,24 +345,31 @@ view model =
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
                          ]
-    headBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                   , HE.onClick $ const Head
-                                   ] [ H.text "Head" ]
-                        ]
-    tailBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                   , HE.onClick $ const Tail
-                                   ] [ H.text "Tail" ]
+    topBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                  , HE.onClick $ const Top
+                                  ] [ H.text "Top" ]
                         ]
     popBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                   , HE.onClick $ const Pop
                                   ] [ H.text "Pop" ]
-                       ]
+                        ]
+    backBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                  , HE.onClick $ const Bottom
+                                  ] [ H.text "Back" ]
+                        ]
+    ejectBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                    , HE.onClick $ const Eject
+                                    ] [ H.text "Eject" ]
+                        ]
     consSpan = H.div [ ] [ H.span [ ] [ H.button [ HA.className "pure-button"
-                                                 , HE.onClick $ const Insert
-                                                 ] [ H.text "Cons"]
+                                                 , HE.onClick $ const Inject
+                                                 ] [ H.text "Inject"]
+                                      , H.button [ HA.className "pure-button"
+                                                 , HE.onClick $ const Push
+                                                 ] [ H.text "Push" ]
                                       , H.input [ HA.type_ "number"
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, headBtn, tailBtn, popBtn, consSpan ]
+   H.div [ ] [ stackDiv, emptyBtn, topBtn, popBtn, backBtn, ejectBtn, consSpan ]

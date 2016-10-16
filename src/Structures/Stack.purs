@@ -3,8 +3,9 @@ module Structures.Stack where
 import Data.Foldable (class Foldable, foldr, foldl, foldMap)
 import Data.Functor (class Functor, map)
 import Data.Maybe (Maybe(..))
-import Data.Monoid (class Monoid, mempty)
+import Data.Monoid (class Monoid, mempty, (<>))
 import Data.Semigroup (class Semigroup, append)
+import Data.Show (class Show, show)
 import Prelude ((+))
 
 data Stack a = Nil
@@ -54,3 +55,7 @@ instance foldableStack :: Foldable Stack where
 
 count :: forall a. Stack a -> Int
 count = foldr (\ _ acc -> acc + 1) 0
+
+instance showStack :: (Show a) => Show (Stack a) where
+  show Nil = "[]"
+  show (Cons x xs) = show x <> " : " <> show xs
