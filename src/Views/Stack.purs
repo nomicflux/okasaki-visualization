@@ -5,18 +5,24 @@ import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Stack as S
+import Control.Monad.Eff.Class (liftEff)
+-- import Control.Monad.Eff.Timer (TIMER)
 import Data.Array ((:), concatMap, fromFoldable)
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
 import Data.Foldable (class Foldable, foldr)
+import Data.Function.Uncurried (runFn3)
 import Data.Functor (map)
 import Data.Int (fromString, toNumber, round)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Ord (class Ord, compare)
 import Data.Show (show)
 import Data.Tuple (Tuple(..), snd)
-import Prelude (($), (+), (/), (-), (*), (<>), (<<<), const, min)
--- import Pux (EffModel, noEffects)
+import Math (atan, sin, cos)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
+import Pux (EffModel, noEffects)
+import Signal ((~>))
+import Signal.Time (now, Time, millisecond)
 
 type Classes = String
 type NodeID = Int
@@ -47,6 +53,9 @@ type Model = { stack :: S.Stack Node
              , currInput :: Maybe NodeValue
              , currNodes :: NodeMap
              , prevNodes :: NodeMap
+             , startAnimation :: Maybe Time
+             , animationPhase :: Number
+             , delay :: Number
              }
 
 initModel :: Model
@@ -55,6 +64,9 @@ initModel = { stack : S.empty
             , currInput : Nothing
             , currNodes : M.empty
             , prevNodes : M.empty
+            , startAnimation : Nothing
+            , animationPhase : 1.0
+            , delay : 750.0 * millisecond
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
@@ -122,21 +134,42 @@ wipeClasses = changeAllClasses ""
 data Action = Empty
             | Head
             | Tail
+            | Pop
             | Insert
             | CurrentInput String
+            | StartTimer Time
+            | Tick Time
 
-updateStack :: Model -> S.Stack Node -> Model
+updateStack :: Model -> S.Stack Node -> EffModel Model Action _
 updateStack model stack =
   let
     ct = S.count stack
     newMap = getNodeMap ct stack
   in
-   model { prevNodes = model.currNodes
-         , currNodes = newMap
-         , stack = stack
-         }
+   { state: model { prevNodes = model.currNodes
+                  , currNodes = newMap
+                  , stack = stack
+                  , animationPhase = 0.0
+                  }
+   , effects: [ do
+      time <- liftEff now
+      pure $ StartTimer time
+              ]
+   }
 
-update :: Action -> Model -> Model
+update :: Action -> Model -> EffModel Model Action _
+update (Tick time) model =
+  case model.startAnimation of
+    Nothing -> noEffects model
+    Just start ->
+      let
+        timeDiff = time - start
+        newPhase = min 1.0 (timeDiff / model.delay)
+      in
+       noEffects $ model { animationPhase = newPhase }
+update (StartTimer time) model = noEffects $ model { startAnimation = Just time
+                                                   , animationPhase = 0.0
+                                                   }
 update Empty model =
   updateStack model S.empty
 update Head model =
@@ -145,8 +178,8 @@ update Head model =
     mtail = S.tail model.stack
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> model
-     Tuple _ Nothing -> model
+     Tuple Nothing _ -> noEffects $ model
+     Tuple _ Nothing -> noEffects $ model
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
@@ -160,13 +193,25 @@ update Tail model =
     mtail = S.tail model.stack
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> model
-     Tuple _ Nothing -> model
+     Tuple Nothing _ -> noEffects $ model
+     Tuple _ Nothing -> noEffects $ model
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "" h
          newTail = changeAllClasses "tail" t
          newStack = S.cons newHead newTail
+       in
+        updateStack model newStack
+update Pop model =
+  let
+    mtail = S.tail model.stack
+  in
+   case mtail of
+     Nothing -> noEffects $ model
+     Just t ->
+       let
+         newTail = changeAllClasses "tail" t
+         newStack = newTail
        in
         updateStack model newStack
 update Insert model =
@@ -175,45 +220,93 @@ update Insert model =
     cleanStack = wipeClasses model.stack
   in
    case mnode of
-     Nothing -> model
+     Nothing -> noEffects $ model
      Just (Tuple node newModel) ->
        updateStack newModel (S.cons node cleanStack)
 update (CurrentInput s) model =
-  model { currInput = fromString s }
+  noEffects $ model { currInput = fromString s }
 
-viewNodePos :: NodeMap -> NodePos -> Array (H.Html Action)
-viewNodePos nodemap nodepos =
+svgText :: forall a. Array (H.Attribute a) -> Array (H.Html a) -> H.Html a
+svgText = runFn3 H.element "text"
+
+initialNode :: NodeID -> NodePos
+initialNode nid = { x : maxWidth + 10.0
+                  , y : -10.0
+                  , r : 0.0
+                  , connections : [nid]
+                  , value : 0
+                  , classes : ""
+                  }
+
+finalNode :: NodeID -> NodePos
+finalNode _ = { x : -10.0
+              , y : maxHeight + 10.0
+              , r : 0.0
+              , connections : []
+              , value : 0
+              , classes : ""
+              }
+
+interpolate :: Number -> Number -> Number -> Number
+interpolate phase old new =
   let
-    xstr = show $ round nodepos.x
-    ystr = show $ round nodepos.y
-    rstr = show $ round nodepos.r
-    circ = H.circle [ HA.cx xstr
-                    , HA.cy ystr
-                    , HA.r rstr
-                    , HA.className (nodepos.classes <> " node")
+    diff = new - old
+  in
+   old + phase*diff
+
+interpolateNodes :: Number -> NodePos -> NodePos -> NodePos
+interpolateNodes phase old new =
+  let
+    intphase = interpolate phase
+  in
+   new { x = intphase old.x new.x
+       , y = intphase old.y new.y
+       , r = intphase old.r new.r
+       }
+
+viewNodePos :: Number -> NodeMap -> NodeMap -> NodeID -> Array (H.Html Action)
+viewNodePos phase prevmap currmap nid =
+  let
+    shround = show <<< round
+    interphase = interpolateNodes phase
+    prev = fromMaybe (initialNode nid) (M.lookup nid prevmap)
+    curr = fromMaybe (finalNode nid) (M.lookup nid currmap)
+    node = interphase prev curr
+    circ = H.circle [ HA.cx (shround $ node.x)
+                    , HA.cy (shround $ node.y)
+                    , HA.r (shround $ node.r)
+                    , HA.className (node.classes <> " node")
                     ] [ ]
-    val = H.textPath [ HA.x xstr
-                     , HA.y ystr
-                     , HA.textAnchor "middle" ] [ H.text (show nodepos.value)]
-    edges = filterMap (\nid ->
+    val = svgText [ HA.x (shround $ node.x)
+                  , HA.y (shround $ node.y + 6.0)
+                  , HA.textAnchor "middle" ] [ H.text (show node.value)]
+    edges = filterMap (\n ->
                         let
-                          mnode = M.lookup nid nodemap
+                          mnode = M.lookup n currmap
                         in
                          case mnode of
                            Nothing -> Nothing
-                           Just n ->
-                             Just $ H.line [ HA.x1 (show <<< round $ nodepos.x - nodepos.r)
-                                           , HA.y1 (show <<< round $ nodepos.y)
-                                           , HA.x2 (show <<< round $ n.x + n.r)
-                                           , HA.y2 (show <<< round $ n.y)
-                                           , HA.className "edge"] [ ]) nodepos.connections
+                           Just currEdge ->
+                             let
+                               prevEdge = fromMaybe (initialNode n) (M.lookup n prevmap)
+                               edgeNode = interphase prevEdge currEdge
+                               sign = if node.x < edgeNode.x then 1.0 else -1.0
+                               tangent = atan ((node.y - edgeNode.y) / (node.x - edgeNode.x))
+                             in
+                              Just $ H.line [ HA.x1 (shround $ node.x - sign*tangent * cos node.r)
+                                            , HA.y1 (shround $ node.y + tangent * sin node.r)
+                                            , HA.x2 (shround $ edgeNode.x + sign*tangent * cos edgeNode.r)
+                                            , HA.y2 (shround $ edgeNode.y - tangent * sin edgeNode.r)
+                                            , HA.className "edge"] [ ]) node.connections
   in
    circ : val : edges
 
 view :: Model -> H.Html Action
 view model =
   let
-    nodes = concatMap (viewNodePos model.currNodes) (fromFoldable $ M.values model.currNodes)
+    keys = M.keys $ M.union model.prevNodes model.currNodes
+    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
+    nodes = concatMap showNodes (fromFoldable keys)
     stackDiv = H.div [ HA.className "render" ] [ H.svg [HA.height (show maxHeight)
                                                        , HA.width (show maxWidth)  ] nodes ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
@@ -228,6 +321,10 @@ view model =
                                    , HE.onClick $ const Tail
                                    ] [ H.text "Tail" ]
                         ]
+    popBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                  , HE.onClick $ const Pop
+                                  ] [ H.text "Pop" ]
+                       ]
     consSpan = H.div [ ] [ H.span [ ] [ H.button [ HA.className "pure-button"
                                                  , HE.onClick $ const Insert
                                                  ] [ H.text "Cons"]
@@ -236,4 +333,4 @@ view model =
                                                 ] [ ]]
                          ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, headBtn, tailBtn, consSpan ]
+   H.div [ ] [ stackDiv, emptyBtn, headBtn, tailBtn, popBtn, consSpan ]
