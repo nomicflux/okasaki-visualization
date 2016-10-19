@@ -345,25 +345,23 @@ view model =
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
                          ]
-    topBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                  , HE.onClick $ const Top
-                                  ] [ H.text "Top" ]
-                        ]
-    popBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                  , HE.onClick $ const Pop
-                                  ] [ H.text "Pop" ]
-                        ]
-    backBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                  , HE.onClick $ const Bottom
-                                  ] [ H.text "Back" ]
-                        ]
-    ejectBtn = H.div [ ] [ H.button [ HA.className "pure-button"
-                                    , HE.onClick $ const Eject
-                                    ] [ H.text "Eject" ]
-                        ]
+    topBtn = H.button [ HA.className "pure-button"
+                      , HE.onClick $ const Top
+                      ] [ H.text "Top" ]
+    popBtn = H.button [ HA.className "pure-button"
+                      , HE.onClick $ const Pop
+                      ] [ H.text "Pop / Unshift" ]
+    frontDiv = H.div [ ] [ topBtn, popBtn ]
+    backBtn = H.button [ HA.className "pure-button"
+                       , HE.onClick $ const Bottom
+                       ] [ H.text "Back" ]
+    ejectBtn = H.button [ HA.className "pure-button"
+                        , HE.onClick $ const Eject
+                        ] [ H.text "Eject" ]
+    backDiv = H.div [ ] [ backBtn, ejectBtn ]
     consSpan = H.div [ ] [ H.span [ ] [ H.button [ HA.className "pure-button"
                                                  , HE.onClick $ const Inject
-                                                 ] [ H.text "Inject"]
+                                                 ] [ H.text "Inject / Shift"]
                                       , H.button [ HA.className "pure-button"
                                                  , HE.onClick $ const Push
                                                  ] [ H.text "Push" ]
@@ -372,4 +370,4 @@ view model =
                                                 ] [ ]]
                          ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, topBtn, popBtn, backBtn, ejectBtn, consSpan ]
+   H.div [ ] [ stackDiv, emptyBtn, frontDiv, backDiv, consSpan ]
