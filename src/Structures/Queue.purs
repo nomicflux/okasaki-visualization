@@ -11,15 +11,20 @@ import Data.Tuple (Tuple(..))
 
 import Structures.Stack as S
 
+-- | *DataStructure Queue
 data Queue a = Queue { front :: S.Stack a
                      , back :: S.Stack a
                      }
+-- .end
 
+-- | *empty
 empty :: forall a. Queue a
 empty = Queue { front : S.empty
               , back : S.empty
               }
+-- .end
 
+-- | *top
 top :: forall a. Queue a -> Maybe a
 top (Queue queue) =
   case S.head (queue.front) of
@@ -28,7 +33,9 @@ top (Queue queue) =
       case S.head (S.reverse queue.back) of
         Nothing -> Nothing
         Just y -> Just y
+-- .end
 
+-- | *back
 back :: forall a. Queue a -> Maybe a
 back (Queue queue) =
   case S.head (queue.back) of
@@ -37,7 +44,9 @@ back (Queue queue) =
       case S.head (S.reverse queue.front) of
         Nothing -> Nothing
         Just x -> Just x
+-- .end
 
+-- | *pop
 pop :: forall a. Queue a -> Maybe (Queue a)
 pop (Queue queue) =
   case S.tail (queue.front) of
@@ -47,7 +56,9 @@ pop (Queue queue) =
         Nothing -> Nothing
         Just ys -> Just (Queue (queue { back = S.empty
                                       , front = ys}))
+-- .end
 
+-- | *eject
 eject :: forall a. Queue a -> Maybe (Queue a)
 eject (Queue queue) =
   case S.tail (queue.back) of
@@ -57,12 +68,17 @@ eject (Queue queue) =
         Nothing -> Nothing
         Just ys -> Just (Queue (queue { front = S.empty
                                       , back = ys}))
+-- .end
 
+-- | *push
 push :: forall a. a -> Queue a -> Queue a
 push val (Queue queue) = Queue (queue { front = S.cons val queue.front })
+-- .end
 
+-- | *inject
 inject :: forall a. a -> Queue a -> Queue a
 inject val (Queue queue) = Queue (queue { back = S.cons val queue.back })
+-- end
 
 topHead :: forall a. Queue a -> Maybe a
 topHead (Queue queue) = S.head queue.front

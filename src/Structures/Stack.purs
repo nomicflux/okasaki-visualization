@@ -8,29 +8,41 @@ import Data.Semigroup (class Semigroup, append)
 import Data.Show (class Show, show)
 import Prelude ((+))
 
+-- | *DataStructure Stack
 data Stack a = Nil
              | Cons a (Stack a)
+-- .end
 
+-- | *empty
 empty :: forall a. Stack a
 empty = Nil
+-- .end
 
+-- | *head
 head :: forall a. Stack a -> Maybe a
 head Nil = Nothing
 head (Cons x _) = Just x
+-- .end
 
+-- | *tail
 tail :: forall a. Stack a -> Maybe (Stack a)
 tail Nil = Nothing
 tail (Cons _ xs) = Just xs
+-- .end
 
+-- | *cons
 cons :: forall a. a -> Stack a -> Stack a
 cons val stack = Cons val stack
+-- .end
 
+-- | *reverse
 reverse :: forall a. Stack a -> Stack a
 reverse stack = go stack Nil
   where
     go :: Stack a -> Stack a -> Stack a
     go Nil acc = acc
     go (Cons x xs) acc = go xs (Cons x acc)
+-- .end
 
 instance functorStack :: Functor Stack where
   map _ Nil = Nil

@@ -2,11 +2,14 @@ module Main where
 
 import Views.Stack as Stack
 import Views.Queue as Queue
-import Prelude (bind, (/), ($), (<$>), const)
+import CodeSnippet as CS
+import Prelude (bind, (/), ($), (<$>), const, pure, (<<<))
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
+import Control.Monad.Aff (runAff)
+import Control.Monad.Eff (runPure)
 import Data.Maybe (Maybe(..))
 import Signal ((~>))
 import Signal.Time (every, second, Time())
@@ -44,7 +47,9 @@ updateQueue state quaction =
 
 update :: Action -> State -> EffModel State Action _
 update (ChangePage page) state =
-  noEffects $ state { currPage = Just page }
+  { state: state { currPage = Just page }
+  , effects: pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack"
+  }
 update (StackAction staction) state =
   updateStack state staction
 update (QueueAction quaction) state =
@@ -64,10 +69,10 @@ view state =
                         , HE.onClick (const $ ChangePage StackPage)] [ H.text "Stack" ]
     queueBtn = H.button [ HA.className "pure-button pure-button-primary"
                         , HE.onClick (const $ ChangePage QueuePage)] [ H.text "Queue" ]
-    btnDiv = H.div [ ] [ stackBtn, queueBtn ]
+    btnDiv = H.div [ HA.className "pure-u-1-1" ] [ stackBtn, queueBtn ]
     renderDiv =
       case state.currPage of
-        Nothing -> H.div [ ] [ H.text "Please select a data structure"]
+        Nothing -> H.div [ HA.className "pure-u-1-1" ] [ H.text "Please select a data structure"]
         Just StackPage -> StackAction <$> Stack.view state.stackModel
         Just QueuePage -> QueueAction <$> Queue.view state.queueModel
   in

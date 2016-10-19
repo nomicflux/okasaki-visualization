@@ -12,7 +12,9 @@
     "purescript-react-dom": "^1.0.0",
     "react": "^15.3.2",
     "purescript-filterable": "^0.1.3",
-    "purescript-signal": "^7.0.0"
+    "purescript-signal": "^7.0.0",
+    "purescript-affjax": "^2.0.1",
+    "purescript-string-parsers": "^1.0.1"
   },
   "devDependencies": {
     "purescript-psci-support": "^1.0.0"

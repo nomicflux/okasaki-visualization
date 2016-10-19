@@ -5,8 +5,11 @@ import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Stack as S
+import CodeSnippet as CS
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (Error)
 import Data.Array ((:), concatMap, fromFoldable)
+import Data.Either (Either(..))
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
 import Data.Foldable (class Foldable, foldr)
@@ -56,6 +59,7 @@ type Model = { stack :: S.Stack Node
              , startAnimation :: Maybe Time
              , animationPhase :: Number
              , delay :: Number
+             , sourceCode :: M.Map String String
              }
 
 initModel :: Model
@@ -67,6 +71,7 @@ initModel = { stack : S.empty
             , startAnimation : Nothing
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
+            , sourceCode : M.empty
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
@@ -139,6 +144,8 @@ data Action = Empty
             | Insert
             | CurrentInput String
             | StartTimer Time
+            | LoadCode (Either String CS.SourceCode)
+            | Failure Error
             | Tick Time
 
 updateStack :: Model -> S.Stack Node -> EffModel Model Action _
@@ -159,6 +166,10 @@ updateStack model stack =
    }
 
 update :: Action -> Model -> EffModel Model Action _
+update (Failure err) model = noEffects model
+update (LoadCode (Left _)) model = noEffects model
+update (LoadCode (Right code)) model =
+  noEffects $ model { sourceCode = CS.parseFunctions code }
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
@@ -311,8 +322,9 @@ view model =
     keys = M.keys $ M.union model.prevNodes model.currNodes
     showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
     nodes = concatMap showNodes (fromFoldable keys)
-    stackDiv = H.div [ HA.className "render" ] [ H.svg [HA.height (show maxHeight)
-                                                       , HA.width (show maxWidth)  ] nodes ]
+    stackDiv = H.div [ HA.className "render pure-u-1-1" ]
+               [ H.svg [HA.height (show maxHeight)
+                       , HA.width (show maxWidth)  ] nodes ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
@@ -339,5 +351,15 @@ view model =
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
+    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ emptyBtn
+                                                     , viewsDiv
+                                                     , revBtn
+                                                     , popBtn
+                                                     , consSpan
+                                                     ]
+    codeDiv = H.div [ HA.className "pure-u-1-2" ] [ H.text "Code" ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, viewsDiv, revBtn, popBtn, consSpan ]
+   H.div [ HA.className "pure-g" ] [ stackDiv
+                                   , controlDiv
+                                   , codeDiv
+                                   ]
