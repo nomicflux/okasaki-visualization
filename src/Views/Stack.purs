@@ -6,7 +6,6 @@ import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Stack as S
 import Control.Monad.Eff.Class (liftEff)
--- import Control.Monad.Eff.Timer (TIMER)
 import Data.Array ((:), concatMap, fromFoldable)
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
@@ -21,6 +20,7 @@ import Data.Tuple (Tuple(..), snd)
 import Math (atan, sin, cos, pi)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
+import Pux.Html.Attributes (letterSpacing)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
@@ -135,6 +135,7 @@ data Action = Empty
             | Head
             | Tail
             | Pop
+            | Reverse
             | Insert
             | CurrentInput String
             | StartTimer Time
@@ -215,6 +216,8 @@ update Pop model =
          newStack = newTail
        in
         updateStack model newStack
+update Reverse model =
+  updateStack model (S.reverse model.stack)
 update Insert model =
   let
     mnode = mkNode model
@@ -314,14 +317,17 @@ view model =
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
                          ]
-    headBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+    headBtn = H.button [ HA.className "pure-button"
                                    , HE.onClick $ const Head
                                    ] [ H.text "Head" ]
-                        ]
-    tailBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+    tailBtn = H.button [ HA.className "pure-button"
                                    , HE.onClick $ const Tail
                                    ] [ H.text "Tail" ]
-                        ]
+    viewsDiv = H.div [ ] [ headBtn, tailBtn ]
+    revBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                  , HE.onClick $ const Reverse
+                                  ] [ H.text "Reverse" ]
+                       ]
     popBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                   , HE.onClick $ const Pop
                                   ] [ H.text "Pop" ]
@@ -334,4 +340,4 @@ view model =
                                                 ] [ ]]
                          ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, headBtn, tailBtn, popBtn, consSpan ]
+   H.div [ ] [ stackDiv, emptyBtn, viewsDiv, revBtn, popBtn, consSpan ]

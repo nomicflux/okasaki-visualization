@@ -23555,7 +23555,7 @@ var PS = {};
   "use strict";
   var Data_Map = PS["Data.Map"];
   var Pux_Html = PS["Pux.Html"];
-  var Pux_Html_Attributes = PS["Pux.Html.Attributes"];
+  var Pux_Html_Attributes_1 = PS["Pux.Html.Attributes"];
   var Pux_Html_Events = PS["Pux.Html.Events"];
   var Structures_Stack = PS["Structures.Stack"];
   var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
@@ -23573,6 +23573,7 @@ var PS = {};
   var $$Math = PS["Math"];
   var Prelude = PS["Prelude"];
   var Pux = PS["Pux"];
+  var Pux_Html_Attributes_1 = PS["Pux.Html.Attributes"];
   var Signal = PS["Signal"];
   var Signal_Time = PS["Signal.Time"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
@@ -23621,6 +23622,13 @@ var PS = {};
       };
       Pop.value = new Pop();
       return Pop;
+  })();
+  var Reverse = (function () {
+      function Reverse() {
+
+      };
+      Reverse.value = new Reverse();
+      return Reverse;
   })();
   var Insert = (function () {
       function Insert() {
@@ -23775,7 +23783,7 @@ var PS = {};
                               if (!$23) {
                                   return -1.0;
                               };
-                              throw new Error("Failed pattern match at Views.Stack line 293, column 40 - line 294, column 32: " + [ $23.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Stack line 296, column 40 - line 297, column 32: " + [ $23.constructor.name ]);
                           })();
                           var signY = (function () {
                               var $24 = node.y < edgeNode.y;
@@ -23785,32 +23793,34 @@ var PS = {};
                               if (!$24) {
                                   return -1.0;
                               };
-                              throw new Error("Failed pattern match at Views.Stack line 294, column 40 - line 295, column 32: " + [ $24.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Stack line 297, column 40 - line 298, column 32: " + [ $24.constructor.name ]);
                           })();
-                          return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y - signY * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y + signY * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes.className("edge") ])([  ]));
+                          return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes_1.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes_1.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y - signY * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes_1.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes_1.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y + signY * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes_1.className("edge") ])([  ]));
                       };
-                      throw new Error("Failed pattern match at Views.Stack line 287, column 26 - line 301, column 71: " + [ mnode.constructor.name ]);
+                      throw new Error("Failed pattern match at Views.Stack line 290, column 26 - line 304, column 71: " + [ mnode.constructor.name ]);
                   })(node.connections);
-                  var val = svgText([ Pux_Html_Attributes.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + 6.0)), Pux_Html_Attributes.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
-                  var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes.className(node.classes + " node") ])([  ]);
+                  var val = svgText([ Pux_Html_Attributes_1.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes_1.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + 6.0)), Pux_Html_Attributes_1.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
+                  var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes_1.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes_1.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes_1.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes_1.className(node.classes + " node") ])([  ]);
                   return Data_Array.cons(circ)(Data_Array.cons(val)(edges));
               };
           };
       };
   };
   var view = function (model) {
-      var tailBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Tail.value)) ])([ Pux_Html_Elements.text("Tail") ]) ]);
+      var tailBtn = Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Tail.value)) ])([ Pux_Html_Elements.text("Tail") ]);
       var showNodes = viewNodePos(model.animationPhase)(model.prevNodes)(model.currNodes);
-      var popBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Pop.value)) ])([ Pux_Html_Elements.text("Pop") ]) ]);
+      var revBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Reverse.value)) ])([ Pux_Html_Elements.text("Reverse") ]) ]);
+      var popBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Pop.value)) ])([ Pux_Html_Elements.text("Pop") ]) ]);
       var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
       var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
-      var stackDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("render") ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(maxWidth)) ])(nodes) ]);
-      var headBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Head.value)) ])([ Pux_Html_Elements.text("Head") ]) ]);
-      var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
-      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Cons") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var stackDiv = Pux_Html_Elements.div([ Pux_Html_Attributes_1.className("render") ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes_1.height(Data_Show.show(Data_Show.showNumber)(maxHeight)), Pux_Html_Attributes_1.width(Data_Show.show(Data_Show.showNumber)(maxWidth)) ])(nodes) ]);
+      var headBtn = Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Head.value)) ])([ Pux_Html_Elements.text("Head") ]);
+      var viewsDiv = Pux_Html_Elements.div([  ])([ headBtn, tailBtn ]);
+      var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
+      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes_1.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Cons") ]), Pux_Html_Elements.input([ Pux_Html_Attributes_1.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
-      return Pux_Html_Elements.div([  ])([ stackDiv, emptyBtn, headBtn, tailBtn, popBtn, consSpan ]);
+      return Pux_Html_Elements.div([  ])([ stackDiv, emptyBtn, viewsDiv, revBtn, popBtn, consSpan ]);
   }; 
   var changeClass = function (classes) {
       return function (v) {
@@ -23919,9 +23929,9 @@ var PS = {};
                           return $57;
                       })());
                   };
-                  throw new Error("Failed pattern match at Views.Stack line 168, column 8 - line 170, column 91: " + [ $53.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Stack line 169, column 8 - line 171, column 91: " + [ $53.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Views.Stack line 162, column 3 - line 170, column 91: " + [ model.startAnimation.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 163, column 3 - line 171, column 91: " + [ model.startAnimation.constructor.name ]);
           };
           if (v instanceof StartTimer) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -23955,7 +23965,7 @@ var PS = {};
                   var newStack = Structures_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack);
               };
-              throw new Error("Failed pattern match at Views.Stack line 181, column 4 - line 190, column 35: " + [ $66.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 182, column 4 - line 191, column 35: " + [ $66.constructor.name ]);
           };
           if (v instanceof Tail) {
               var mtail = Structures_Stack.tail(model.stack);
@@ -23973,7 +23983,7 @@ var PS = {};
                   var newStack = Structures_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack);
               };
-              throw new Error("Failed pattern match at Views.Stack line 196, column 4 - line 205, column 35: " + [ $75.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 197, column 4 - line 206, column 35: " + [ $75.constructor.name ]);
           };
           if (v instanceof Pop) {
               var mtail = Structures_Stack.tail(model.stack);
@@ -23984,7 +23994,10 @@ var PS = {};
                   var newTail = changeAllClasses("tail")(mtail.value0);
                   return updateStack(model)(newTail);
               };
-              throw new Error("Failed pattern match at Views.Stack line 210, column 4 - line 217, column 35: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 211, column 4 - line 218, column 35: " + [ mtail.constructor.name ]);
+          };
+          if (v instanceof Reverse) {
+              return updateStack(model)(Structures_Stack.reverse(model.stack));
           };
           if (v instanceof Insert) {
               var mnode = mkNode(model);
@@ -23995,7 +24008,7 @@ var PS = {};
               if (mnode instanceof Data_Maybe.Just) {
                   return updateStack(mnode.value0.value1)(Structures_Stack.cons(mnode.value0.value0)(cleanStack));
               };
-              throw new Error("Failed pattern match at Views.Stack line 223, column 4 - line 226, column 53: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 226, column 4 - line 229, column 53: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -24009,13 +24022,14 @@ var PS = {};
                   return $90;
               })());
           };
-          throw new Error("Failed pattern match at Views.Stack line 161, column 1 - line 170, column 91: " + [ v.constructor.name, model.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Stack line 162, column 1 - line 171, column 91: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
   exports["Head"] = Head;
   exports["Tail"] = Tail;
   exports["Pop"] = Pop;
+  exports["Reverse"] = Reverse;
   exports["Insert"] = Insert;
   exports["CurrentInput"] = CurrentInput;
   exports["StartTimer"] = StartTimer;
@@ -24548,19 +24562,21 @@ var PS = {};
       };
   };
   var view = function (model) {
-      var topBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Top.value)) ])([ Pux_Html_Elements.text("Top") ]) ]);
+      var topBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Top.value)) ])([ Pux_Html_Elements.text("Top") ]);
       var showNodes = viewNodePos(model.animationPhase)(model.prevNodes)(model.currNodes);
-      var popBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Pop.value)) ])([ Pux_Html_Elements.text("Pop") ]) ]);
+      var popBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Pop.value)) ])([ Pux_Html_Elements.text("Pop / Unshift") ]);
       var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
       var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
       var stackDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("render") ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(maxWidth)) ])(nodes) ]);
+      var frontDiv = Pux_Html_Elements.div([  ])([ topBtn, popBtn ]);
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
-      var ejectBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Eject.value)) ])([ Pux_Html_Elements.text("Eject") ]) ]);
-      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var ejectBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Eject.value)) ])([ Pux_Html_Elements.text("Eject") ]);
+      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject / Shift") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
-      var backBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Bottom.value)) ])([ Pux_Html_Elements.text("Back") ]) ]);
-      return Pux_Html_Elements.div([  ])([ stackDiv, emptyBtn, topBtn, popBtn, backBtn, ejectBtn, consSpan ]);
+      var backBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Bottom.value)) ])([ Pux_Html_Elements.text("Back") ]);
+      var backDiv = Pux_Html_Elements.div([  ])([ backBtn, ejectBtn ]);
+      return Pux_Html_Elements.div([  ])([ stackDiv, emptyBtn, frontDiv, backDiv, consSpan ]);
   }; 
   var changeClass = function (classes) {
       return function (v) {
