@@ -21397,7 +21397,8 @@ var PS = {};
               throw new Error("Failed pattern match at Data.Maybe line 232, column 1 - line 232, column 22: " + [ v.constructor.name, v1.constructor.name, v2.constructor.name ]);
           };
       };
-  };                                                      
+  };                                                         
+  var isJust = maybe(false)(Data_Function["const"](true));
   var functorMaybe = new Data_Functor.Functor(function (v) {
       return function (v1) {
           if (v1 instanceof Just) {
@@ -21441,6 +21442,7 @@ var PS = {};
   exports["Nothing"] = Nothing;
   exports["fromJust"] = fromJust;
   exports["fromMaybe"] = fromMaybe;
+  exports["isJust"] = isJust;
   exports["maybe"] = maybe;
   exports["functorMaybe"] = functorMaybe;
   exports["eqMaybe"] = eqMaybe;
@@ -22507,8 +22509,8 @@ var PS = {};
   var Control_Category = PS["Control.Category"];
   var Control_Semigroupoid = PS["Control.Semigroupoid"];
   var Data_Ordering = PS["Data.Ordering"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Semiring = PS["Data.Semiring"];        
+  var Data_Semiring = PS["Data.Semiring"];
+  var Data_Function = PS["Data.Function"];        
   var Leaf = (function () {
       function Leaf() {
 
@@ -22691,7 +22693,7 @@ var PS = {};
       if (v instanceof Three) {
           return Data_Semigroup.append(Data_List.semigroupList)(toList(v.value0))(Data_Semigroup.append(Data_List.semigroupList)(Control_Applicative.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(v.value1, v.value2)))(Data_Semigroup.append(Data_List.semigroupList)(toList(v.value3))(Data_Semigroup.append(Data_List.semigroupList)(Control_Applicative.pure(Data_List.applicativeList)(new Data_Tuple.Tuple(v.value4, v.value5)))(toList(v.value6)))));
       };
-      throw new Error("Failed pattern match at Data.Map line 370, column 1 - line 370, column 18: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Data.Map line 302, column 1 - line 302, column 18: " + [ v.constructor.name ]);
   };
   var lookup = function (dictOrd) {
       return Partial_Unsafe.unsafePartial(function (dictPartial) {
@@ -22702,43 +22704,50 @@ var PS = {};
                   };
                   var comp = Data_Ord.compare(dictOrd);
                   var __unused = function (dictPartial1) {
-                      return function ($dollar37) {
-                          return $dollar37;
+                      return function ($dollar23) {
+                          return $dollar23;
                       };
                   };
                   return __unused(dictPartial)((function () {
                       if (tree instanceof Two) {
-                          var $162 = comp(k)(tree.value1);
-                          if ($162 instanceof Data_Ordering.EQ) {
+                          var $103 = comp(k)(tree.value1);
+                          if ($103 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(tree.value2);
                           };
-                          if ($162 instanceof Data_Ordering.LT) {
+                          if ($103 instanceof Data_Ordering.LT) {
                               return lookup(dictOrd)(k)(tree.value0);
                           };
                           return lookup(dictOrd)(k)(tree.value3);
                       };
                       if (tree instanceof Three) {
-                          var $167 = comp(k)(tree.value1);
-                          if ($167 instanceof Data_Ordering.EQ) {
+                          var $108 = comp(k)(tree.value1);
+                          if ($108 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(tree.value2);
                           };
-                          var $169 = comp(k)(tree.value4);
-                          if ($169 instanceof Data_Ordering.EQ) {
+                          var $110 = comp(k)(tree.value4);
+                          if ($110 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(tree.value5);
                           };
-                          if ($167 instanceof Data_Ordering.LT) {
+                          if ($108 instanceof Data_Ordering.LT) {
                               return lookup(dictOrd)(k)(tree.value0);
                           };
-                          if ($169 instanceof Data_Ordering.GT) {
+                          if ($110 instanceof Data_Ordering.GT) {
                               return lookup(dictOrd)(k)(tree.value6);
                           };
                           return lookup(dictOrd)(k)(tree.value3);
                       };
-                      throw new Error("Failed pattern match at Data.Map line 133, column 10 - line 147, column 39: " + [ tree.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 126, column 10 - line 140, column 39: " + [ tree.constructor.name ]);
                   })());
               };
           };
       });
+  };
+  var member = function (dictOrd) {
+      return function (k) {
+          return function (m) {
+              return Data_Maybe.isJust(lookup(dictOrd)(k)(m));
+          };
+      };
   };
   var keys = function (v) {
       if (v instanceof Leaf) {
@@ -22750,7 +22759,7 @@ var PS = {};
       if (v instanceof Three) {
           return Data_Semigroup.append(Data_List.semigroupList)(keys(v.value0))(Data_Semigroup.append(Data_List.semigroupList)(Control_Applicative.pure(Data_List.applicativeList)(v.value1))(Data_Semigroup.append(Data_List.semigroupList)(keys(v.value3))(Data_Semigroup.append(Data_List.semigroupList)(Control_Applicative.pure(Data_List.applicativeList)(v.value4))(keys(v.value6)))));
       };
-      throw new Error("Failed pattern match at Data.Map line 385, column 1 - line 385, column 16: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Data.Map line 317, column 1 - line 317, column 16: " + [ v.constructor.name ]);
   }; 
   var fromZipper = function (__copy_dictOrd) {
       return function (__copy_v) {
@@ -22808,9 +22817,9 @@ var PS = {};
                           tree = __tco_tree;
                           continue tco;
                       };
-                      throw new Error("Failed pattern match at Data.Map line 224, column 3 - line 229, column 88: " + [ v.value0.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 156, column 3 - line 161, column 88: " + [ v.value0.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Data.Map line 222, column 1 - line 222, column 27: " + [ v.constructor.name, tree.constructor.name ]);
+                  throw new Error("Failed pattern match at Data.Map line 154, column 1 - line 154, column 27: " + [ v.constructor.name, tree.constructor.name ]);
               };
           };
       };
@@ -22852,9 +22861,9 @@ var PS = {};
                           v1 = __tco_v1;
                           continue tco;
                       };
-                      throw new Error("Failed pattern match at Data.Map line 260, column 5 - line 265, column 104: " + [ v.value0.constructor.name, v1.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 192, column 5 - line 197, column 104: " + [ v.value0.constructor.name, v1.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Data.Map line 258, column 3 - line 258, column 54: " + [ v.constructor.name, v1.constructor.name ]);
+                  throw new Error("Failed pattern match at Data.Map line 190, column 3 - line 190, column 54: " + [ v.constructor.name, v1.constructor.name ]);
               };
           };
       };
@@ -22872,11 +22881,11 @@ var PS = {};
                               return up(ctx)(new KickUp(Leaf.value, k, v, Leaf.value));
                           };
                           if (v1 instanceof Two) {
-                              var $290 = comp(k)(v1.value1);
-                              if ($290 instanceof Data_Ordering.EQ) {
+                              var $231 = comp(k)(v1.value1);
+                              if ($231 instanceof Data_Ordering.EQ) {
                                   return fromZipper(dictOrd)(ctx)(new Two(v1.value0, k, v, v1.value3));
                               };
-                              if ($290 instanceof Data_Ordering.LT) {
+                              if ($231 instanceof Data_Ordering.LT) {
                                   var __tco_ctx = new Data_List.Cons(new TwoLeft(v1.value1, v1.value2, v1.value3), ctx);
                                   var __tco_k = k;
                                   var __tco_v = v;
@@ -22898,15 +22907,15 @@ var PS = {};
                               continue tco;
                           };
                           if (v1 instanceof Three) {
-                              var $295 = comp(k)(v1.value1);
-                              if ($295 instanceof Data_Ordering.EQ) {
+                              var $236 = comp(k)(v1.value1);
+                              if ($236 instanceof Data_Ordering.EQ) {
                                   return fromZipper(dictOrd)(ctx)(new Three(v1.value0, k, v, v1.value3, v1.value4, v1.value5, v1.value6));
                               };
-                              var $297 = comp(k)(v1.value4);
-                              if ($297 instanceof Data_Ordering.EQ) {
+                              var $238 = comp(k)(v1.value4);
+                              if ($238 instanceof Data_Ordering.EQ) {
                                   return fromZipper(dictOrd)(ctx)(new Three(v1.value0, v1.value1, v1.value2, v1.value3, k, v, v1.value6));
                               };
-                              if ($295 instanceof Data_Ordering.LT) {
+                              if ($236 instanceof Data_Ordering.LT) {
                                   var __tco_ctx = new Data_List.Cons(new ThreeLeft(v1.value1, v1.value2, v1.value3, v1.value4, v1.value5, v1.value6), ctx);
                                   var __tco_k = k;
                                   var __tco_v = v;
@@ -22917,7 +22926,7 @@ var PS = {};
                                   v1 = __tco_v1;
                                   continue tco;
                               };
-                              if ($295 instanceof Data_Ordering.GT && $297 instanceof Data_Ordering.LT) {
+                              if ($236 instanceof Data_Ordering.GT && $238 instanceof Data_Ordering.LT) {
                                   var __tco_ctx = new Data_List.Cons(new ThreeMiddle(v1.value0, v1.value1, v1.value2, v1.value4, v1.value5, v1.value6), ctx);
                                   var __tco_k = k;
                                   var __tco_v = v;
@@ -22938,7 +22947,7 @@ var PS = {};
                               v1 = __tco_v1;
                               continue tco;
                           };
-                          throw new Error("Failed pattern match at Data.Map line 241, column 3 - line 241, column 52: " + [ ctx.constructor.name, k.constructor.name, v.constructor.name, v1.constructor.name ]);
+                          throw new Error("Failed pattern match at Data.Map line 173, column 3 - line 173, column 52: " + [ ctx.constructor.name, k.constructor.name, v.constructor.name, v1.constructor.name ]);
                       };
                   };
               };
@@ -22955,8 +22964,8 @@ var PS = {};
                   };
                   if (ctxs instanceof Data_List.Cons) {
                       var __unused = function (dictPartial1) {
-                          return function ($dollar45) {
-                              return $dollar45;
+                          return function ($dollar31) {
+                              return $dollar31;
                           };
                       };
                       return __unused(dictPartial)((function () {
@@ -23011,10 +23020,10 @@ var PS = {};
                           if (ctxs.value0 instanceof ThreeRight && ctxs.value0.value3 instanceof Three) {
                               return fromZipper(dictOrd)(ctxs.value1)(new Three(ctxs.value0.value0, ctxs.value0.value1, ctxs.value0.value2, new Two(ctxs.value0.value3.value0, ctxs.value0.value3.value1, ctxs.value0.value3.value2, ctxs.value0.value3.value3), ctxs.value0.value3.value4, ctxs.value0.value3.value5, new Two(ctxs.value0.value3.value6, ctxs.value0.value4, ctxs.value0.value5, tree)));
                           };
-                          throw new Error("Failed pattern match at Data.Map line 310, column 9 - line 327, column 136: " + [ ctxs.value0.constructor.name, tree.constructor.name ]);
+                          throw new Error("Failed pattern match at Data.Map line 242, column 9 - line 259, column 136: " + [ ctxs.value0.constructor.name, tree.constructor.name ]);
                       })());
                   };
-                  throw new Error("Failed pattern match at Data.Map line 307, column 5 - line 327, column 136: " + [ ctxs.constructor.name ]);
+                  throw new Error("Failed pattern match at Data.Map line 239, column 5 - line 259, column 136: " + [ ctxs.constructor.name ]);
               };
           };
       });
@@ -23022,8 +23031,8 @@ var PS = {};
           return function (ctx) {
               return function (m) {
                   var __unused = function (dictPartial1) {
-                      return function ($dollar47) {
-                          return $dollar47;
+                      return function ($dollar33) {
+                          return $dollar33;
                       };
                   };
                   return __unused(dictPartial)((function () {
@@ -23039,7 +23048,7 @@ var PS = {};
                       if (m instanceof Three) {
                           return removeMaxNode(new Data_List.Cons(new ThreeRight(m.value0, m.value1, m.value2, m.value3, m.value4, m.value5), ctx))(m.value6);
                       };
-                      throw new Error("Failed pattern match at Data.Map line 339, column 5 - line 343, column 107: " + [ m.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 271, column 5 - line 275, column 107: " + [ m.constructor.name ]);
                   })());
               };
           };
@@ -23047,8 +23056,8 @@ var PS = {};
       var maxNode = Partial_Unsafe.unsafePartial(function (dictPartial) {
           return function (m) {
               var __unused = function (dictPartial1) {
-                  return function ($dollar49) {
-                      return $dollar49;
+                  return function ($dollar35) {
+                      return $dollar35;
                   };
               };
               return __unused(dictPartial)((function () {
@@ -23070,7 +23079,7 @@ var PS = {};
                   if (m instanceof Three) {
                       return maxNode(m.value6);
                   };
-                  throw new Error("Failed pattern match at Data.Map line 330, column 33 - line 334, column 45: " + [ m.constructor.name ]);
+                  throw new Error("Failed pattern match at Data.Map line 262, column 33 - line 266, column 45: " + [ m.constructor.name ]);
               })());
           };
       });
@@ -23083,15 +23092,15 @@ var PS = {};
                           return Data_Maybe.Nothing.value;
                       };
                       if (m instanceof Two) {
-                          var $508 = comp(k)(m.value1);
-                          if (m.value3 instanceof Leaf && $508 instanceof Data_Ordering.EQ) {
+                          var $449 = comp(k)(m.value1);
+                          if (m.value3 instanceof Leaf && $449 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value2, up(ctx)(Leaf.value)));
                           };
-                          if ($508 instanceof Data_Ordering.EQ) {
+                          if ($449 instanceof Data_Ordering.EQ) {
                               var max = maxNode(m.value0);
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value2, removeMaxNode(new Data_List.Cons(new TwoLeft(max.key, max.value, m.value3), ctx))(m.value0)));
                           };
-                          if ($508 instanceof Data_Ordering.LT) {
+                          if ($449 instanceof Data_Ordering.LT) {
                               return down(new Data_List.Cons(new TwoLeft(m.value1, m.value2, m.value3), ctx))(k)(m.value0);
                           };
                           return down(new Data_List.Cons(new TwoRight(m.value0, m.value1, m.value2), ctx))(k)(m.value3);
@@ -23103,31 +23112,31 @@ var PS = {};
                               };
                               return false;
                           })();
-                          var $517 = comp(k)(m.value1);
-                          var $518 = comp(k)(m.value4);
-                          if (leaves && $517 instanceof Data_Ordering.EQ) {
+                          var $458 = comp(k)(m.value1);
+                          var $459 = comp(k)(m.value4);
+                          if (leaves && $458 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value2, fromZipper(dictOrd)(ctx)(new Two(Leaf.value, m.value4, m.value5, Leaf.value))));
                           };
-                          if (leaves && $518 instanceof Data_Ordering.EQ) {
+                          if (leaves && $459 instanceof Data_Ordering.EQ) {
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value5, fromZipper(dictOrd)(ctx)(new Two(Leaf.value, m.value1, m.value2, Leaf.value))));
                           };
-                          if ($517 instanceof Data_Ordering.EQ) {
+                          if ($458 instanceof Data_Ordering.EQ) {
                               var max = maxNode(m.value0);
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value2, removeMaxNode(new Data_List.Cons(new ThreeLeft(max.key, max.value, m.value3, m.value4, m.value5, m.value6), ctx))(m.value0)));
                           };
-                          if ($518 instanceof Data_Ordering.EQ) {
+                          if ($459 instanceof Data_Ordering.EQ) {
                               var max = maxNode(m.value3);
                               return new Data_Maybe.Just(new Data_Tuple.Tuple(m.value5, removeMaxNode(new Data_List.Cons(new ThreeMiddle(m.value0, m.value1, m.value2, max.key, max.value, m.value6), ctx))(m.value3)));
                           };
-                          if ($517 instanceof Data_Ordering.LT) {
+                          if ($458 instanceof Data_Ordering.LT) {
                               return down(new Data_List.Cons(new ThreeLeft(m.value1, m.value2, m.value3, m.value4, m.value5, m.value6), ctx))(k)(m.value0);
                           };
-                          if ($517 instanceof Data_Ordering.GT && $518 instanceof Data_Ordering.LT) {
+                          if ($458 instanceof Data_Ordering.GT && $459 instanceof Data_Ordering.LT) {
                               return down(new Data_List.Cons(new ThreeMiddle(m.value0, m.value1, m.value2, m.value4, m.value5, m.value6), ctx))(k)(m.value3);
                           };
                           return down(new Data_List.Cons(new ThreeRight(m.value0, m.value1, m.value2, m.value3, m.value4, m.value5), ctx))(k)(m.value6);
                       };
-                      throw new Error("Failed pattern match at Data.Map line 280, column 36 - line 303, column 82: " + [ m.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 212, column 36 - line 235, column 82: " + [ m.constructor.name ]);
                   };
               };
           };
@@ -23146,14 +23155,14 @@ var PS = {};
       return function (f) {
           return function (k) {
               return function (m) {
-                  var $595 = f(lookup(dictOrd)(k)(m));
-                  if ($595 instanceof Data_Maybe.Nothing) {
+                  var $482 = f(lookup(dictOrd)(k)(m));
+                  if ($482 instanceof Data_Maybe.Nothing) {
                       return $$delete(dictOrd)(k)(m);
                   };
-                  if ($595 instanceof Data_Maybe.Just) {
-                      return insert(dictOrd)(k)($595.value0)(m);
+                  if ($482 instanceof Data_Maybe.Just) {
+                      return insert(dictOrd)(k)($482.value0)(m);
                   };
-                  throw new Error("Failed pattern match at Data.Map line 348, column 15 - line 350, column 25: " + [ $595.constructor.name ]);
+                  throw new Error("Failed pattern match at Data.Map line 280, column 15 - line 282, column 25: " + [ $482.constructor.name ]);
               };
           };
       };
@@ -23169,7 +23178,7 @@ var PS = {};
                       if (v1 instanceof Data_Maybe.Nothing) {
                           return new Data_Maybe.Just(v);
                       };
-                      throw new Error("Failed pattern match at Data.Map line 365, column 3 - line 365, column 38: " + [ v.constructor.name, v1.constructor.name ]);
+                      throw new Error("Failed pattern match at Data.Map line 297, column 3 - line 297, column 38: " + [ v.constructor.name, v1.constructor.name ]);
                   };
               };
               return Data_Foldable.foldl(dictFoldable)(function (m) {
@@ -23186,8 +23195,8 @@ var PS = {};
               return function (m2) {
                   var go = function (m) {
                       return function (v) {
-                          return alter(dictOrd)(function ($608) {
-                              return Data_Maybe.Just.create(Data_Maybe.maybe(v.value1)(f(v.value1))($608));
+                          return alter(dictOrd)(function ($495) {
+                              return Data_Maybe.Just.create(Data_Maybe.maybe(v.value1)(f(v.value1))($495));
                           })(v.value0)(m);
                       };
                   };
@@ -23200,11 +23209,13 @@ var PS = {};
       return unionWith(dictOrd)(Data_Function["const"]);
   };
   exports["alter"] = alter;
+  exports["delete"] = $$delete;
   exports["empty"] = empty;
   exports["fromFoldableWith"] = fromFoldableWith;
   exports["insert"] = insert;
   exports["keys"] = keys;
   exports["lookup"] = lookup;
+  exports["member"] = member;
   exports["pop"] = pop;
   exports["toList"] = toList;
   exports["union"] = union;
@@ -23331,7 +23342,7 @@ var PS = {};
       xhr.onload = function () {
         callback({
           status: xhr.status,
-          headers: xhr.getAllResponseHeaders().split("\r\n")
+          headers: xhr.getAllResponseHeaders().split("\n")
             .filter(function (header) {
               return header.length > 0;
             })
@@ -24489,7 +24500,7 @@ var PS = {};
           });
       };
       throw new Error("Failed pattern match at Text.Parsing.StringParser.String line 42, column 3 - line 44, column 64: " + [ $17.constructor.name ]);
-  }); 
+  });
   var satisfy = function (f) {
       return Text_Parsing_StringParser["try"](Control_Bind.bind(Text_Parsing_StringParser.bindParser)(anyChar)(function (v) {
           var $26 = f(v);
@@ -24522,14 +24533,17 @@ var PS = {};
   var Data_Functor = PS["Data.Functor"];
   var Data_List = PS["Data.List"];
   var Data_Map = PS["Data.Map"];
+  var Data_Ord = PS["Data.Ord"];
   var Data_Show = PS["Data.Show"];
   var Data_String = PS["Data.String"];
   var Data_Tuple = PS["Data.Tuple"];
   var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
+  var Network_HTTP_StatusCode = PS["Network.HTTP.StatusCode"];
   var Prelude = PS["Prelude"];
   var Text_Parsing_StringParser = PS["Text.Parsing.StringParser"];
   var Text_Parsing_StringParser_Combinators = PS["Text.Parsing.StringParser.Combinators"];
   var Text_Parsing_StringParser_String = PS["Text.Parsing.StringParser.String"];
+  var Data_Ordering = PS["Data.Ordering"];
   var Data_Semigroup = PS["Data.Semigroup"];
   var Control_Bind = PS["Control.Bind"];
   var Data_Function = PS["Data.Function"];
@@ -24540,8 +24554,7 @@ var PS = {};
   var Control_Apply = PS["Control.Apply"];
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Unit = PS["Data.Unit"];
-  var Control_Category = PS["Control.Category"];
-  var Data_Ord = PS["Data.Ord"];        
+  var Control_Category = PS["Control.Category"];        
   var Purescript = (function () {
       function Purescript() {
 
@@ -24641,26 +24654,29 @@ var PS = {};
       if (v instanceof Scala) {
           return "scala";
       };
-      throw new Error("Failed pattern match at CodeSnippet line 42, column 1 - line 43, column 1: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at CodeSnippet line 56, column 1 - line 57, column 1: " + [ v.constructor.name ]);
   }; 
   var getFile = function (fname) {
       return function (lang) {
           var extension = suffix(lang);
           var fullname = "/src/Structures/" + (extension + ("/" + (fname + ("." + extension))));
           return Control_Bind.bind(Control_Monad_Aff.bindAff)(Data_Function.apply(Control_Monad_Aff.attempt)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(fullname)))(function (v) {
-              return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($26) {
-                  return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($26));
+              return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($31) {
+                  return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($31));
               })(function (r) {
-                  return Data_Function.apply(Data_Either.Right.create)(new SourceCode({
-                      getSourceCode: r.response, 
-                      language: lang
-                  }));
+                  if (r.status === 200) {
+                      return Data_Function.apply(Data_Either.Right.create)(new SourceCode({
+                          getSourceCode: r.response, 
+                          language: lang
+                      }));
+                  };
+                  return Data_Function.apply(Data_Either.Left.create)(Data_Show.show(Data_Show.showInt)(r.status));
               })(v));
           });
       };
   };
-  var fromCharList = function ($27) {
-      return Data_String.fromCharArray(Data_Array.fromFoldable(Data_List.foldableList)($27));
+  var fromCharList = function ($32) {
+      return Data_String.fromCharArray(Data_Array.fromFoldable(Data_List.foldableList)($32));
   };
   var eqLanguage = new Data_Eq.Eq(function (x) {
       return function (y) {
@@ -24691,6 +24707,79 @@ var PS = {};
           return false;
       };
   });
+  var ordLanguage = new Data_Ord.Ord(function () {
+      return eqLanguage;
+  }, function (x) {
+      return function (y) {
+          if (x instanceof Purescript && y instanceof Purescript) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Purescript) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Purescript) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Elm && y instanceof Elm) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Elm) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Elm) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Haskell && y instanceof Haskell) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Haskell) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Haskell) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Idris && y instanceof Idris) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Idris) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Idris) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Clojure && y instanceof Clojure) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Clojure) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Clojure) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Scheme && y instanceof Scheme) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Scheme) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Scheme) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Elixir && y instanceof Elixir) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof Elixir) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Elixir) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof Scala && y instanceof Scala) {
+              return Data_Ordering.EQ.value;
+          };
+          throw new Error("Failed pattern match at CodeSnippet line 32, column 1 - line 32, column 44: " + [ x.constructor.name, y.constructor.name ]);
+      };
+  });
   var comment = function (v) {
       if (v instanceof Purescript) {
           return "--";
@@ -24716,7 +24805,7 @@ var PS = {};
       if (v instanceof Scala) {
           return "//";
       };
-      throw new Error("Failed pattern match at CodeSnippet line 32, column 1 - line 33, column 1: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at CodeSnippet line 46, column 1 - line 47, column 1: " + [ v.constructor.name ]);
   };
   var docComment = function (lang) {
       return Text_Parsing_StringParser_String.string(comment(lang) + " | *");
@@ -24754,6 +24843,7 @@ var PS = {};
           return new Data_Tuple.Tuple(v1.value0.name, v1.value0.body);
       })(fns));
   };
+  var allLangs = [ Purescript.value, Elm.value, Haskell.value, Idris.value, Clojure.value, Scheme.value, Elixir.value, Scala.value ];
   exports["FunctionBlock"] = FunctionBlock;
   exports["Purescript"] = Purescript;
   exports["Elm"] = Elm;
@@ -24764,6 +24854,7 @@ var PS = {};
   exports["Elixir"] = Elixir;
   exports["Scala"] = Scala;
   exports["SourceCode"] = SourceCode;
+  exports["allLangs"] = allLangs;
   exports["comment"] = comment;
   exports["docComment"] = docComment;
   exports["endComment"] = endComment;
@@ -24776,6 +24867,7 @@ var PS = {};
   exports["parseFunctions"] = parseFunctions;
   exports["suffix"] = suffix;
   exports["eqLanguage"] = eqLanguage;
+  exports["ordLanguage"] = ordLanguage;
 })(PS["CodeSnippet"] = PS["CodeSnippet"] || {});
 (function(exports) {
   /* global exports */
@@ -24866,6 +24958,110 @@ var PS = {};
   exports["filterableArray"] = filterableArray;
 })(PS["Data.Filterable"] = PS["Data.Filterable"] || {});
 (function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var Prelude = PS["Prelude"];
+  var Control_Monad_Eff = PS["Control.Monad.Eff"];
+  var Control_Monad_Rec_Class = PS["Control.Monad.Rec.Class"];
+  var Control_Monad_ST = PS["Control.Monad.ST"];
+  var Data_Array = PS["Data.Array"];
+  var Data_Array_Partial = PS["Data.Array.Partial"];
+  var Data_Array_ST = PS["Data.Array.ST"];
+  var Data_Either = PS["Data.Either"];
+  var Data_Foldable = PS["Data.Foldable"];
+  var Data_List_1 = PS["Data.List"];
+  var Data_List_1 = PS["Data.List"];
+  var Data_Map = PS["Data.Map"];
+  var Data_Monoid = PS["Data.Monoid"];
+  var Data_Unfoldable = PS["Data.Unfoldable"];
+  var Partial_Unsafe = PS["Partial.Unsafe"];
+  var Data_Eq = PS["Data.Eq"];
+  var Data_Show = PS["Data.Show"];
+  var Data_Semigroup = PS["Data.Semigroup"];
+  var Data_Ord = PS["Data.Ord"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Data_Unit = PS["Data.Unit"];
+  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
+  var Data_Ordering = PS["Data.Ordering"];
+  var Control_Bind = PS["Control.Bind"];
+  var Data_Function = PS["Data.Function"];
+  var Control_Applicative = PS["Control.Applicative"];
+  var Data_Semiring = PS["Data.Semiring"];        
+  var $$Set = (function () {
+      function Set(value0) {
+          this.value0 = value0;
+      };
+      Set.create = function (value0) {
+          return new Set(value0);
+      };
+      return Set;
+  })();
+  var member = function (dictOrd) {
+      return function (a) {
+          return function (v) {
+              return Data_Map.member(dictOrd)(a)(v.value0);
+          };
+      };
+  };
+  var insert = function (dictOrd) {
+      return function (a) {
+          return function (v) {
+              return new $$Set(Data_Map.insert(dictOrd)(a)(Data_Unit.unit)(v.value0));
+          };
+      };
+  };
+  var empty = new $$Set(Data_Map.empty);
+  var $$delete = function (dictOrd) {
+      return function (a) {
+          return function (v) {
+              return new $$Set(Data_Map["delete"](dictOrd)(a)(v.value0));
+          };
+      };
+  };
+  exports["delete"] = $$delete;
+  exports["empty"] = empty;
+  exports["insert"] = insert;
+  exports["member"] = member;
+})(PS["Data.Set"] = PS["Data.Set"] || {});
+(function(exports) {
+    "use strict";
+
+  // module Debug.Trace
+
+  // Alias require to prevent webpack or browserify from actually requiring.
+  var req = typeof module === "undefined" ? undefined : module.require;
+  var util = req === undefined ? undefined : req("util");
+
+  exports.traceAny = function (x) {
+    return function (k) {
+      // node only recurses two levels into an object before printing
+      // "[object]" for further objects when using console.log()
+      if (util !== undefined) {
+        console.log(util.inspect(x, { depth: null, colors: true }));
+      } else {
+        console.log(x);
+      }
+      return k({});
+    };
+  };
+})(PS["Debug.Trace"] = PS["Debug.Trace"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Debug.Trace"];
+  var Prelude = PS["Prelude"];
+  var Data_Show = PS["Data.Show"];
+  var Control_Applicative = PS["Control.Applicative"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Data_Unit = PS["Data.Unit"];
+  var spy = function (a) {
+      return $foreign.traceAny(a)(function (v) {
+          return a;
+      });
+  };
+  exports["spy"] = spy;
+})(PS["Debug.Trace"] = PS["Debug.Trace"] || {});
+(function(exports) {
     'use strict';
 
   // module Pux.Html.Attributes
@@ -24950,7 +25146,8 @@ var PS = {};
   exports["onClick"] = onClick;
 })(PS["Pux.Html.Events"] = PS["Pux.Html.Events"] || {});
 (function(exports) {
-    "use strict";
+  // Generated by psc version 0.9.3
+  "use strict";
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Functor = PS["Data.Functor"];
   var Data_Maybe = PS["Data.Maybe"];
@@ -24959,10 +25156,6 @@ var PS = {};
   var Data_Show = PS["Data.Show"];
   var Prelude = PS["Prelude"];
   var Data_Semiring = PS["Data.Semiring"];        
-
-  /**
- *  | *Stack
- */  
   var Nil = (function () {
       function Nil() {
 
@@ -24970,10 +25163,6 @@ var PS = {};
       Nil.value = new Nil();
       return Nil;
   })();
-
-  /**
- *  | *Stack
- */  
   var Cons = (function () {
       function Cons(value0, value1) {
           this.value0 = value0;
@@ -24986,11 +25175,6 @@ var PS = {};
       };
       return Cons;
   })();
-
-  /**
- *  .end
- *  | *tail
- */  
   var tail = function (v) {
       if (v instanceof Nil) {
           return Data_Maybe.Nothing.value;
@@ -25011,11 +25195,6 @@ var PS = {};
           throw new Error("Failed pattern match at Structures.Purs.Stack line 52, column 3 - line 52, column 27: " + [ v.constructor.name, stack.constructor.name ]);
       };
   });
-
-  /**
- *  .end
- *  | *reverse
- */  
   var reverse = function (stack) {
       var go = function (__copy_v) {
           return function (__copy_acc) {
@@ -25038,11 +25217,6 @@ var PS = {};
       };
       return go(stack)(Nil.value);
   };            
-
-  /**
- *  .end
- *  | *head
- */  
   var head = function (v) {
       if (v instanceof Nil) {
           return Data_Maybe.Nothing.value;
@@ -25100,22 +25274,12 @@ var PS = {};
           };
       };
   });
-
-  /**
- *  .end
- *  | *empty
- */  
   var empty = Nil.value;
   var count = Data_Foldable.foldr(foldableStack)(function (v) {
       return function (acc) {
           return acc + 1 | 0;
       };
   })(0);
-
-  /**
- *  .end
- *  | *cons
- */  
   var cons = function (val) {
       return function (stack) {
           return new Cons(val, stack);
@@ -25573,7 +25737,8 @@ var PS = {};
   exports["text"] = $foreign.text;
 })(PS["Pux.Html.Elements"] = PS["Pux.Html.Elements"] || {});
 (function(exports) {
-    "use strict";
+  // Generated by psc version 0.9.3
+  "use strict";
   var CodeSnippet = PS["CodeSnippet"];
   var Data_Map = PS["Data.Map"];
   var Pux_Html = PS["Pux.Html"];
@@ -26173,7 +26338,8 @@ var PS = {};
   exports["wipeClasses"] = wipeClasses;
 })(PS["Views.Stack"] = PS["Views.Stack"] || {});
 (function(exports) {
-    "use strict";
+  // Generated by psc version 0.9.3
+  "use strict";
   var Data_Semigroup = PS["Data.Semigroup"];
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Functor = PS["Data.Functor"];
@@ -26182,10 +26348,6 @@ var PS = {};
   var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
   var Structures_Purs_Stack = PS["Structures.Purs.Stack"];        
-
-  /**
- *  | *DataStructure Queue
- */  
   var Queue = (function () {
       function Queue(value0) {
           this.value0 = value0;
@@ -26195,18 +26357,9 @@ var PS = {};
       };
       return Queue;
   })();
-
-  /**
- *  .end
- */  
   var topHead = function (v) {
       return Structures_Purs_Stack.head(v.value0.front);
   };
-
-  /**
- *  .end
- *  | *top
- */  
   var top = function (v) {
       var $17 = Structures_Purs_Stack.head(v.value0.front);
       if ($17 instanceof Data_Maybe.Just) {
@@ -26227,11 +26380,6 @@ var PS = {};
   var toStack = function (v) {
       return Data_Semigroup.append(Structures_Purs_Stack.sgroupStack)(v.value0.front)(Structures_Purs_Stack.reverse(v.value0.back));
   };
-
-  /**
- *  .end
- *  | *push
- */  
   var push = function (val) {
       return function (v) {
           return new Queue((function () {
@@ -26246,11 +26394,6 @@ var PS = {};
           })());
       };
   };
-
-  /**
- *  .end
- *  | *pop
- */  
   var pop = function (v) {
       var $33 = Structures_Purs_Stack.tail(v.value0.front);
       if ($33 instanceof Data_Maybe.Just) {
@@ -26287,11 +26430,6 @@ var PS = {};
       };
       throw new Error("Failed pattern match at Structures.Purs.Queue line 52, column 3 - line 58, column 54: " + [ $33.constructor.name ]);
   };
-
-  /**
- *  .end
- *  | *inject
- */  
   var inject = function (val) {
       return function (v) {
           return new Queue((function () {
@@ -26340,20 +26478,10 @@ var PS = {};
           };
       };
   });
-
-  /**
- *  .end
- *  | *empty
- */  
   var empty = new Queue({
       front: Structures_Purs_Stack.empty, 
       back: Structures_Purs_Stack.empty
   });
-
-  /**
- *  .end
- *  | *eject
- */  
   var eject = function (v) {
       var $57 = Structures_Purs_Stack.tail(v.value0.back);
       if ($57 instanceof Data_Maybe.Just) {
@@ -26396,11 +26524,6 @@ var PS = {};
   var backHead = function (v) {
       return Structures_Purs_Stack.head(v.value0.back);
   };
-
-  /**
- *  .end
- *  | *back
- */  
   var back = function (v) {
       var $73 = Structures_Purs_Stack.head(v.value0.back);
       if ($73 instanceof Data_Maybe.Just) {
@@ -26434,7 +26557,8 @@ var PS = {};
   exports["foldableQueue"] = foldableQueue;
 })(PS["Structures.Purs.Queue"] = PS["Structures.Purs.Queue"] || {});
 (function(exports) {
-    "use strict";
+  // Generated by psc version 0.9.3
+  "use strict";
   var Data_Map = PS["Data.Map"];
   var Pux_Html = PS["Pux.Html"];
   var Pux_Html_Attributes = PS["Pux.Html.Attributes"];
@@ -26760,7 +26884,7 @@ var PS = {};
       var frontDiv = Pux_Html_Elements.div([  ])([ topBtn, popBtn ]);
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
       var ejectBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Eject.value)) ])([ Pux_Html_Elements.text("Eject") ]);
-      var dataBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-warning"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](ShowStructure.value)) ])([ Pux_Html_Elements.text("Stack Structure") ]) ]);
+      var dataBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-warning"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](ShowStructure.value)) ])([ Pux_Html_Elements.text("Queue Structure") ]) ]);
       var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject / Shift") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
@@ -26848,10 +26972,6 @@ var PS = {};
   var updateQueue = function (model) {
       return function (queue) {
           return function (fn) {
-            
-              /**
-             *  ct = max (fst bict) (snd bict)
-             */  
               var bict = Structures_Purs_Queue.biCount(queue);
               var ct = Data_Tuple.fst(bict) + Data_Tuple.snd(bict) | 0;
               var newMap = getNodeMap(Structures_Purs_Queue.foldableQueue)(ct)(queue);
@@ -27106,17 +27226,24 @@ var PS = {};
   var Pux_Html = PS["Pux.Html"];
   var Pux_Html_Attributes = PS["Pux.Html.Attributes"];
   var Pux_Html_Events = PS["Pux.Html.Events"];
+  var Control_Monad_Aff = PS["Control.Monad.Aff"];
+  var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
+  var Data_Array = PS["Data.Array"];
+  var Data_Either = PS["Data.Either"];
   var Data_Eq = PS["Data.Eq"];
+  var Data_Functor = PS["Data.Functor"];
   var Data_Maybe = PS["Data.Maybe"];
+  var Data_Set = PS["Data.Set"];
+  var Debug_Trace = PS["Debug.Trace"];
+  var Network_HTTP_Affjax = PS["Network.HTTP.Affjax"];
   var Signal = PS["Signal"];
+  var Signal_Channel = PS["Signal.Channel"];
   var Signal_Time = PS["Signal.Time"];
   var Data_Function = PS["Data.Function"];
   var Data_Semigroup = PS["Data.Semigroup"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
-  var Control_Applicative = PS["Control.Applicative"];
-  var Data_Functor = PS["Data.Functor"];
-  var Control_Monad_Aff = PS["Control.Monad.Aff"];
   var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Control_Applicative = PS["Control.Applicative"];
   var Control_Bind = PS["Control.Bind"];
   var Control_Monad_Eff = PS["Control.Monad.Eff"];
   var Data_EuclideanRing = PS["Data.EuclideanRing"];        
@@ -27151,6 +27278,18 @@ var PS = {};
           return new ChangeLanguage(value0);
       };
       return ChangeLanguage;
+  })();
+  var PageCheck = (function () {
+      function PageCheck(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      PageCheck.create = function (value0) {
+          return function (value1) {
+              return new PageCheck(value0, value1);
+          };
+      };
+      return PageCheck;
   })();
   var StackAction = (function () {
       function StackAction(value0) {
@@ -27218,9 +27357,16 @@ var PS = {};
                       return "pure-button pure-button-danger" + " pure-button-active";
                   };
                   if (!$12) {
-                      return "pure-button pure-button-danger";
+                      var $13 = Data_Set.member(CodeSnippet.ordLanguage)(token)(state.availableLanguages);
+                      if ($13) {
+                          return "pure-button pure-button-danger";
+                      };
+                      if (!$13) {
+                          return "pure-button pure-button-danger" + " pure-button-disabled";
+                      };
+                      throw new Error("Failed pattern match at Main line 136, column 23 - line 139, column 3: " + [ $13.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Main line 103, column 18 - line 105, column 34: " + [ $12.constructor.name ]);
+                  throw new Error("Failed pattern match at Main line 134, column 18 - line 139, column 3: " + [ $12.constructor.name ]);
               })();
               return Pux_Html_Elements.button([ Pux_Html_Attributes.className(allClasses), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangeLanguage(token))) ])([ Pux_Html_Elements.text(name) ]);
           };
@@ -27230,91 +27376,22 @@ var PS = {};
       stackModel: Views_Stack.initModel, 
       queueModel: Views_Queue.initModel, 
       currPage: Data_Maybe.Nothing.value, 
-      currLanguage: CodeSnippet.Purescript.value
+      currLanguage: CodeSnippet.Purescript.value, 
+      availableLanguages: Data_Set.empty
   };
-  var getSource = function (dictApplicative) {
-      return function (v) {
-          return function (lang) {
-              if (v instanceof StackPage) {
-                  return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($45) {
-                      return StackAction.create(Views_Stack.LoadCode.create($45));
-                  })(CodeSnippet.getFile("Stack")(lang)));
-              };
-              if (v instanceof QueuePage) {
-                  return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($46) {
-                      return QueueAction.create(Views_Queue.LoadCode.create($46));
-                  })(CodeSnippet.getFile("Queue")(lang)));
-              };
-              throw new Error("Failed pattern match at Main line 55, column 1 - line 56, column 68: " + [ v.constructor.name, lang.constructor.name ]);
+  var getSource = function (v) {
+      return function (lang) {
+          if (v instanceof StackPage) {
+              return Data_Functor.map(Control_Monad_Aff.functorAff)(function ($59) {
+                  return StackAction.create(Views_Stack.LoadCode.create($59));
+              })(CodeSnippet.getFile("Stack")(lang));
           };
-      };
-  };
-  var update = function (v) {
-      return function (state) {
-          if (v instanceof ChangeLanguage) {
-              if (state.currPage instanceof Data_Maybe.Nothing) {
-                  return Data_Function.apply(Pux.noEffects)((function () {
-                      var $18 = {};
-                      for (var $19 in state) {
-                          if (state.hasOwnProperty($19)) {
-                              $18[$19] = state[$19];
-                          };
-                      };
-                      $18.currLanguage = v.value0;
-                      return $18;
-                  })());
-              };
-              if (state.currPage instanceof Data_Maybe.Just) {
-                  return {
-                      state: (function () {
-                          var $21 = {};
-                          for (var $22 in state) {
-                              if (state.hasOwnProperty($22)) {
-                                  $21[$22] = state[$22];
-                              };
-                          };
-                          $21.currLanguage = v.value0;
-                          return $21;
-                      })(), 
-                      effects: getSource(Control_Applicative.applicativeArray)(state.currPage.value0)(v.value0)
-                  };
-              };
-              throw new Error("Failed pattern match at Main line 62, column 3 - line 67, column 8: " + [ state.currPage.constructor.name ]);
+          if (v instanceof QueuePage) {
+              return Data_Functor.map(Control_Monad_Aff.functorAff)(function ($60) {
+                  return QueueAction.create(Views_Queue.LoadCode.create($60));
+              })(CodeSnippet.getFile("Queue")(lang));
           };
-          if (v instanceof ChangePage) {
-              return {
-                  state: (function () {
-                      var $26 = {};
-                      for (var $27 in state) {
-                          if (state.hasOwnProperty($27)) {
-                              $26[$27] = state[$27];
-                          };
-                      };
-                      $26.currPage = new Data_Maybe.Just(v.value0);
-                      return $26;
-                  })(), 
-                  effects: getSource(Control_Applicative.applicativeArray)(v.value0)(state.currLanguage)
-              };
-          };
-          if (v instanceof StackAction) {
-              return updateStack(state)(v.value0);
-          };
-          if (v instanceof QueueAction) {
-              return updateQueue(state)(v.value0);
-          };
-          if (v instanceof Tick) {
-              if (state.currPage instanceof Data_Maybe.Nothing) {
-                  return Pux.noEffects(state);
-              };
-              if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof StackPage) {
-                  return updateStack(state)(new Views_Stack.Tick(v.value0));
-              };
-              if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
-                  return updateQueue(state)(new Views_Queue.Tick(v.value0));
-              };
-              throw new Error("Failed pattern match at Main line 77, column 3 - line 82, column 42: " + [ state.currPage.constructor.name ]);
-          };
-          throw new Error("Failed pattern match at Main line 61, column 1 - line 67, column 8: " + [ v.constructor.name, state.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 69, column 1 - line 70, column 61: " + [ v.constructor.name, lang.constructor.name ]);
       };
   };
   var eqPage = new Data_Eq.Eq(function (x) {
@@ -27336,16 +27413,16 @@ var PS = {};
                       return "pure-button pure-button-primary";
                   };
                   if (state.currPage instanceof Data_Maybe.Just) {
-                      var $39 = Data_Eq.eq(eqPage)(state.currPage.value0)(token);
-                      if ($39) {
+                      var $19 = Data_Eq.eq(eqPage)(state.currPage.value0)(token);
+                      if ($19) {
                           return "pure-button pure-button-primary" + " pure-button-active";
                       };
-                      if (!$39) {
+                      if (!$19) {
                           return "pure-button pure-button-primary";
                       };
-                      throw new Error("Failed pattern match at Main line 91, column 22 - line 93, column 38: " + [ $39.constructor.name ]);
+                      throw new Error("Failed pattern match at Main line 122, column 22 - line 124, column 38: " + [ $19.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Main line 89, column 7 - line 93, column 38: " + [ state.currPage.constructor.name ]);
+                  throw new Error("Failed pattern match at Main line 120, column 7 - line 124, column 38: " + [ state.currPage.constructor.name ]);
               })();
               return Pux_Html_Elements.button([ Pux_Html_Attributes.className(allClasses), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangePage(token))) ])([ Pux_Html_Elements.text(name) ]);
           };
@@ -27362,13 +27439,120 @@ var PS = {};
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
               return Data_Functor.map(Pux_Html_Elements.functorHtml)(QueueAction.create)(Views_Queue.view(state.queueModel));
           };
-          throw new Error("Failed pattern match at Main line 128, column 7 - line 131, column 70: " + [ state.currPage.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 161, column 7 - line 164, column 70: " + [ state.currPage.constructor.name ]);
       })();
       var lbf = langBtn(state);
       var langDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ lbf("Purescript")(CodeSnippet.Purescript.value), lbf("Elm")(CodeSnippet.Elm.value), lbf("Haskell")(CodeSnippet.Haskell.value), lbf("Idris")(CodeSnippet.Idris.value), lbf("Clojure")(CodeSnippet.Clojure.value), lbf("Scheme")(CodeSnippet.Scheme.value), lbf("Elixir")(CodeSnippet.Elixir.value), lbf("Scala")(CodeSnippet.Scala.value) ]);
       var dbf = dsBtn(state);
       var dataDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ dbf("Stack")(StackPage.value), dbf("Queue")(QueuePage.value) ]);
       return Pux_Html_Elements.div([  ])([ dataDiv, langDiv, renderDiv ]);
+  };
+  var checkSources = function (v) {
+      if (v instanceof StackPage) {
+          return Data_Functor.map(Data_Functor.functorArray)(function (lang) {
+              return Data_Functor.map(Control_Monad_Aff.functorAff)(PageCheck.create(lang))(CodeSnippet.getFile("Stack")(lang));
+          })(CodeSnippet.allLangs);
+      };
+      if (v instanceof QueuePage) {
+          return Data_Functor.map(Data_Functor.functorArray)(function (lang) {
+              return Data_Functor.map(Control_Monad_Aff.functorAff)(PageCheck.create(lang))(CodeSnippet.getFile("Queue")(lang));
+          })(CodeSnippet.allLangs);
+      };
+      throw new Error("Failed pattern match at Main line 75, column 1 - line 76, column 72: " + [ v.constructor.name ]);
+  };
+  var update = function (v) {
+      return function (state) {
+          if (v instanceof PageCheck && v.value1 instanceof Data_Either.Right) {
+              var res = Debug_Trace.spy(v.value1.value0);
+              return Data_Function.apply(Pux.noEffects)((function () {
+                  var $27 = {};
+                  for (var $28 in state) {
+                      if (state.hasOwnProperty($28)) {
+                          $27[$28] = state[$28];
+                      };
+                  };
+                  $27.availableLanguages = Data_Set.insert(CodeSnippet.ordLanguage)(v.value0)(state.availableLanguages);
+                  return $27;
+              })());
+          };
+          if (v instanceof PageCheck && v.value1 instanceof Data_Either.Left) {
+              var res = Debug_Trace.spy(v.value1.value0);
+              return Data_Function.apply(Pux.noEffects)((function () {
+                  var $33 = {};
+                  for (var $34 in state) {
+                      if (state.hasOwnProperty($34)) {
+                          $33[$34] = state[$34];
+                      };
+                  };
+                  $33.availableLanguages = Data_Set["delete"](CodeSnippet.ordLanguage)(v.value0)(state.availableLanguages);
+                  return $33;
+              })());
+          };
+          if (v instanceof ChangeLanguage) {
+              if (state.currPage instanceof Data_Maybe.Nothing) {
+                  return Data_Function.apply(Pux.noEffects)((function () {
+                      var $40 = {};
+                      for (var $41 in state) {
+                          if (state.hasOwnProperty($41)) {
+                              $40[$41] = state[$41];
+                          };
+                      };
+                      $40.currLanguage = v.value0;
+                      return $40;
+                  })());
+              };
+              if (state.currPage instanceof Data_Maybe.Just) {
+                  return {
+                      state: (function () {
+                          var $43 = {};
+                          for (var $44 in state) {
+                              if (state.hasOwnProperty($44)) {
+                                  $43[$44] = state[$44];
+                              };
+                          };
+                          $43.currLanguage = v.value0;
+                          return $43;
+                      })(), 
+                      effects: Data_Function.apply(Control_Applicative.pure(Control_Applicative.applicativeArray))(getSource(state.currPage.value0)(v.value0))
+                  };
+              };
+              throw new Error("Failed pattern match at Main line 93, column 3 - line 98, column 8: " + [ state.currPage.constructor.name ]);
+          };
+          if (v instanceof ChangePage) {
+              return {
+                  state: (function () {
+                      var $48 = {};
+                      for (var $49 in state) {
+                          if (state.hasOwnProperty($49)) {
+                              $48[$49] = state[$49];
+                          };
+                      };
+                      $48.currPage = new Data_Maybe.Just(v.value0);
+                      return $48;
+                  })(), 
+                  effects: Data_Array.cons(getSource(v.value0)(state.currLanguage))(checkSources(v.value0))
+              };
+          };
+          if (v instanceof StackAction) {
+              return updateStack(state)(v.value0);
+          };
+          if (v instanceof QueueAction) {
+              return updateQueue(state)(v.value0);
+          };
+          if (v instanceof Tick) {
+              if (state.currPage instanceof Data_Maybe.Nothing) {
+                  return Pux.noEffects(state);
+              };
+              if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof StackPage) {
+                  return updateStack(state)(new Views_Stack.Tick(v.value0));
+              };
+              if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
+                  return updateQueue(state)(new Views_Queue.Tick(v.value0));
+              };
+              throw new Error("Failed pattern match at Main line 108, column 3 - line 113, column 42: " + [ state.currPage.constructor.name ]);
+          };
+          throw new Error("Failed pattern match at Main line 82, column 1 - line 86, column 82: " + [ v.constructor.name, state.constructor.name ]);
+      };
   };
   var main = function __do() {
       var v = Pux.start({
@@ -27381,11 +27565,13 @@ var PS = {};
   };
   exports["ChangePage"] = ChangePage;
   exports["ChangeLanguage"] = ChangeLanguage;
+  exports["PageCheck"] = PageCheck;
   exports["StackAction"] = StackAction;
   exports["QueueAction"] = QueueAction;
   exports["Tick"] = Tick;
   exports["StackPage"] = StackPage;
   exports["QueuePage"] = QueuePage;
+  exports["checkSources"] = checkSources;
   exports["dsBtn"] = dsBtn;
   exports["getSource"] = getSource;
   exports["initialState"] = initialState;

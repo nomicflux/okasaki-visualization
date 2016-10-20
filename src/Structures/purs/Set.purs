@@ -1,4 +1,4 @@
-module Structures.Set where
+module Structures.Purs.Set where
 
 import Data.Foldable (class Foldable, foldr, foldl, foldMap)
 import Data.Functor (class Functor, map)
@@ -6,7 +6,7 @@ import Data.Monoid (mempty)
 import Data.Ord (class Ord, compare, Ordering(..))
 import Data.Semigroup (append)
 
-import Structures.Stack as S
+import Structures.Purs.Stack as S
 
 data Set a = Leaf
            | Node { left :: Set a

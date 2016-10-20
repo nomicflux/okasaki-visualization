@@ -8,11 +8,19 @@ import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
--- import Control.Monad.Aff (runAff, Aff)
+import Control.Monad.Aff (Aff)
 -- import Control.Monad.Eff (runPure)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Data.Array ((:))
+import Data.Either (Either(..))
 import Data.Eq (class Eq)
+import Data.Functor (map)
 import Data.Maybe (Maybe(..))
+import Data.Set (Set, insert, delete, empty, member)
+import Debug.Trace (spy)
+import Network.HTTP.Affjax (AJAX)
 import Signal ((~>))
+import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time())
 
 data Page = StackPage | QueuePage
@@ -23,6 +31,7 @@ type State = { stackModel :: Stack.Model
              , queueModel :: Queue.Model
              , currPage :: Maybe Page
              , currLanguage :: CS.Language
+             , availableLanguages :: Set CS.Language
              }
 
 initialState :: State
@@ -30,44 +39,66 @@ initialState = { stackModel : Stack.initModel
                , queueModel : Queue.initModel
                , currPage : Nothing
                , currLanguage : CS.Purescript
+               , availableLanguages : empty
                }
 
 data Action = ChangePage Page
             | ChangeLanguage CS.Language
+            | PageCheck CS.Language (Either String CS.SourceCode)
             | StackAction Stack.Action
             | QueueAction Queue.Action
             | Tick Time
-updateStack :: State -> Stack.Action -> EffModel State Action _
+
+updateStack :: State -> Stack.Action
+            -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
 updateStack state staction =
   let
     updated = Stack.update staction state.stackModel
   in
    mapEffects StackAction $ mapState (\s -> state { stackModel = s}) $ updated
 
-updateQueue :: State -> Queue.Action -> EffModel State Action _
+updateQueue :: State -> Queue.Action
+            -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
 updateQueue state quaction =
   let
     updated = Queue.update quaction state.queueModel
   in
    mapEffects QueueAction $ mapState (\s -> state { queueModel = s}) $ updated
 
--- getSource :: Page -> CS.Language -> Aff _ Action
+getSource :: forall eff. Page -> CS.Language -> Aff (ajax :: AJAX | eff) Action
 getSource StackPage lang =
-  pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack" lang
+  StackAction <<< Stack.LoadCode <$> CS.getFile "Stack" lang
 getSource QueuePage lang =
-  pure $ QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue" lang
+  QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue" lang
 
-update :: Action -> State -> EffModel State Action _
+checkSources :: forall eff. Page -> Array (Aff (ajax :: AJAX | eff) Action)
+checkSources StackPage =
+  map (\lang -> PageCheck lang <$> CS.getFile "Stack" lang) CS.allLangs
+checkSources QueuePage =
+  map (\lang -> PageCheck lang <$> CS.getFile "Queue" lang) CS.allLangs
+
+update :: Action -> State
+       -> EffModel State Action _
+update (PageCheck lang (Right code)) state =
+  let
+    res = spy code
+  in
+   noEffects $ state { availableLanguages = insert lang state.availableLanguages}
+update (PageCheck lang (Left err)) state =
+  let
+    res = spy err
+  in
+   noEffects $ state { availableLanguages = delete lang state.availableLanguages}
 update (ChangeLanguage lang) state =
   case state.currPage of
     Nothing -> noEffects $ state { currLanguage = lang }
     Just page ->
       { state: state { currLanguage = lang }
-      , effects: getSource page lang
+      , effects: pure $ getSource page lang
       }
 update (ChangePage page) state =
   { state: state { currPage = Just page }
-  , effects: getSource page state.currLanguage
+  , effects: getSource page state.currLanguage : checkSources page
   }
 update (StackAction staction) state =
   updateStack state staction
@@ -102,7 +133,9 @@ langBtn state name token =
     baseClasses = "pure-button pure-button-danger"
     allClasses = if state.currLanguage == token
                  then baseClasses <> " pure-button-active"
-                 else baseClasses
+                 else if member token state.availableLanguages
+                      then baseClasses
+                      else baseClasses <> " pure-button-disabled"
   in
    H.button [ HA.className allClasses
             , HE. onClick (const $ ChangeLanguage token)

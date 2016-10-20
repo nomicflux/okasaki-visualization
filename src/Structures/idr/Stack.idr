@@ -1,4 +1,7 @@
-module Structures.Stack
+module Stack
+
+%access export
+%default total
 
 -- | *DataStructure Stack
 data Stack : Nat -> Type -> Type where

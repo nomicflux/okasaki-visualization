@@ -8,10 +8,12 @@ import Data.Functor (map)
 import Data.List (List(..))
 import Data.Map (Map, fromFoldableWith)
 -- import Data.Maybe (Maybe(..))
+import Data.Ord (class Ord)
 import Data.Show (class Show)
 import Data.String (fromCharArray)
 import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (get, AJAX)
+import Network.HTTP.StatusCode (StatusCode(..))
 import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit)
 import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.Combinators (sepEndBy, manyTill, many, choice, lookAhead)
@@ -27,6 +29,18 @@ data Language = Purescript
               | Scala
 
 derive instance eqLanguage :: Eq Language
+derive instance ordLanguage :: Ord Language
+
+allLangs :: Array Language
+allLangs = [ Purescript
+           , Elm
+           , Haskell
+           , Idris
+           , Clojure
+           , Scheme
+           , Elixir
+           , Scala
+           ]
 
 comment :: Language -> String
 comment Purescript = "--"
@@ -66,9 +80,12 @@ getFile fname lang = do
   let extension = suffix lang
       fullname = "/src/Structures/" <> extension <> "/" <> fname <> "." <> extension
   res <- attempt $ get fullname
-  pure $ either (Left <<< show) (\r -> Right $ SourceCode { getSourceCode : r.response
-                                                          , language : lang
-                                                          }) res
+  pure $ either (Left <<< show)
+    (\r -> case r.status of
+        StatusCode 200 -> Right $ SourceCode { getSourceCode : r.response
+                                  , language : lang
+                                  }
+        StatusCode status -> Left $ show status) res
 
 docComment :: Language -> Parser String
 docComment lang = string (comment lang <> " | *")

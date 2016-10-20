@@ -1,4 +1,4 @@
-module Structures.Stack where
+module Stack where
 
 -- | *DataStructure Stack
 data Stack a = Nil

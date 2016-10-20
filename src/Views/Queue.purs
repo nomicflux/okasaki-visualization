@@ -373,7 +373,7 @@ view model =
                                                        , HA.width (show maxWidth)  ] nodes ]
     dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
                                    , HE.onClick $ const ShowStructure
-                                   ] [ H.text "Stack Structure" ]
+                                   ] [ H.text "Queue Structure" ]
                         ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                     , HE.onClick $ const Empty
