@@ -10,7 +10,7 @@ abstract class Stack[A]
   // .end
 }
 
-// | *DataStructure Stack
+// | *Stack
 case class Nil[Nothing]() extends Stack[Nothing]
 // .end
 {
@@ -25,7 +25,7 @@ case class Nil[Nothing]() extends Stack[Nothing]
   // .end
 }
 
-// | *DataStructure Stack
+// | *Stack
 case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
 // .end
 {
