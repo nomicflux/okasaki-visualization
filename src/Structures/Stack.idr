@@ -1,37 +1,38 @@
 module Structures.Stack
 
 -- | *DataStructure Stack
-data Stack a = Nil
-             | Cons a (Stack a)
+data Stack : Nat -> Type -> Type where
+     Nil : Stack Z a
+     Cons : (x : a) -> (xs : Stack k a) -> Stack (S k) a
 -- .end
 
 -- | *empty
-empty : Stack a
+empty : Stack Z a
 empty = Nil
 -- .end
 
 -- | *head
-head : Stack a -> Maybe a
-head Nil = Nothing
-head (Cons x _) = Just x
+head : Stack (S k) a -> a
+head (Cons x _xs) = x
 -- .end
 
 -- | *tail
-tail : Stack a -> Maybe (Stack a)
-tail Nil = Nothing
-tail (Cons _ xs) = Just xs
+tail : Stack (S k) a -> Stack k a
+tail (Cons _x xs) = xs
 -- .end
 
 -- | *cons
-cons : a -> Stack a -> Stack a
-cons val stack = Cons val stack
+cons : a -> Stack k a -> Stack (S k) a
+cons x [] = Cons x []
+cons x (Cons y xs) = Cons x (Cons y xs)
 -- .end
 
 -- | *reverse
-reverse : Stack a -> Stack a
-reverse stack = go stack Nil
+reverse : Stack n a -> Stack n a
+reverse {n} stack = go empty stack
   where
-    go : Stack a -> Stack a -> Stack a
-    go Nil acc = acc
-    go (Cons x xs) acc = go xs (cons x acc)
+    go : (acc : Stack k a) -> (curr : Stack j a) -> Stack (k + j) a
+    go {k} acc [] = rewrite plusZeroRightNeutral k in acc
+    go {k} {j = S j'} acc (Cons x xs) =
+       rewrite sym $ plusSuccRightSucc k j' in go (cons x acc) xs
 -- .end
