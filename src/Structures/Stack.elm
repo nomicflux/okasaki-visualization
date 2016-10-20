@@ -1,4 +1,4 @@
-module Structures.Stack exposing (..)
+module Stack exposing (..)
 
 import Maybe exposing (Maybe(..))
 
@@ -35,10 +35,14 @@ cons val stack = Cons val stack
 
 -- | *reverse
 reverse : Stack a -> Stack a
-reverse stack = go stack Nil
-    where
-        go Nil acc = acc
-        go (Cons x xs) acc = go xs (Cons x acc)
+reverse stack =
+    let
+        go curr acc =
+            case curr of
+                Nil -> acc
+                Cons x xs -> go xs (cons x acc)
+    in
+        go stack Nil
 -- .end
 
 map : (a -> b) -> Stack a -> Stack b
