@@ -1,12 +1,9 @@
-package Structures.Stack
-
 // | *DataStructure Stack
-abstract class Stack[+A]
+abstract class Stack[A]
 // .end
 {
   def head: A
   def tail: Stack[A]
-  def cons(A): Stack[A]
   def reverse: Stack[A]
   // | *cons
   def cons(x : A) = Cons(x, this)
@@ -14,7 +11,7 @@ abstract class Stack[+A]
 }
 
 // | *DataStructure Stack
-case class Nil[Nothing] extends Stack
+case class Nil[Nothing]() extends Stack[Nothing]
 // .end
 {
   // | *head
@@ -29,16 +26,22 @@ case class Nil[Nothing] extends Stack
 }
 
 // | *DataStructure Stack
-case class Cons[+A](head: A, tail: Stack[A]) extends Stack
+case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
 // .end
 {
+  // | *head
+  // case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
+  // .end
+  // | *tail
+  // case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
+  // .end
   // | *reverse
   def reverse = {
     def reverseHelp(curr: Stack[A], acc: Stack[A]): Stack[A] = curr match {
-      Nil => acc
-      Cons(h, t) => reverseHelp(t, Cons(h, acc))
+      case Nil() => acc
+      case Cons(h, t) => reverseHelp(t, Cons(h, acc))
     }
-    reverseHelp(this)
+    reverseHelp(this, Nil())
   }
   // .end
 }
