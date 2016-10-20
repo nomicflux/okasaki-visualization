@@ -20726,6 +20726,7 @@ module.exports = require('./lib/React');
 var Data_Array = require("../Data.Array");
 var Control_Monad_Aff = require("../Control.Monad.Aff");
 var Data_Either = require("../Data.Either");
+var Data_Eq = require("../Data.Eq");
 var Data_Functor = require("../Data.Functor");
 var Data_List = require("../Data.List");
 var Data_Map = require("../Data.Map");
@@ -20853,7 +20854,7 @@ var suffix = function (v) {
     if (v instanceof Scala) {
         return "scala";
     };
-    throw new Error("Failed pattern match at CodeSnippet line 39, column 1 - line 40, column 1: " + [ v.constructor.name ]);
+    throw new Error("Failed pattern match at CodeSnippet line 42, column 1 - line 43, column 1: " + [ v.constructor.name ]);
 };
 var showSourceCode = new Data_Show.Show(function (v) {
     return v.value0.getSourceCode;
@@ -20865,8 +20866,8 @@ var getFile = function (fname) {
     return function (lang) {
         var fullname = "/src/Structures/" + (fname + ("." + suffix(lang)));
         return Control_Bind.bind(Control_Monad_Aff.bindAff)(Data_Function.apply(Control_Monad_Aff.attempt)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(fullname)))(function (v) {
-            return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($22) {
-                return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($22));
+            return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($26) {
+                return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($26));
             })(function (r) {
                 return Data_Function.apply(Data_Either.Right.create)(new SourceCode({
                     getSourceCode: r.response, 
@@ -20876,9 +20877,38 @@ var getFile = function (fname) {
         });
     };
 };
-var fromCharList = function ($23) {
-    return Data_String.fromCharArray(Data_Array.fromFoldable(Data_List.foldableList)($23));
+var fromCharList = function ($27) {
+    return Data_String.fromCharArray(Data_Array.fromFoldable(Data_List.foldableList)($27));
 };
+var eqLanguage = new Data_Eq.Eq(function (x) {
+    return function (y) {
+        if (x instanceof Purescript && y instanceof Purescript) {
+            return true;
+        };
+        if (x instanceof Elm && y instanceof Elm) {
+            return true;
+        };
+        if (x instanceof Haskell && y instanceof Haskell) {
+            return true;
+        };
+        if (x instanceof Idris && y instanceof Idris) {
+            return true;
+        };
+        if (x instanceof Clojure && y instanceof Clojure) {
+            return true;
+        };
+        if (x instanceof Scheme && y instanceof Scheme) {
+            return true;
+        };
+        if (x instanceof Elixir && y instanceof Elixir) {
+            return true;
+        };
+        if (x instanceof Scala && y instanceof Scala) {
+            return true;
+        };
+        return false;
+    };
+});
 var comment = function (v) {
     if (v instanceof Purescript) {
         return "--";
@@ -20904,7 +20934,7 @@ var comment = function (v) {
     if (v instanceof Scala) {
         return "//";
     };
-    throw new Error("Failed pattern match at CodeSnippet line 29, column 1 - line 30, column 1: " + [ v.constructor.name ]);
+    throw new Error("Failed pattern match at CodeSnippet line 32, column 1 - line 33, column 1: " + [ v.constructor.name ]);
 };
 var docComment = function (lang) {
     return Text_Parsing_StringParser_String.string(comment(lang) + " | *");
@@ -20962,11 +20992,12 @@ module.exports = {
     suffix: suffix, 
     testSC: testSC, 
     testString: testString, 
+    eqLanguage: eqLanguage, 
     showSourceCode: showSourceCode, 
     showFunctionBlock: showFunctionBlock
 };
 
-},{"../Control.Applicative":178,"../Control.Apply":180,"../Control.Bind":184,"../Control.Category":185,"../Control.Monad.Aff":195,"../Control.Monad.Eff.Exception":200,"../Control.Semigroupoid":227,"../Data.Array":236,"../Data.Either":249,"../Data.Foldable":257,"../Data.Function":271,"../Data.Functor":274,"../Data.List":285,"../Data.Map":286,"../Data.Ord":305,"../Data.Semigroup":310,"../Data.Show":314,"../Data.String":322,"../Data.Tuple":325,"../Data.Unit":329,"../Network.HTTP.Affjax":341,"../Network.HTTP.Affjax.Response":339,"../Prelude":349,"../Text.Parsing.StringParser":372,"../Text.Parsing.StringParser.Combinators":370,"../Text.Parsing.StringParser.String":371}],176:[function(require,module,exports){
+},{"../Control.Applicative":178,"../Control.Apply":180,"../Control.Bind":184,"../Control.Category":185,"../Control.Monad.Aff":195,"../Control.Monad.Eff.Exception":200,"../Control.Semigroupoid":227,"../Data.Array":236,"../Data.Either":249,"../Data.Eq":251,"../Data.Foldable":257,"../Data.Function":271,"../Data.Functor":274,"../Data.List":285,"../Data.Map":286,"../Data.Ord":305,"../Data.Semigroup":310,"../Data.Show":314,"../Data.String":322,"../Data.Tuple":325,"../Data.Unit":329,"../Network.HTTP.Affjax":341,"../Network.HTTP.Affjax.Response":339,"../Prelude":349,"../Text.Parsing.StringParser":372,"../Text.Parsing.StringParser.Combinators":370,"../Text.Parsing.StringParser.String":371}],176:[function(require,module,exports){
 // Generated by psc version 0.9.3
 "use strict";
 var Data_Functor = require("../Data.Functor");
@@ -37461,7 +37492,6 @@ module.exports = {
 };
 
 },{"./foreign":333}],335:[function(require,module,exports){
-// Generated by psc version 0.9.3
 "use strict";
 var Views_Stack = require("../Views.Stack");
 var Views_Queue = require("../Views.Queue");
@@ -37471,17 +37501,19 @@ var Pux = require("../Pux");
 var Pux_Html = require("../Pux.Html");
 var Pux_Html_Attributes = require("../Pux.Html.Attributes");
 var Pux_Html_Events = require("../Pux.Html.Events");
-var Control_Monad_Aff = require("../Control.Monad.Aff");
-var Control_Monad_Eff = require("../Control.Monad.Eff");
+var Data_Eq = require("../Data.Eq");
 var Data_Maybe = require("../Data.Maybe");
 var Signal = require("../Signal");
 var Signal_Time = require("../Signal.Time");
 var Data_Function = require("../Data.Function");
+var Data_Semigroup = require("../Data.Semigroup");
 var Pux_Html_Elements = require("../Pux.Html.Elements");
 var Control_Applicative = require("../Control.Applicative");
 var Data_Functor = require("../Data.Functor");
+var Control_Monad_Aff = require("../Control.Monad.Aff");
 var Control_Semigroupoid = require("../Control.Semigroupoid");
 var Control_Bind = require("../Control.Bind");
+var Control_Monad_Eff = require("../Control.Monad.Eff");
 var Data_EuclideanRing = require("../Data.EuclideanRing");
 var StackPage = (function () {
     function StackPage() {
@@ -37546,14 +37578,14 @@ var updateStack = function (state) {
     return function (staction) {
         var updated = Views_Stack.update(staction)(state.stackModel);
         return Data_Function.apply(Pux.mapEffects(StackAction.create))(Data_Function.apply(Pux.mapState(function (s) {
-            var $4 = {};
-            for (var $5 in state) {
-                if (state.hasOwnProperty($5)) {
-                    $4[$5] = state[$5];
+            var $6 = {};
+            for (var $7 in state) {
+                if (state.hasOwnProperty($7)) {
+                    $6[$7] = state[$7];
                 };
             };
-            $4.stackModel = s;
-            return $4;
+            $6.stackModel = s;
+            return $6;
         }))(updated));
     };
 };
@@ -37561,20 +37593,32 @@ var updateQueue = function (state) {
     return function (quaction) {
         var updated = Views_Queue.update(quaction)(state.queueModel);
         return Data_Function.apply(Pux.mapEffects(QueueAction.create))(Data_Function.apply(Pux.mapState(function (s) {
-            var $7 = {};
-            for (var $8 in state) {
-                if (state.hasOwnProperty($8)) {
-                    $7[$8] = state[$8];
+            var $9 = {};
+            for (var $10 in state) {
+                if (state.hasOwnProperty($10)) {
+                    $9[$10] = state[$10];
                 };
             };
-            $7.queueModel = s;
-            return $7;
+            $9.queueModel = s;
+            return $9;
         }))(updated));
     };
 };
-var langBtn = function (name) {
-    return function (token) {
-        return Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-danger"), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangeLanguage(token))) ])([ Pux_Html_Elements.text(name) ]);
+var langBtn = function (state) {
+    return function (name) {
+        return function (token) {
+            var allClasses = (function () {
+                var $12 = Data_Eq.eq(CodeSnippet.eqLanguage)(state.currLanguage)(token);
+                if ($12) {
+                    return "pure-button pure-button-danger" + " pure-button-active";
+                };
+                if (!$12) {
+                    return "pure-button pure-button-danger";
+                };
+                throw new Error("Failed pattern match at Main line 103, column 18 - line 105, column 34: " + [ $12.constructor.name ]);
+            })();
+            return Pux_Html_Elements.button([ Pux_Html_Attributes.className(allClasses), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangeLanguage(token))) ])([ Pux_Html_Elements.text(name) ]);
+        };
     };
 };
 var initialState = {
@@ -37583,20 +37627,24 @@ var initialState = {
     currPage: Data_Maybe.Nothing.value, 
     currLanguage: CodeSnippet.Purescript.value
 };
+
+/**
+ *  getSource :: Page -> CS.Language -> Aff _ Action
+ */
 var getSource = function (dictApplicative) {
     return function (v) {
         return function (lang) {
             if (v instanceof StackPage) {
-                return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($37) {
-                    return StackAction.create(Views_Stack.LoadCode.create($37));
+                return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($45) {
+                    return StackAction.create(Views_Stack.LoadCode.create($45));
                 })(CodeSnippet.getFile("Stack")(lang)));
             };
             if (v instanceof QueuePage) {
-                return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($38) {
-                    return QueueAction.create(Views_Queue.LoadCode.create($38));
+                return Data_Function.apply(Control_Applicative.pure(dictApplicative))(Data_Functor.map(Control_Monad_Aff.functorAff)(function ($46) {
+                    return QueueAction.create(Views_Queue.LoadCode.create($46));
                 })(CodeSnippet.getFile("Queue")(lang)));
             };
-            throw new Error("Failed pattern match at Main line 52, column 1 - line 53, column 68: " + [ v.constructor.name, lang.constructor.name ]);
+            throw new Error("Failed pattern match at Main line 55, column 1 - line 56, column 68: " + [ v.constructor.name, lang.constructor.name ]);
         };
     };
 };
@@ -37605,44 +37653,44 @@ var update = function (v) {
         if (v instanceof ChangeLanguage) {
             if (state.currPage instanceof Data_Maybe.Nothing) {
                 return Data_Function.apply(Pux.noEffects)((function () {
-                    var $15 = {};
-                    for (var $16 in state) {
-                        if (state.hasOwnProperty($16)) {
-                            $15[$16] = state[$16];
+                    var $18 = {};
+                    for (var $19 in state) {
+                        if (state.hasOwnProperty($19)) {
+                            $18[$19] = state[$19];
                         };
                     };
-                    $15.currLanguage = v.value0;
-                    return $15;
+                    $18.currLanguage = v.value0;
+                    return $18;
                 })());
             };
             if (state.currPage instanceof Data_Maybe.Just) {
                 return {
                     state: (function () {
-                        var $18 = {};
-                        for (var $19 in state) {
-                            if (state.hasOwnProperty($19)) {
-                                $18[$19] = state[$19];
+                        var $21 = {};
+                        for (var $22 in state) {
+                            if (state.hasOwnProperty($22)) {
+                                $21[$22] = state[$22];
                             };
                         };
-                        $18.currLanguage = v.value0;
-                        return $18;
+                        $21.currLanguage = v.value0;
+                        return $21;
                     })(), 
                     effects: getSource(Control_Applicative.applicativeArray)(state.currPage.value0)(v.value0)
                 };
             };
-            throw new Error("Failed pattern match at Main line 59, column 3 - line 64, column 8: " + [ state.currPage.constructor.name ]);
+            throw new Error("Failed pattern match at Main line 62, column 3 - line 67, column 8: " + [ state.currPage.constructor.name ]);
         };
         if (v instanceof ChangePage) {
             return {
                 state: (function () {
-                    var $23 = {};
-                    for (var $24 in state) {
-                        if (state.hasOwnProperty($24)) {
-                            $23[$24] = state[$24];
+                    var $26 = {};
+                    for (var $27 in state) {
+                        if (state.hasOwnProperty($27)) {
+                            $26[$27] = state[$27];
                         };
                     };
-                    $23.currPage = new Data_Maybe.Just(v.value0);
-                    return $23;
+                    $26.currPage = new Data_Maybe.Just(v.value0);
+                    return $26;
                 })(), 
                 effects: getSource(Control_Applicative.applicativeArray)(v.value0)(state.currLanguage)
             };
@@ -37663,14 +37711,43 @@ var update = function (v) {
             if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
                 return updateQueue(state)(new Views_Queue.Tick(v.value0));
             };
-            throw new Error("Failed pattern match at Main line 74, column 3 - line 79, column 42: " + [ state.currPage.constructor.name ]);
+            throw new Error("Failed pattern match at Main line 77, column 3 - line 82, column 42: " + [ state.currPage.constructor.name ]);
         };
-        throw new Error("Failed pattern match at Main line 58, column 1 - line 64, column 8: " + [ v.constructor.name, state.constructor.name ]);
+        throw new Error("Failed pattern match at Main line 61, column 1 - line 67, column 8: " + [ v.constructor.name, state.constructor.name ]);
     };
 };
-var dsBtn = function (name) {
-    return function (token) {
-        return Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-primary"), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangePage(token))) ])([ Pux_Html_Elements.text(name) ]);
+var eqPage = new Data_Eq.Eq(function (x) {
+    return function (y) {
+        if (x instanceof StackPage && y instanceof StackPage) {
+            return true;
+        };
+        if (x instanceof QueuePage && y instanceof QueuePage) {
+            return true;
+        };
+        return false;
+    };
+});
+var dsBtn = function (state) {
+    return function (name) {
+        return function (token) {
+            var allClasses = (function () {
+                if (state.currPage instanceof Data_Maybe.Nothing) {
+                    return "pure-button pure-button-primary";
+                };
+                if (state.currPage instanceof Data_Maybe.Just) {
+                    var $39 = Data_Eq.eq(eqPage)(state.currPage.value0)(token);
+                    if ($39) {
+                        return "pure-button pure-button-primary" + " pure-button-active";
+                    };
+                    if (!$39) {
+                        return "pure-button pure-button-primary";
+                    };
+                    throw new Error("Failed pattern match at Main line 91, column 22 - line 93, column 38: " + [ $39.constructor.name ]);
+                };
+                throw new Error("Failed pattern match at Main line 89, column 7 - line 93, column 38: " + [ state.currPage.constructor.name ]);
+            })();
+            return Pux_Html_Elements.button([ Pux_Html_Attributes.className(allClasses), Pux_Html_Events.onClick(Data_Function.apply(Data_Function["const"])(new ChangePage(token))) ])([ Pux_Html_Elements.text(name) ]);
+        };
     };
 };
 var view = function (state) {
@@ -37684,10 +37761,12 @@ var view = function (state) {
         if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
             return Data_Functor.map(Pux_Html_Elements.functorHtml)(QueueAction.create)(Views_Queue.view(state.queueModel));
         };
-        throw new Error("Failed pattern match at Main line 105, column 7 - line 108, column 70: " + [ state.currPage.constructor.name ]);
+        throw new Error("Failed pattern match at Main line 127, column 7 - line 130, column 70: " + [ state.currPage.constructor.name ]);
     })();
-    var langDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ langBtn("Purescript")(CodeSnippet.Purescript.value), langBtn("Elm")(CodeSnippet.Elm.value), langBtn("Haskell")(CodeSnippet.Haskell.value), langBtn("Idris")(CodeSnippet.Idris.value), langBtn("Clojure")(CodeSnippet.Clojure.value), langBtn("Scheme")(CodeSnippet.Scheme.value), langBtn("Elixir")(CodeSnippet.Elixir.value) ]);
-    var dataDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ dsBtn("Stack")(StackPage.value), dsBtn("Queue")(QueuePage.value) ]);
+    var lbf = langBtn(state);
+    var langDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ lbf("Purescript")(CodeSnippet.Purescript.value), lbf("Elm")(CodeSnippet.Elm.value), lbf("Haskell")(CodeSnippet.Haskell.value), lbf("Idris")(CodeSnippet.Idris.value), lbf("Clojure")(CodeSnippet.Clojure.value), lbf("Scheme")(CodeSnippet.Scheme.value), lbf("Elixir")(CodeSnippet.Elixir.value) ]);
+    var dbf = dsBtn(state);
+    var dataDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-1") ])([ dbf("Stack")(StackPage.value), dbf("Queue")(QueuePage.value) ]);
     return Pux_Html_Elements.div([  ])([ dataDiv, langDiv, renderDiv ]);
 };
 var main = function __do() {
@@ -37715,10 +37794,11 @@ module.exports = {
     update: update, 
     updateQueue: updateQueue, 
     updateStack: updateStack, 
-    view: view
+    view: view, 
+    eqPage: eqPage
 };
 
-},{"../CodeSnippet":175,"../Control.Applicative":178,"../Control.Bind":184,"../Control.Monad.Aff":195,"../Control.Monad.Eff":208,"../Control.Semigroupoid":227,"../Data.EuclideanRing":253,"../Data.Function":271,"../Data.Functor":274,"../Data.Maybe":289,"../Prelude":349,"../Pux":359,"../Pux.Html":357,"../Pux.Html.Attributes":351,"../Pux.Html.Elements":353,"../Pux.Html.Events":355,"../Signal":367,"../Signal.Time":365,"../Views.Queue":376,"../Views.Stack":377}],336:[function(require,module,exports){
+},{"../CodeSnippet":175,"../Control.Applicative":178,"../Control.Bind":184,"../Control.Monad.Aff":195,"../Control.Monad.Eff":208,"../Control.Semigroupoid":227,"../Data.Eq":251,"../Data.EuclideanRing":253,"../Data.Function":271,"../Data.Functor":274,"../Data.Maybe":289,"../Data.Semigroup":310,"../Prelude":349,"../Pux":359,"../Pux.Html":357,"../Pux.Html.Attributes":351,"../Pux.Html.Elements":353,"../Pux.Html.Events":355,"../Signal":367,"../Signal.Time":365,"../Views.Queue":376,"../Views.Stack":377}],336:[function(require,module,exports){
 "use strict";
 
 // module Math
@@ -42948,6 +43028,7 @@ module.exports = {
 };
 
 },{"../CodeSnippet":175,"../Control.Applicative":178,"../Control.Bind":184,"../Control.Monad.Aff":195,"../Control.Monad.Eff.Class":198,"../Control.Monad.Eff.Exception":200,"../Data.Array":236,"../Data.Either":249,"../Data.Eq":251,"../Data.EuclideanRing":253,"../Data.Filterable":255,"../Data.Foldable":257,"../Data.Function":271,"../Data.Function.Uncurried":270,"../Data.Functor":274,"../Data.Int":284,"../Data.List":285,"../Data.Map":286,"../Data.Maybe":289,"../Data.Ord":305,"../Data.Ring":308,"../Data.Semigroup":310,"../Data.Semiring":312,"../Data.Show":314,"../Data.Tuple":325,"../Debug.Trace":332,"../Math":337,"../Prelude":349,"../Pux":359,"../Pux.Html":357,"../Pux.Html.Attributes":351,"../Pux.Html.Elements":353,"../Pux.Html.Events":355,"../Signal":367,"../Signal.Time":365,"../Structures.Queue":368}],377:[function(require,module,exports){
+// Generated by psc version 0.9.3
 "use strict";
 var CodeSnippet = require("../CodeSnippet");
 var Data_Map = require("../Data.Map");

@@ -3,6 +3,7 @@ module CodeSnippet where
 import Data.Array as A
 import Control.Monad.Aff (Aff, attempt)
 import Data.Either (either, Either(..))
+import Data.Eq (class Eq)
 import Data.Functor (map)
 import Data.List (List(..))
 import Data.Map (Map, fromFoldable)
@@ -24,6 +25,8 @@ data Language = Purescript
               | Scheme
               | Elixir
               | Scala
+
+derive instance eqLanguage :: Eq Language
 
 comment :: Language -> String
 comment Purescript = "--"

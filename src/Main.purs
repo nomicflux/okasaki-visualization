@@ -3,18 +3,21 @@ module Main where
 import Views.Stack as Stack
 import Views.Queue as Queue
 import CodeSnippet as CS
-import Prelude (bind, (/), ($), (<$>), const, pure, (<<<))
+import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>))
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Control.Monad.Aff (runAff, Aff)
-import Control.Monad.Eff (runPure)
+-- import Control.Monad.Aff (runAff, Aff)
+-- import Control.Monad.Eff (runPure)
+import Data.Eq (class Eq)
 import Data.Maybe (Maybe(..))
 import Signal ((~>))
 import Signal.Time (every, second, Time())
 
 data Page = StackPage | QueuePage
+
+derive instance eqPage :: Eq Page
 
 type State = { stackModel :: Stack.Model
              , queueModel :: Queue.Model
@@ -78,28 +81,47 @@ update (Tick time) state =
     Just QueuePage ->
       updateQueue state (Queue.Tick time)
 
-dsBtn :: String -> Page -> H.Html Action
-dsBtn name token = H.button [ HA.className "pure-button pure-button-primary"
-                            , HE.onClick (const $ ChangePage token)
-                            ] [ H.text name ]
+dsBtn :: State -> String -> Page -> H.Html Action
+dsBtn state name token =
+  let
+    baseClasses = "pure-button pure-button-primary"
+    allClasses =
+      case state.currPage of
+        Nothing -> baseClasses
+        Just page -> if page == token
+                     then baseClasses <> " pure-button-active"
+                     else baseClasses
+  in
+   H.button [ HA.className allClasses
+            , HE.onClick (const $ ChangePage token)
+            ] [ H.text name ]
 
-langBtn :: String -> CS.Language -> H.Html Action
-langBtn name token = H.button [ HA.className "pure-button pure-button-danger"
-                              , HE. onClick (const $ ChangeLanguage token)
-                              ] [ H.text name ]
+langBtn :: State -> String -> CS.Language -> H.Html Action
+langBtn state name token =
+  let
+    baseClasses = "pure-button pure-button-danger"
+    allClasses = if state.currLanguage == token
+                 then baseClasses <> " pure-button-active"
+                 else baseClasses
+  in
+   H.button [ HA.className allClasses
+            , HE. onClick (const $ ChangeLanguage token)
+            ] [ H.text name ]
 
 view :: State -> H.Html Action
 view state =
   let
-    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dsBtn "Stack" StackPage
-                                                  , dsBtn "Queue" QueuePage ]
-    langDiv = H.div [ HA.className "pure-u-1-1" ] [ langBtn "Purescript" CS.Purescript
-                                                  , langBtn "Elm" CS.Elm
-                                                  , langBtn "Haskell" CS.Haskell
-                                                  , langBtn "Idris" CS.Idris
-                                                  , langBtn "Clojure" CS.Clojure
-                                                  , langBtn "Scheme" CS.Scheme
-                                                  , langBtn "Elixir" CS.Elixir
+    dbf = dsBtn state
+    lbf = langBtn state
+    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dbf "Stack" StackPage
+                                                  , dbf "Queue" QueuePage ]
+    langDiv = H.div [ HA.className "pure-u-1-1" ] [ lbf "Purescript" CS.Purescript
+                                                  , lbf "Elm" CS.Elm
+                                                  , lbf "Haskell" CS.Haskell
+                                                  , lbf "Idris" CS.Idris
+                                                  , lbf "Clojure" CS.Clojure
+                                                  , lbf "Scheme" CS.Scheme
+                                                  , lbf "Elixir" CS.Elixir
                                                   ]
     renderDiv =
       case state.currPage of
