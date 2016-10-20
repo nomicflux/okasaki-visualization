@@ -148,6 +148,7 @@ data Action = Empty
             | Reverse
             | Insert
             | CurrentInput String
+            | ShowStructure
             | StartTimer Time
             | LoadCode (Either String CS.SourceCode)
             | Failure Error
@@ -261,6 +262,8 @@ update Insert model =
        updateStack newModel (S.cons node cleanStack) "cons"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
+update ShowStructure model =
+  noEffects $ changeFn model "DataStructure Stack"
 
 svgText :: forall a. Array (H.Attribute a) -> Array (H.Html a) -> H.Html a
 svgText = runFn3 H.element "text"
@@ -346,6 +349,10 @@ view model =
     stackDiv = H.div [ HA.className "render pure-u-1-1" ]
                [ H.svg [HA.height (show maxHeight)
                        , HA.width (show maxWidth)  ] nodes ]
+    dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
+                                   , HE.onClick $ const ShowStructure
+                                   ] [ H.text "Stack Structure" ]
+                        ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
@@ -372,7 +379,8 @@ view model =
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
-    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ emptyBtn
+    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
+                                                     , emptyBtn
                                                      , viewsDiv
                                                      , revBtn
                                                      , popBtn
@@ -380,7 +388,9 @@ view model =
                                                      ]
     codeDiv = H.div [ HA.className "pure-u-1-2" ] [ H.code [ ]
                                                     [ H.pre [ ]
-                                                      [ H.text (fromMaybe "" model.currFn) ]
+                                                      [ case model.currFn of
+                                                           Nothing -> H.i [] [ H.text "No implementation given"]
+                                                           Just fn -> H.text fn ]
                                                     ]
                                                   ]
   in
