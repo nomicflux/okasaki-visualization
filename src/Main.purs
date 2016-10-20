@@ -8,7 +8,7 @@ import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Control.Monad.Aff (runAff)
+import Control.Monad.Aff (runAff, Aff)
 import Control.Monad.Eff (runPure)
 import Data.Maybe (Maybe(..))
 import Signal ((~>))
@@ -19,15 +19,18 @@ data Page = StackPage | QueuePage
 type State = { stackModel :: Stack.Model
              , queueModel :: Queue.Model
              , currPage :: Maybe Page
+             , currLanguage :: CS.Language
              }
 
 initialState :: State
 initialState = { stackModel : Stack.initModel
                , queueModel : Queue.initModel
                , currPage : Nothing
+               , currLanguage : CS.Purescript
                }
 
 data Action = ChangePage Page
+            | ChangeLanguage CS.Language
             | StackAction Stack.Action
             | QueueAction Queue.Action
             | Tick Time
@@ -45,13 +48,23 @@ updateQueue state quaction =
   in
    mapEffects QueueAction $ mapState (\s -> state { queueModel = s}) $ updated
 
+-- getSource :: Page -> CS.Language -> Aff _ Action
+getSource StackPage lang =
+  pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack" lang
+getSource QueuePage lang =
+  pure $ QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue" lang
+
 update :: Action -> State -> EffModel State Action _
+update (ChangeLanguage lang) state =
+  case state.currPage of
+    Nothing -> noEffects $ state { currLanguage = lang }
+    Just page ->
+      { state: state { currLanguage = lang }
+      , effects: getSource page lang
+      }
 update (ChangePage page) state =
   { state: state { currPage = Just page }
-  , effects:
-    case page of
-         StackPage -> pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack"
-         QueuePage -> pure $ QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue"
+  , effects: getSource page state.currLanguage
   }
 update (StackAction staction) state =
   updateStack state staction
@@ -65,22 +78,36 @@ update (Tick time) state =
     Just QueuePage ->
       updateQueue state (Queue.Tick time)
 
+dsBtn :: String -> Page -> H.Html Action
+dsBtn name token = H.button [ HA.className "pure-button pure-button-primary"
+                            , HE.onClick (const $ ChangePage token)
+                            ] [ H.text name ]
+
+langBtn :: String -> CS.Language -> H.Html Action
+langBtn name token = H.button [ HA.className "pure-button pure-button-danger"
+                              , HE. onClick (const $ ChangeLanguage token)
+                              ] [ H.text name ]
+
 view :: State -> H.Html Action
 view state =
   let
-    stackBtn = H.button [ HA.className "pure-button pure-button-primary"
-                        , HE.onClick (const $ ChangePage StackPage)] [ H.text "Stack" ]
-    queueBtn = H.button [ HA.className "pure-button pure-button-primary"
-                        , HE.onClick (const $ ChangePage QueuePage)] [ H.text "Queue" ]
-    btnDiv = H.div [ HA.className "pure-u-1-1" ] [ stackBtn, queueBtn ]
+    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dsBtn "Stack" StackPage
+                                                  , dsBtn "Queue" QueuePage ]
+    langDiv = H.div [ HA.className "pure-u-1-1" ] [ langBtn "Purescript" CS.Purescript
+                                                  , langBtn "Elm" CS.Elm
+                                                  , langBtn "Haskell" CS.Haskell
+                                                  , langBtn "Idris" CS.Idris
+                                                  , langBtn "Clojure" CS.Clojure
+                                                  , langBtn "Scheme" CS.Scheme
+                                                  , langBtn "Elixir" CS.Elixir
+                                                  ]
     renderDiv =
       case state.currPage of
         Nothing -> H.div [ HA.className "pure-u-1-1" ] [ H.text "Please select a data structure"]
         Just StackPage -> StackAction <$> Stack.view state.stackModel
         Just QueuePage -> QueueAction <$> Queue.view state.queueModel
   in
-   H.div [ ] [ btnDiv, renderDiv ]
-
+   H.div [ ] [ dataDiv, langDiv, renderDiv ]
 
 main = do
   app <- start

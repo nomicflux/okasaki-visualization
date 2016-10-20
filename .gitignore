@@ -9,3 +9,6 @@
 /elm.js
 /src/elm.js
 .#*
+/src/Structures/elm-stuff
+/src/Structures/elm-package.json
+/src/Structures/elm.js

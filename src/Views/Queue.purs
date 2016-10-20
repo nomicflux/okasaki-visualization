@@ -60,6 +60,7 @@ type Model = { queue :: Q.Queue Node
              , animationPhase :: Number
              , delay :: Number
              , sourceCode :: M.Map String String
+             , currFnName :: Maybe String
              , currFn :: Maybe String
              }
 
@@ -73,6 +74,7 @@ initModel = { queue : Q.empty
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
             , sourceCode : M.empty
+            , currFnName : Nothing
             , currFn : Nothing
             }
 
@@ -157,7 +159,8 @@ data Action = Empty
             | Tick Time
 
 changeFn :: Model -> String -> Model
-changeFn model fn = model { currFn = M.lookup fn model.sourceCode }
+changeFn model fn = model { currFn = M.lookup fn model.sourceCode
+                          , currFnName = Just fn}
 
 updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
 updateQueue model queue fn =
@@ -171,6 +174,7 @@ updateQueue model queue fn =
                   , currNodes = newMap
                   , queue = queue
                   , animationPhase = 0.0
+                  , currFnName = Just fn
                   , currFn = M.lookup fn model.sourceCode
                   }
    , effects: [ do
@@ -184,10 +188,13 @@ update (Failure err) model = noEffects model
 update (LoadCode (Left err)) model = noEffects model
 update (LoadCode (Right code)) model =
   let
-    res = spy code
-    res2 = spy $ CS.parseFunctions code
+    sourceCodeModel = model { sourceCode = CS.parseFunctions code }
+    newModel =
+      case model.currFnName of
+        Nothing -> sourceCodeModel
+        Just fn -> changeFn sourceCodeModel fn
   in
-   noEffects $ model { sourceCode = CS.parseFunctions code }
+   noEffects newModel
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model

@@ -61,6 +61,7 @@ type Model = { stack :: S.Stack Node
              , animationPhase :: Number
              , delay :: Number
              , sourceCode :: M.Map String String
+             , currFnName :: Maybe String
              , currFn :: Maybe String
              }
 
@@ -74,6 +75,7 @@ initModel = { stack : S.empty
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
             , sourceCode : M.empty
+            , currFnName : Nothing
             , currFn : Nothing
             }
 
@@ -152,7 +154,9 @@ data Action = Empty
             | Tick Time
 
 changeFn :: Model -> String -> Model
-changeFn model fn = model { currFn = M.lookup fn model.sourceCode }
+changeFn model fn = model { currFn = M.lookup fn model.sourceCode
+                          , currFnName = Just fn
+                          }
 
 updateStack :: Model -> S.Stack Node -> String -> EffModel Model Action _
 updateStack model stack fn =
@@ -164,6 +168,7 @@ updateStack model stack fn =
                   , currNodes = newMap
                   , stack = stack
                   , animationPhase = 0.0
+                  , currFnName = Just fn
                   , currFn = M.lookup fn model.sourceCode
                   }
    , effects: [ do
@@ -174,21 +179,18 @@ updateStack model stack fn =
 
 update :: Action -> Model -> EffModel Model Action _
 update (Failure err) model =
-  let
-    res = spy err
-  in
    noEffects $ model
 update (LoadCode (Left err)) model =
-  let
-    res = spy err
-  in
    noEffects $ model
 update (LoadCode (Right code)) model =
   let
-    res = spy code
-    res2 = spy $ CS.parseFunctions code
+    sourceCodeModel = model { sourceCode = CS.parseFunctions code }
+    newModel =
+      case model.currFnName of
+        Nothing -> sourceCodeModel
+        Just fn -> changeFn sourceCodeModel fn
   in
-   noEffects $ model { sourceCode = CS.parseFunctions code }
+   noEffects newModel
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
