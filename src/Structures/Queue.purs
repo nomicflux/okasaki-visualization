@@ -78,7 +78,7 @@ push val (Queue queue) = Queue (queue { front = S.cons val queue.front })
 -- | *inject
 inject :: forall a. a -> Queue a -> Queue a
 inject val (Queue queue) = Queue (queue { back = S.cons val queue.back })
--- end
+-- .end
 
 topHead :: forall a. Queue a -> Maybe a
 topHead (Queue queue) = S.head queue.front

@@ -48,7 +48,10 @@ updateQueue state quaction =
 update :: Action -> State -> EffModel State Action _
 update (ChangePage page) state =
   { state: state { currPage = Just page }
-  , effects: pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack"
+  , effects:
+    case page of
+         StackPage -> pure $ StackAction <<< Stack.LoadCode <$> CS.getFile "Stack"
+         QueuePage -> pure $ QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue"
   }
 update (StackAction staction) state =
   updateStack state staction

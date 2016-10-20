@@ -5,9 +5,12 @@ import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Queue as Q
+import CodeSnippet as CS
 import Control.Monad.Eff.Class (liftEff)
--- import Control.Monad.Eff.Timer (TIMER)
+import Control.Monad.Eff.Exception (Error)
+import Debug.Trace (spy)
 import Data.Array ((:), concatMap, fromFoldable)
+import Data.Either (Either(..))
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
 import Data.Foldable (class Foldable, foldr)
@@ -19,8 +22,7 @@ import Data.Ord (class Ord, compare)
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
 import Math (atan, sin, cos, pi)
-import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const
-               , min, max, (<$>), bind, pure, negate)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, max, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
@@ -57,6 +59,8 @@ type Model = { queue :: Q.Queue Node
              , startAnimation :: Maybe Time
              , animationPhase :: Number
              , delay :: Number
+             , sourceCode :: M.Map String String
+             , currFn :: Maybe String
              }
 
 initModel :: Model
@@ -68,6 +72,8 @@ initModel = { queue : Q.empty
             , startAnimation : Nothing
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
+            , sourceCode : M.empty
+            , currFn : Nothing
             }
 
 data Direction = Front | Back
@@ -146,10 +152,15 @@ data Action = Empty
             | Inject
             | CurrentInput String
             | StartTimer Time
+            | LoadCode (Either String CS.SourceCode)
+            | Failure Error
             | Tick Time
 
-updateQueue :: Model -> Q.Queue Node -> EffModel Model Action _
-updateQueue model queue =
+changeFn :: Model -> String -> Model
+changeFn model fn = model { currFn = M.lookup fn model.sourceCode }
+
+updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
+updateQueue model queue fn =
   let
     bict = Q.biCount queue
     -- ct = max (fst bict) (snd bict)
@@ -160,6 +171,7 @@ updateQueue model queue =
                   , currNodes = newMap
                   , queue = queue
                   , animationPhase = 0.0
+                  , currFn = M.lookup fn model.sourceCode
                   }
    , effects: [ do
       time <- liftEff now
@@ -168,6 +180,14 @@ updateQueue model queue =
    }
 
 update :: Action -> Model -> EffModel Model Action _
+update (Failure err) model = noEffects model
+update (LoadCode (Left err)) model = noEffects model
+update (LoadCode (Right code)) model =
+  let
+    res = spy code
+    res2 = spy $ CS.parseFunctions code
+  in
+   noEffects $ model { sourceCode = CS.parseFunctions code }
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
@@ -182,79 +202,79 @@ update (StartTimer time) model = noEffects $ model { startAnimation = Just time
                                                    , animationPhase = 0.0
                                                    }
 update Empty model =
-  updateQueue model Q.empty
+  updateQueue model Q.empty "empty"
 update Top model =
   let
     mhead = Q.top model.queue
     mtail = Q.pop model.queue
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ model
-     Tuple _ Nothing -> noEffects $ model
+     Tuple Nothing _ -> noEffects $ changeFn model "top"
+     Tuple _ Nothing -> noEffects $ changeFn model "top"
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
          newTail = wipeClasses t
          newQ = Q.push newHead newTail
        in
-        updateQueue model newQ
+        updateQueue model newQ "top"
 update Pop model =
   let
     mtail = Q.pop model.queue
   in
    case mtail of
-     Nothing -> noEffects $ model
+     Nothing -> noEffects $ changeFn model "pop"
      Just t ->
        let
          newTail = changeAllClasses "tail" t
          newQ = newTail
        in
-        updateQueue model newQ
+        updateQueue model newQ "pop"
 update Bottom model =
   let
     mhead = Q.back model.queue
     mtail = Q.eject model.queue
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ model
-     Tuple _ Nothing -> noEffects $ model
+     Tuple Nothing _ -> noEffects $ changeFn model "back"
+     Tuple _ Nothing -> noEffects $ changeFn model "back"
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
          newTail = wipeClasses t
          newQ = Q.inject newHead newTail
        in
-        updateQueue model newQ
+        updateQueue model newQ "back"
 update Eject model =
   let
     mtail = Q.eject model.queue
   in
    case mtail of
-     Nothing -> noEffects $ model
+     Nothing -> noEffects $ changeFn model "eject"
      Just t ->
        let
          newTail = changeAllClasses "tail" t
          newQ = newTail
        in
-        updateQueue model newQ
+        updateQueue model newQ "eject"
 update Inject model =
   let
     mnode = mkNode Back model
     cleanQueue = wipeClasses model.queue
   in
    case mnode of
-     Nothing -> noEffects $ model
+     Nothing -> noEffects $ changeFn model "inject"
      Just (Tuple node newModel) ->
-       updateQueue newModel (Q.inject node cleanQueue)
+       updateQueue newModel (Q.inject node cleanQueue) "inject"
 update Push model =
   let
     mnode = mkNode Front model
     cleanQueue = wipeClasses model.queue
   in
    case mnode of
-     Nothing -> noEffects $ model
+     Nothing -> noEffects $ changeFn model "push"
      Just (Tuple node newModel) ->
-       updateQueue newModel (Q.push node cleanQueue)
+       updateQueue newModel (Q.push node cleanQueue) "push"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 
@@ -369,5 +389,18 @@ view model =
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
+    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ emptyBtn
+                                                     , frontDiv
+                                                     , backDiv
+                                                     , consSpan
+                                                     ]
+    codeDiv = H.div [ HA.className "pure-u-1-2" ] [ H.code [ ]
+                                                    [ H.pre [ ]
+                                                      [ H.text (fromMaybe "" model.currFn) ]
+                                                    ]
+                                                  ]
   in
-   H.div [ ] [ stackDiv, emptyBtn, frontDiv, backDiv, consSpan ]
+   H.div [ HA.className "pure-g" ] [ stackDiv
+                                   , controlDiv
+                                   , codeDiv
+                                   ]
