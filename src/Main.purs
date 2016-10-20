@@ -122,6 +122,7 @@ view state =
                                                   , lbf "Clojure" CS.Clojure
                                                   , lbf "Scheme" CS.Scheme
                                                   , lbf "Elixir" CS.Elixir
+                                                  , lbf "Scala" CS.Scala
                                                   ]
     renderDiv =
       case state.currPage of
