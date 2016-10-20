@@ -1,6 +1,6 @@
 module Stack where
 
--- | *DataStructure Stack
+-- | *Stack
 data Stack a = Nil
              | Cons a (Stack a)
 -- .end

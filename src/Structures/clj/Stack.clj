@@ -1,4 +1,4 @@
-; | *DataStructure Stack
+; | *Stack
 (deftype Stack [car cdr])
 ; .end
 

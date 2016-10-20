@@ -3,7 +3,7 @@ module Stack
 %access export
 %default total
 
--- | *DataStructure Stack
+-- | *Stack
 data Stack : Nat -> Type -> Type where
      Nil : Stack Z a
      Cons : (x : a) -> (xs : Stack k a) -> Stack (S k) a

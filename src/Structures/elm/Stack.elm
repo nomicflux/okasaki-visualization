@@ -2,7 +2,7 @@ module Stack exposing (..)
 
 import Maybe exposing (Maybe(..))
 
--- | *DataStructure Stack
+-- | *Stack
 type Stack a = Nil
              | Cons a (Stack a)
 -- .end

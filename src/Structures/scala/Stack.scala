@@ -1,4 +1,4 @@
-// | *DataStructure Stack
+// | *Stack
 abstract class Stack[A]
 // .end
 {
