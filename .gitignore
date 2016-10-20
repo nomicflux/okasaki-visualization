@@ -13,3 +13,4 @@
 /src/Structures/elm-package.json
 /src/Structures/elm.js
 *.ibc
+*.beam
