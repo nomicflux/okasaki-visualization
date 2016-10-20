@@ -6,7 +6,7 @@ import Data.Either (either, Either(..))
 import Data.Eq (class Eq)
 import Data.Functor (map)
 import Data.List (List(..))
-import Data.Map (Map, fromFoldable)
+import Data.Map (Map, fromFoldableWith)
 -- import Data.Maybe (Maybe(..))
 import Data.Show (class Show)
 import Data.String (fromCharArray)
@@ -101,7 +101,7 @@ parseFunctions (SourceCode code) =
     res = runParser (nextFunction code.language *> functions code.language) code.getSourceCode
     fns = either (const Nil) id res
   in
-   fromFoldable (map (\ (FunctionBlock f) -> Tuple f.name f.body) fns)
+   fromFoldableWith (<>) (map (\ (FunctionBlock f) -> Tuple f.name f.body) fns)
 
 testString :: String
 testString = """
