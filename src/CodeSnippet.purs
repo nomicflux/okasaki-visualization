@@ -101,7 +101,7 @@ parseFunctions (SourceCode code) =
     res = runParser (nextFunction code.language *> functions code.language) code.getSourceCode
     fns = either (const Nil) id res
   in
-   fromFoldableWith (<>) (map (\ (FunctionBlock f) -> Tuple f.name f.body) fns)
+   fromFoldableWith (\a b -> b <> a) (map (\ (FunctionBlock f) -> Tuple f.name f.body) fns)
 
 testString :: String
 testString = """
