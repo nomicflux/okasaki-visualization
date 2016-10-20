@@ -11,7 +11,7 @@ import Data.Tuple (Tuple(..))
 
 import Structures.Purs.Stack as S
 
--- | *DataStructure Queue
+-- | *Queue
 data Queue a = Queue { front :: S.Stack a
                      , back :: S.Stack a
                      }
