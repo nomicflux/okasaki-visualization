@@ -15,19 +15,20 @@
 ; .end
 
 ; | *cons
-(define cons'
+(define my-cons
   (lambda (val rest)
     (cons val rest)))
 ; .end
 
 ; | *reverse
-(define reverse
+(define reverse-helper
+  (lambda (curr acc)
+    (cond
+     ((eq? curr empty) acc)
+     (else (reverse-helper (tail curr)
+                           (my-cons (car curr) acc))))))
+
+(define my-reverse
   (lambda (stack)
-    (let (reverse-helper
-          (lambda (curr acc)
-            (cond
-             (nil? acc) acc
-             #t (reverse-helper (tail curr)
-                                (cons' (car curr) acc)))))
-      (reverse-helper stack))))
+      (reverse-helper stack empty)))
 ; .end
