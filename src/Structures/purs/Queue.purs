@@ -1,4 +1,4 @@
-module Structures.Queue where
+module Structures.Purs.Queue where
 
 import Data.Semigroup (append)
 -- import Data.Monoid (mempty)
@@ -9,7 +9,7 @@ import Data.Monoid ((<>))
 import Data.Show (class Show, show)
 import Data.Tuple (Tuple(..))
 
-import Structures.Stack as S
+import Structures.Purs.Stack as S
 
 -- | *DataStructure Queue
 data Queue a = Queue { front :: S.Stack a

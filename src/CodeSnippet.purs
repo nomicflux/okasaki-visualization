@@ -63,7 +63,8 @@ instance showFunctionBlock :: Show FunctionBlock where
 
 getFile :: forall eff. String -> Language -> Aff (ajax :: AJAX | eff) (Either String SourceCode)
 getFile fname lang = do
-  let fullname = "/src/Structures/" <> fname <> "." <> suffix lang
+  let extension = suffix lang
+      fullname = "/src/Structures/" <> extension <> "/" <> fname <> "." <> extension
   res <- attempt $ get fullname
   pure $ either (Left <<< show) (\r -> Right $ SourceCode { getSourceCode : r.response
                                                           , language : lang

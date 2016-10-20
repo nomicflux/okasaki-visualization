@@ -1,4 +1,4 @@
-module Structures.Stack where
+module Structures.Purs.Stack where
 
 import Data.Foldable (class Foldable, foldr, foldl, foldMap)
 import Data.Functor (class Functor, map)
@@ -8,7 +8,7 @@ import Data.Semigroup (class Semigroup, append)
 import Data.Show (class Show, show)
 import Prelude ((+))
 
--- | *DataStructure Stack
+-- | *Stack
 data Stack a = Nil
              | Cons a (Stack a)
 -- .end

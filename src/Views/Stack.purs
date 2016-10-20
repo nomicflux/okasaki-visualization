@@ -5,7 +5,7 @@ import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Structures.Stack as S
+import Structures.Purs.Stack as S
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
 import Data.Array ((:), concatMap, fromFoldable)
@@ -263,7 +263,7 @@ update Insert model =
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =
-  noEffects $ changeFn model "DataStructure Stack"
+  noEffects $ changeFn model "Stack"
 
 svgText :: forall a. Array (H.Attribute a) -> Array (H.Html a) -> H.Html a
 svgText = runFn3 H.element "text"
@@ -386,13 +386,16 @@ view model =
                                                      , popBtn
                                                      , consSpan
                                                      ]
-    codeDiv = H.div [ HA.className "pure-u-1-2" ] [ H.code [ ]
-                                                    [ H.pre [ ]
-                                                      [ case model.currFn of
-                                                           Nothing -> H.i [] [ H.text "No implementation given"]
-                                                           Just fn -> H.text fn ]
-                                                    ]
-                                                  ]
+    codeDiv = H.div [ HA.className "pure-u-1-2" ]
+                    [ H.code [ ]
+                      [ H.pre [ ]
+                        [ case model.currFn of
+                             Nothing ->
+                               H.i []
+                                   [ H.text "No implementation given or no function selected"]
+                             Just fn -> H.text fn ]
+                      ]
+                    ]
   in
    H.div [ HA.className "pure-g" ] [ stackDiv
                                    , controlDiv

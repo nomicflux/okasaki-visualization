@@ -24645,7 +24645,8 @@ var PS = {};
   }; 
   var getFile = function (fname) {
       return function (lang) {
-          var fullname = "/src/Structures/" + (fname + ("." + suffix(lang)));
+          var extension = suffix(lang);
+          var fullname = "/src/Structures/" + (extension + ("/" + (fname + ("." + extension))));
           return Control_Bind.bind(Control_Monad_Aff.bindAff)(Data_Function.apply(Control_Monad_Aff.attempt)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(fullname)))(function (v) {
               return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($26) {
                   return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($26));
@@ -24960,7 +24961,7 @@ var PS = {};
   var Data_Semiring = PS["Data.Semiring"];        
 
   /**
- *  | *DataStructure Stack
+ *  | *Stack
  */  
   var Nil = (function () {
       function Nil() {
@@ -24971,7 +24972,7 @@ var PS = {};
   })();
 
   /**
- *  | *DataStructure Stack
+ *  | *Stack
  */  
   var Cons = (function () {
       function Cons(value0, value1) {
@@ -24997,7 +24998,7 @@ var PS = {};
       if (v instanceof Cons) {
           return new Data_Maybe.Just(v.value1);
       };
-      throw new Error("Failed pattern match at Structures.Stack line 29, column 1 - line 29, column 19: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Stack line 29, column 1 - line 29, column 19: " + [ v.constructor.name ]);
   };
   var sgroupStack = new Data_Semigroup.Semigroup(function (v) {
       return function (stack) {
@@ -25007,7 +25008,7 @@ var PS = {};
           if (v instanceof Cons) {
               return new Cons(v.value0, Data_Semigroup.append(sgroupStack)(v.value1)(stack));
           };
-          throw new Error("Failed pattern match at Structures.Stack line 52, column 3 - line 52, column 27: " + [ v.constructor.name, stack.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Stack line 52, column 3 - line 52, column 27: " + [ v.constructor.name, stack.constructor.name ]);
       };
   });
 
@@ -25031,7 +25032,7 @@ var PS = {};
                       acc = __tco_acc;
                       continue tco;
                   };
-                  throw new Error("Failed pattern match at Structures.Stack line 43, column 5 - line 43, column 21: " + [ v.constructor.name, acc.constructor.name ]);
+                  throw new Error("Failed pattern match at Structures.Purs.Stack line 43, column 5 - line 43, column 21: " + [ v.constructor.name, acc.constructor.name ]);
               };
           };
       };
@@ -25049,7 +25050,7 @@ var PS = {};
       if (v instanceof Cons) {
           return new Data_Maybe.Just(v.value0);
       };
-      throw new Error("Failed pattern match at Structures.Stack line 23, column 1 - line 23, column 19: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Stack line 23, column 1 - line 23, column 19: " + [ v.constructor.name ]);
   };
   var functorStack = new Data_Functor.Functor(function (v) {
       return function (v1) {
@@ -25059,7 +25060,7 @@ var PS = {};
           if (v1 instanceof Cons) {
               return new Cons(v(v1.value0), Data_Functor.map(functorStack)(v)(v1.value1));
           };
-          throw new Error("Failed pattern match at Structures.Stack line 48, column 3 - line 48, column 18: " + [ v.constructor.name, v1.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Stack line 48, column 3 - line 48, column 18: " + [ v.constructor.name, v1.constructor.name ]);
       };
   });
   var foldableStack = new Data_Foldable.Foldable(function (dictMonoid) {
@@ -25071,7 +25072,7 @@ var PS = {};
               if (v1 instanceof Cons) {
                   return Data_Semigroup.append(dictMonoid["__superclass_Data.Semigroup.Semigroup_0"]())(v(v1.value0))(Data_Foldable.foldMap(foldableStack)(dictMonoid)(v)(v1.value1));
               };
-              throw new Error("Failed pattern match at Structures.Stack line 65, column 3 - line 65, column 25: " + [ v.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at Structures.Purs.Stack line 65, column 3 - line 65, column 25: " + [ v.constructor.name, v1.constructor.name ]);
           };
       };
   }, function (v) {
@@ -25083,7 +25084,7 @@ var PS = {};
               if (v1 instanceof Cons) {
                   return v(Data_Foldable.foldl(foldableStack)(v)(def)(v1.value1))(v1.value0);
               };
-              throw new Error("Failed pattern match at Structures.Stack line 62, column 3 - line 62, column 24: " + [ v.constructor.name, def.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at Structures.Purs.Stack line 62, column 3 - line 62, column 24: " + [ v.constructor.name, def.constructor.name, v1.constructor.name ]);
           };
       };
   }, function (v) {
@@ -25095,7 +25096,7 @@ var PS = {};
               if (v1 instanceof Cons) {
                   return v(v1.value0)(Data_Foldable.foldr(foldableStack)(v)(def)(v1.value1));
               };
-              throw new Error("Failed pattern match at Structures.Stack line 59, column 3 - line 59, column 24: " + [ v.constructor.name, def.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at Structures.Purs.Stack line 59, column 3 - line 59, column 24: " + [ v.constructor.name, def.constructor.name, v1.constructor.name ]);
           };
       };
   });
@@ -25131,7 +25132,7 @@ var PS = {};
   exports["functorStack"] = functorStack;
   exports["sgroupStack"] = sgroupStack;
   exports["foldableStack"] = foldableStack;
-})(PS["Structures.Stack"] = PS["Structures.Stack"] || {});
+})(PS["Structures.Purs.Stack"] = PS["Structures.Purs.Stack"] || {});
 (function(exports) {
     "use strict";
 
@@ -25572,14 +25573,13 @@ var PS = {};
   exports["text"] = $foreign.text;
 })(PS["Pux.Html.Elements"] = PS["Pux.Html.Elements"] || {});
 (function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
+    "use strict";
   var CodeSnippet = PS["CodeSnippet"];
   var Data_Map = PS["Data.Map"];
   var Pux_Html = PS["Pux.Html"];
   var Pux_Html_Attributes_1 = PS["Pux.Html.Attributes"];
   var Pux_Html_Events = PS["Pux.Html.Events"];
-  var Structures_Stack = PS["Structures.Stack"];
+  var Structures_Purs_Stack = PS["Structures.Purs.Stack"];
   var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
   var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
   var Data_Array = PS["Data.Array"];
@@ -25730,7 +25730,7 @@ var PS = {};
               $12.currId = model.currId + 1 | 0;
               return $12;
           })();
-          var mlastNode = Structures_Stack.head(model.stack);
+          var mlastNode = Structures_Purs_Stack.head(model.stack);
           var connections = (function () {
               if (mlastNode instanceof Data_Maybe.Nothing) {
                   return [  ];
@@ -25789,7 +25789,7 @@ var PS = {};
       };
   };
   var initModel = {
-      stack: Structures_Stack.empty, 
+      stack: Structures_Purs_Stack.empty, 
       currId: 0, 
       currInput: Data_Maybe.Nothing.value, 
       currNodes: Data_Map.empty, 
@@ -25877,12 +25877,12 @@ var PS = {};
       var controlDiv = Pux_Html_Elements.div([ Pux_Html_Attributes_1.className("pure-u-1-2") ])([ dataBtn, emptyBtn, viewsDiv, revBtn, popBtn, consSpan ]);
       var codeDiv = Pux_Html_Elements.div([ Pux_Html_Attributes_1.className("pure-u-1-2") ])([ Pux_Html_Elements.code([  ])([ Pux_Html_Elements.pre([  ])([ (function () {
           if (model.currFn instanceof Data_Maybe.Nothing) {
-              return Pux_Html_Elements.i([  ])([ Pux_Html_Elements.text("No implementation given") ]);
+              return Pux_Html_Elements.i([  ])([ Pux_Html_Elements.text("No implementation given or no function selected") ]);
           };
           if (model.currFn instanceof Data_Maybe.Just) {
               return Pux_Html_Elements.text(model.currFn.value0);
           };
-          throw new Error("Failed pattern match at Views.Stack line 391, column 57 - line 393, column 80: " + [ model.currFn.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Stack line 392, column 27 - line 396, column 50: " + [ model.currFn.constructor.name ]);
       })() ]) ]) ]);
       return Pux_Html_Elements.div([ Pux_Html_Attributes_1.className("pure-g") ])([ stackDiv, controlDiv, codeDiv ]);
   }; 
@@ -25914,7 +25914,7 @@ var PS = {};
       };
   };
   var changeAllClasses = function (classes) {
-      return Data_Functor.map(Structures_Stack.functorStack)(changeClass(classes));
+      return Data_Functor.map(Structures_Purs_Stack.functorStack)(changeClass(classes));
   };
   var wipeClasses = changeAllClasses("");
   var buffer = 10.0;
@@ -25952,8 +25952,8 @@ var PS = {};
   var updateStack = function (model) {
       return function (stack) {
           return function (fn) {
-              var ct = Structures_Stack.count(stack);
-              var newMap = getNodeMap(Structures_Stack.foldableStack)(ct)(stack);
+              var ct = Structures_Purs_Stack.count(stack);
+              var newMap = getNodeMap(Structures_Purs_Stack.foldableStack)(ct)(stack);
               return {
                   state: (function () {
                       var $51 = {};
@@ -26056,11 +26056,11 @@ var PS = {};
               })());
           };
           if (v instanceof Empty) {
-              return updateStack(model)(Structures_Stack.empty)("empty");
+              return updateStack(model)(Structures_Purs_Stack.empty)("empty");
           };
           if (v instanceof Head) {
-              var mtail = Structures_Stack.tail(model.stack);
-              var mhead = Structures_Stack.head(model.stack);
+              var mtail = Structures_Purs_Stack.tail(model.stack);
+              var mhead = Structures_Purs_Stack.head(model.stack);
               var $81 = new Data_Tuple.Tuple(mhead, mtail);
               if ($81.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("head"));
@@ -26071,14 +26071,14 @@ var PS = {};
               if ($81.value0 instanceof Data_Maybe.Just && $81.value1 instanceof Data_Maybe.Just) {
                   var newTail = wipeClasses($81.value1.value0);
                   var newHead = changeClass("head")($81.value0.value0);
-                  var newStack = Structures_Stack.cons(newHead)(newTail);
+                  var newStack = Structures_Purs_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack)("head");
               };
               throw new Error("Failed pattern match at Views.Stack line 215, column 4 - line 225, column 1: " + [ $81.constructor.name ]);
           };
           if (v instanceof Tail) {
-              var mtail = Structures_Stack.tail(model.stack);
-              var mhead = Structures_Stack.head(model.stack);
+              var mtail = Structures_Purs_Stack.tail(model.stack);
+              var mhead = Structures_Purs_Stack.head(model.stack);
               var $90 = new Data_Tuple.Tuple(mhead, mtail);
               if ($90.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("tail"));
@@ -26089,13 +26089,13 @@ var PS = {};
               if ($90.value0 instanceof Data_Maybe.Just && $90.value1 instanceof Data_Maybe.Just) {
                   var newTail = changeAllClasses("tail")($90.value1.value0);
                   var newHead = changeClass("")($90.value0.value0);
-                  var newStack = Structures_Stack.cons(newHead)(newTail);
+                  var newStack = Structures_Purs_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack)("tail");
               };
               throw new Error("Failed pattern match at Views.Stack line 230, column 4 - line 240, column 1: " + [ $90.constructor.name ]);
           };
           if (v instanceof Pop) {
-              var mtail = Structures_Stack.tail(model.stack);
+              var mtail = Structures_Purs_Stack.tail(model.stack);
               if (mtail instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("tail"));
               };
@@ -26106,7 +26106,7 @@ var PS = {};
               throw new Error("Failed pattern match at Views.Stack line 244, column 4 - line 252, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Reverse) {
-              return updateStack(model)(Structures_Stack.reverse(model.stack))("reverse");
+              return updateStack(model)(Structures_Purs_Stack.reverse(model.stack))("reverse");
           };
           if (v instanceof Insert) {
               var mnode = mkNode(model);
@@ -26115,7 +26115,7 @@ var PS = {};
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("cons"));
               };
               if (mnode instanceof Data_Maybe.Just) {
-                  return updateStack(mnode.value0.value1)(Structures_Stack.cons(mnode.value0.value0)(cleanStack))("cons");
+                  return updateStack(mnode.value0.value1)(Structures_Purs_Stack.cons(mnode.value0.value0)(cleanStack))("cons");
               };
               throw new Error("Failed pattern match at Views.Stack line 259, column 4 - line 263, column 1: " + [ mnode.constructor.name ]);
           };
@@ -26132,7 +26132,7 @@ var PS = {};
               })());
           };
           if (v instanceof ShowStructure) {
-              return Data_Function.apply(Pux.noEffects)(changeFn(model)("DataStructure Stack"));
+              return Data_Function.apply(Pux.noEffects)(changeFn(model)("Stack"));
           };
           throw new Error("Failed pattern match at Views.Stack line 182, column 1 - line 183, column 21: " + [ v.constructor.name, model.constructor.name ]);
       };
@@ -26173,8 +26173,7 @@ var PS = {};
   exports["wipeClasses"] = wipeClasses;
 })(PS["Views.Stack"] = PS["Views.Stack"] || {});
 (function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
+    "use strict";
   var Data_Semigroup = PS["Data.Semigroup"];
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Functor = PS["Data.Functor"];
@@ -26182,7 +26181,11 @@ var PS = {};
   var Data_Monoid = PS["Data.Monoid"];
   var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
-  var Structures_Stack = PS["Structures.Stack"];        
+  var Structures_Purs_Stack = PS["Structures.Purs.Stack"];        
+
+  /**
+ *  | *DataStructure Queue
+ */  
   var Queue = (function () {
       function Queue(value0) {
           this.value0 = value0;
@@ -26192,29 +26195,43 @@ var PS = {};
       };
       return Queue;
   })();
+
+  /**
+ *  .end
+ */  
   var topHead = function (v) {
-      return Structures_Stack.head(v.value0.front);
+      return Structures_Purs_Stack.head(v.value0.front);
   };
+
+  /**
+ *  .end
+ *  | *top
+ */  
   var top = function (v) {
-      var $17 = Structures_Stack.head(v.value0.front);
+      var $17 = Structures_Purs_Stack.head(v.value0.front);
       if ($17 instanceof Data_Maybe.Just) {
           return new Data_Maybe.Just($17.value0);
       };
       if ($17 instanceof Data_Maybe.Nothing) {
-          var $19 = Structures_Stack.head(Structures_Stack.reverse(v.value0.back));
+          var $19 = Structures_Purs_Stack.head(Structures_Purs_Stack.reverse(v.value0.back));
           if ($19 instanceof Data_Maybe.Nothing) {
               return Data_Maybe.Nothing.value;
           };
           if ($19 instanceof Data_Maybe.Just) {
               return new Data_Maybe.Just($19.value0);
           };
-          throw new Error("Failed pattern match at Structures.Queue line 33, column 7 - line 35, column 25: " + [ $19.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Queue line 33, column 7 - line 35, column 25: " + [ $19.constructor.name ]);
       };
-      throw new Error("Failed pattern match at Structures.Queue line 30, column 3 - line 35, column 25: " + [ $17.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Queue line 30, column 3 - line 35, column 25: " + [ $17.constructor.name ]);
   };
   var toStack = function (v) {
-      return Data_Semigroup.append(Structures_Stack.sgroupStack)(v.value0.front)(Structures_Stack.reverse(v.value0.back));
+      return Data_Semigroup.append(Structures_Purs_Stack.sgroupStack)(v.value0.front)(Structures_Purs_Stack.reverse(v.value0.back));
   };
+
+  /**
+ *  .end
+ *  | *push
+ */  
   var push = function (val) {
       return function (v) {
           return new Queue((function () {
@@ -26224,13 +26241,18 @@ var PS = {};
                       $28[$29] = v.value0[$29];
                   };
               };
-              $28.front = Structures_Stack.cons(val)(v.value0.front);
+              $28.front = Structures_Purs_Stack.cons(val)(v.value0.front);
               return $28;
           })());
       };
   };
+
+  /**
+ *  .end
+ *  | *pop
+ */  
   var pop = function (v) {
-      var $33 = Structures_Stack.tail(v.value0.front);
+      var $33 = Structures_Purs_Stack.tail(v.value0.front);
       if ($33 instanceof Data_Maybe.Just) {
           return new Data_Maybe.Just(new Queue((function () {
               var $34 = {};
@@ -26244,7 +26266,7 @@ var PS = {};
           })()));
       };
       if ($33 instanceof Data_Maybe.Nothing) {
-          var $38 = Structures_Stack.tail(Structures_Stack.reverse(v.value0.back));
+          var $38 = Structures_Purs_Stack.tail(Structures_Purs_Stack.reverse(v.value0.back));
           if ($38 instanceof Data_Maybe.Nothing) {
               return Data_Maybe.Nothing.value;
           };
@@ -26256,15 +26278,20 @@ var PS = {};
                           $39[$40] = v.value0[$40];
                       };
                   };
-                  $39.back = Structures_Stack.empty;
+                  $39.back = Structures_Purs_Stack.empty;
                   $39.front = $38.value0;
                   return $39;
               })()));
           };
-          throw new Error("Failed pattern match at Structures.Queue line 55, column 7 - line 58, column 54: " + [ $38.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Queue line 55, column 7 - line 58, column 54: " + [ $38.constructor.name ]);
       };
-      throw new Error("Failed pattern match at Structures.Queue line 52, column 3 - line 58, column 54: " + [ $33.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Queue line 52, column 3 - line 58, column 54: " + [ $33.constructor.name ]);
   };
+
+  /**
+ *  .end
+ *  | *inject
+ */  
   var inject = function (val) {
       return function (v) {
           return new Queue((function () {
@@ -26274,7 +26301,7 @@ var PS = {};
                       $46[$47] = v.value0[$47];
                   };
               };
-              $46.back = Structures_Stack.cons(val)(v.value0.back);
+              $46.back = Structures_Purs_Stack.cons(val)(v.value0.back);
               return $46;
           })());
       };
@@ -26288,8 +26315,8 @@ var PS = {};
                       $52[$53] = v.value0[$53];
                   };
               };
-              $52.front = Data_Functor.map(Structures_Stack.functorStack)(f)(v.value0.front);
-              $52.back = Data_Functor.map(Structures_Stack.functorStack)(f)(v.value0.back);
+              $52.front = Data_Functor.map(Structures_Purs_Stack.functorStack)(f)(v.value0.front);
+              $52.back = Data_Functor.map(Structures_Purs_Stack.functorStack)(f)(v.value0.back);
               return $52;
           })());
       };
@@ -26297,28 +26324,38 @@ var PS = {};
   var foldableQueue = new Data_Foldable.Foldable(function (dictMonoid) {
       return function (f) {
           return function (queue) {
-              return Data_Foldable.foldMap(Structures_Stack.foldableStack)(dictMonoid)(f)(toStack(queue));
+              return Data_Foldable.foldMap(Structures_Purs_Stack.foldableStack)(dictMonoid)(f)(toStack(queue));
           };
       };
   }, function (f) {
       return function (def) {
           return function (queue) {
-              return Data_Foldable.foldl(Structures_Stack.foldableStack)(f)(def)(toStack(queue));
+              return Data_Foldable.foldl(Structures_Purs_Stack.foldableStack)(f)(def)(toStack(queue));
           };
       };
   }, function (f) {
       return function (def) {
           return function (queue) {
-              return Data_Foldable.foldr(Structures_Stack.foldableStack)(f)(def)(toStack(queue));
+              return Data_Foldable.foldr(Structures_Purs_Stack.foldableStack)(f)(def)(toStack(queue));
           };
       };
   });
+
+  /**
+ *  .end
+ *  | *empty
+ */  
   var empty = new Queue({
-      front: Structures_Stack.empty, 
-      back: Structures_Stack.empty
+      front: Structures_Purs_Stack.empty, 
+      back: Structures_Purs_Stack.empty
   });
+
+  /**
+ *  .end
+ *  | *eject
+ */  
   var eject = function (v) {
-      var $57 = Structures_Stack.tail(v.value0.back);
+      var $57 = Structures_Purs_Stack.tail(v.value0.back);
       if ($57 instanceof Data_Maybe.Just) {
           return new Data_Maybe.Just(new Queue((function () {
               var $58 = {};
@@ -26332,7 +26369,7 @@ var PS = {};
           })()));
       };
       if ($57 instanceof Data_Maybe.Nothing) {
-          var $62 = Structures_Stack.tail(Structures_Stack.reverse(v.value0.front));
+          var $62 = Structures_Purs_Stack.tail(Structures_Purs_Stack.reverse(v.value0.front));
           if ($62 instanceof Data_Maybe.Nothing) {
               return Data_Maybe.Nothing.value;
           };
@@ -26344,37 +26381,42 @@ var PS = {};
                           $63[$64] = v.value0[$64];
                       };
                   };
-                  $63.front = Structures_Stack.empty;
+                  $63.front = Structures_Purs_Stack.empty;
                   $63.back = $62.value0;
                   return $63;
               })()));
           };
-          throw new Error("Failed pattern match at Structures.Queue line 67, column 7 - line 70, column 53: " + [ $62.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Queue line 67, column 7 - line 70, column 53: " + [ $62.constructor.name ]);
       };
-      throw new Error("Failed pattern match at Structures.Queue line 64, column 3 - line 70, column 53: " + [ $57.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Queue line 64, column 3 - line 70, column 53: " + [ $57.constructor.name ]);
   };
   var biCount = function (v) {
-      return new Data_Tuple.Tuple(Structures_Stack.count(v.value0.front), Structures_Stack.count(v.value0.back));
+      return new Data_Tuple.Tuple(Structures_Purs_Stack.count(v.value0.front), Structures_Purs_Stack.count(v.value0.back));
   };
   var backHead = function (v) {
-      return Structures_Stack.head(v.value0.back);
+      return Structures_Purs_Stack.head(v.value0.back);
   };
+
+  /**
+ *  .end
+ *  | *back
+ */  
   var back = function (v) {
-      var $73 = Structures_Stack.head(v.value0.back);
+      var $73 = Structures_Purs_Stack.head(v.value0.back);
       if ($73 instanceof Data_Maybe.Just) {
           return new Data_Maybe.Just($73.value0);
       };
       if ($73 instanceof Data_Maybe.Nothing) {
-          var $75 = Structures_Stack.head(Structures_Stack.reverse(v.value0.front));
+          var $75 = Structures_Purs_Stack.head(Structures_Purs_Stack.reverse(v.value0.front));
           if ($75 instanceof Data_Maybe.Nothing) {
               return Data_Maybe.Nothing.value;
           };
           if ($75 instanceof Data_Maybe.Just) {
               return new Data_Maybe.Just($75.value0);
           };
-          throw new Error("Failed pattern match at Structures.Queue line 44, column 7 - line 46, column 25: " + [ $75.constructor.name ]);
+          throw new Error("Failed pattern match at Structures.Purs.Queue line 44, column 7 - line 46, column 25: " + [ $75.constructor.name ]);
       };
-      throw new Error("Failed pattern match at Structures.Queue line 41, column 3 - line 46, column 25: " + [ $73.constructor.name ]);
+      throw new Error("Failed pattern match at Structures.Purs.Queue line 41, column 3 - line 46, column 25: " + [ $73.constructor.name ]);
   };
   exports["Queue"] = Queue;
   exports["back"] = back;
@@ -26390,15 +26432,14 @@ var PS = {};
   exports["topHead"] = topHead;
   exports["functorQueue"] = functorQueue;
   exports["foldableQueue"] = foldableQueue;
-})(PS["Structures.Queue"] = PS["Structures.Queue"] || {});
+})(PS["Structures.Purs.Queue"] = PS["Structures.Purs.Queue"] || {});
 (function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
+    "use strict";
   var Data_Map = PS["Data.Map"];
   var Pux_Html = PS["Pux.Html"];
   var Pux_Html_Attributes = PS["Pux.Html.Attributes"];
   var Pux_Html_Events = PS["Pux.Html.Events"];
-  var Structures_Queue = PS["Structures.Queue"];
+  var Structures_Purs_Queue = PS["Structures.Purs.Queue"];
   var CodeSnippet = PS["CodeSnippet"];
   var Control_Monad_Eff_Class = PS["Control.Monad.Eff.Class"];
   var Control_Monad_Eff_Exception = PS["Control.Monad.Eff.Exception"];
@@ -26511,6 +26552,13 @@ var PS = {};
       };
       return CurrentInput;
   })();
+  var ShowStructure = (function () {
+      function ShowStructure() {
+
+      };
+      ShowStructure.value = new ShowStructure();
+      return ShowStructure;
+  })();
   var StartTimer = (function () {
       function StartTimer(value0) {
           this.value0 = value0;
@@ -26566,10 +26614,10 @@ var PS = {};
               })();
               var mlastNode = (function () {
                   if (dir instanceof Front) {
-                      return Structures_Queue.topHead(model.queue);
+                      return Structures_Purs_Queue.topHead(model.queue);
                   };
                   if (dir instanceof Back) {
-                      return Structures_Queue.backHead(model.queue);
+                      return Structures_Purs_Queue.backHead(model.queue);
                   };
                   throw new Error("Failed pattern match at Views.Queue line 90, column 11 - line 92, column 43: " + [ dir.constructor.name ]);
               })();
@@ -26632,7 +26680,7 @@ var PS = {};
       };
   };
   var initModel = {
-      queue: Structures_Queue.empty, 
+      queue: Structures_Purs_Queue.empty, 
       currId: 0, 
       currInput: Data_Maybe.Nothing.value, 
       currNodes: Data_Map.empty, 
@@ -26679,7 +26727,7 @@ var PS = {};
                               if (!$26) {
                                   return -1.0;
                               };
-                              throw new Error("Failed pattern match at Views.Queue line 351, column 40 - line 352, column 32: " + [ $26.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Queue line 354, column 40 - line 355, column 32: " + [ $26.constructor.name ]);
                           })();
                           var signY = (function () {
                               var $27 = node.y < edgeNode.y;
@@ -26689,11 +26737,11 @@ var PS = {};
                               if (!$27) {
                                   return -1.0;
                               };
-                              throw new Error("Failed pattern match at Views.Queue line 352, column 40 - line 353, column 32: " + [ $27.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Queue line 355, column 40 - line 356, column 32: " + [ $27.constructor.name ]);
                           })();
                           return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y - signY * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y + signY * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes.className("edge") ])([  ]));
                       };
-                      throw new Error("Failed pattern match at Views.Queue line 345, column 26 - line 359, column 71: " + [ mnode.constructor.name ]);
+                      throw new Error("Failed pattern match at Views.Queue line 348, column 26 - line 362, column 71: " + [ mnode.constructor.name ]);
                   })(node.connections);
                   var val = svgText([ Pux_Html_Attributes.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + 6.0)), Pux_Html_Attributes.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
                   var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes.className(node.classes + " node") ])([  ]);
@@ -26712,39 +26760,48 @@ var PS = {};
       var frontDiv = Pux_Html_Elements.div([  ])([ topBtn, popBtn ]);
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
       var ejectBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Eject.value)) ])([ Pux_Html_Elements.text("Eject") ]);
+      var dataBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-warning"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](ShowStructure.value)) ])([ Pux_Html_Elements.text("Stack Structure") ]) ]);
       var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject / Shift") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
-      var codeDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-2") ])([ Pux_Html_Elements.code([  ])([ Pux_Html_Elements.pre([  ])([ Pux_Html_Elements.text(Data_Maybe.fromMaybe("")(model.currFn)) ]) ]) ]);
+      var codeDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-2") ])([ Pux_Html_Elements.code([  ])([ Pux_Html_Elements.pre([  ])([ (function () {
+          if (model.currFn instanceof Data_Maybe.Nothing) {
+              return Pux_Html_Elements.i([  ])([ Pux_Html_Elements.text("No implementation given or no function selected") ]);
+          };
+          if (model.currFn instanceof Data_Maybe.Just) {
+              return Pux_Html_Elements.text(model.currFn.value0);
+          };
+          throw new Error("Failed pattern match at Views.Queue line 415, column 27 - line 419, column 50: " + [ model.currFn.constructor.name ]);
+      })() ]) ]) ]);
       var backBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Bottom.value)) ])([ Pux_Html_Elements.text("Back") ]);
       var backDiv = Pux_Html_Elements.div([  ])([ backBtn, ejectBtn ]);
-      var controlDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-2") ])([ emptyBtn, frontDiv, backDiv, consSpan ]);
+      var controlDiv = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-2") ])([ dataBtn, emptyBtn, frontDiv, backDiv, consSpan ]);
       return Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-g") ])([ stackDiv, controlDiv, codeDiv ]);
   }; 
   var changeFn = function (model) {
       return function (fn) {
-          var $37 = {};
-          for (var $38 in model) {
-              if (model.hasOwnProperty($38)) {
-                  $37[$38] = model[$38];
+          var $39 = {};
+          for (var $40 in model) {
+              if (model.hasOwnProperty($40)) {
+                  $39[$40] = model[$40];
               };
           };
-          $37.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
-          $37.currFnName = new Data_Maybe.Just(fn);
-          return $37;
+          $39.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
+          $39.currFnName = new Data_Maybe.Just(fn);
+          return $39;
       };
   };
   var changeClass = function (classes) {
       return function (v) {
           return new Node((function () {
-              var $42 = {};
-              for (var $43 in v.value0) {
-                  if (v.value0.hasOwnProperty($43)) {
-                      $42[$43] = v.value0[$43];
+              var $44 = {};
+              for (var $45 in v.value0) {
+                  if (v.value0.hasOwnProperty($45)) {
+                      $44[$45] = v.value0[$45];
                   };
               };
-              $42.classes = classes;
-              return $42;
+              $44.classes = classes;
+              return $44;
           })());
       };
   };
@@ -26791,24 +26848,28 @@ var PS = {};
   var updateQueue = function (model) {
       return function (queue) {
           return function (fn) {
-              var bict = Structures_Queue.biCount(queue);
+            
+              /**
+             *  ct = max (fst bict) (snd bict)
+             */  
+              var bict = Structures_Purs_Queue.biCount(queue);
               var ct = Data_Tuple.fst(bict) + Data_Tuple.snd(bict) | 0;
-              var newMap = getNodeMap(Structures_Queue.foldableQueue)(ct)(queue);
+              var newMap = getNodeMap(Structures_Purs_Queue.foldableQueue)(ct)(queue);
               return {
                   state: (function () {
-                      var $52 = {};
-                      for (var $53 in model) {
-                          if (model.hasOwnProperty($53)) {
-                              $52[$53] = model[$53];
+                      var $54 = {};
+                      for (var $55 in model) {
+                          if (model.hasOwnProperty($55)) {
+                              $54[$55] = model[$55];
                           };
                       };
-                      $52.prevNodes = model.currNodes;
-                      $52.currNodes = newMap;
-                      $52.queue = queue;
-                      $52.animationPhase = 0.0;
-                      $52.currFnName = new Data_Maybe.Just(fn);
-                      $52.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
-                      return $52;
+                      $54.prevNodes = model.currNodes;
+                      $54.currNodes = newMap;
+                      $54.queue = queue;
+                      $54.animationPhase = 0.0;
+                      $54.currFnName = new Data_Maybe.Just(fn);
+                      $54.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
+                      return $54;
                   })(), 
                   effects: [ Control_Bind.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(Signal_Time.now))(function (v) {
                       return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(new StartTimer(v));
@@ -26827,14 +26888,14 @@ var PS = {};
           };
           if (v instanceof LoadCode && v.value0 instanceof Data_Either.Right) {
               var sourceCodeModel = (function () {
-                  var $61 = {};
-                  for (var $62 in model) {
-                      if (model.hasOwnProperty($62)) {
-                          $61[$62] = model[$62];
+                  var $63 = {};
+                  for (var $64 in model) {
+                      if (model.hasOwnProperty($64)) {
+                          $63[$64] = model[$64];
                       };
                   };
-                  $61.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
-                  return $61;
+                  $63.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
+                  return $63;
               })();
               var newModel = (function () {
                   if (model.currFnName instanceof Data_Maybe.Nothing) {
@@ -26843,7 +26904,7 @@ var PS = {};
                   if (model.currFnName instanceof Data_Maybe.Just) {
                       return changeFn(sourceCodeModel)(model.currFnName.value0);
                   };
-                  throw new Error("Failed pattern match at Views.Queue line 193, column 7 - line 195, column 47: " + [ model.currFnName.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Queue line 194, column 7 - line 196, column 47: " + [ model.currFnName.constructor.name ]);
               })();
               return Pux.noEffects(newModel);
           };
@@ -26853,144 +26914,147 @@ var PS = {};
               };
               if (model.startAnimation instanceof Data_Maybe.Just) {
                   var timeDiff = v.value0 - model.startAnimation.value0;
-                  var $69 = model.delay < timeDiff;
-                  if ($69) {
+                  var $71 = model.delay < timeDiff;
+                  if ($71) {
                       return Data_Function.apply(Pux.noEffects)((function () {
-                          var $70 = {};
-                          for (var $71 in model) {
-                              if (model.hasOwnProperty($71)) {
-                                  $70[$71] = model[$71];
+                          var $72 = {};
+                          for (var $73 in model) {
+                              if (model.hasOwnProperty($73)) {
+                                  $72[$73] = model[$73];
                               };
                           };
-                          $70.animationPhase = 1.0;
-                          return $70;
+                          $72.animationPhase = 1.0;
+                          return $72;
                       })());
                   };
-                  if (!$69) {
+                  if (!$71) {
                       return Data_Function.apply(Pux.noEffects)((function () {
-                          var $73 = {};
-                          for (var $74 in model) {
-                              if (model.hasOwnProperty($74)) {
-                                  $73[$74] = model[$74];
+                          var $75 = {};
+                          for (var $76 in model) {
+                              if (model.hasOwnProperty($76)) {
+                                  $75[$76] = model[$76];
                               };
                           };
-                          $73.animationPhase = $$Math.sin(((timeDiff / model.delay) * $$Math.pi) / 2.0);
-                          return $73;
+                          $75.animationPhase = $$Math.sin(((timeDiff / model.delay) * $$Math.pi) / 2.0);
+                          return $75;
                       })());
                   };
-                  throw new Error("Failed pattern match at Views.Queue line 205, column 8 - line 207, column 91: " + [ $69.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Queue line 206, column 8 - line 208, column 91: " + [ $71.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Views.Queue line 199, column 3 - line 207, column 91: " + [ model.startAnimation.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 200, column 3 - line 208, column 91: " + [ model.startAnimation.constructor.name ]);
           };
           if (v instanceof StartTimer) {
               return Data_Function.apply(Pux.noEffects)((function () {
-                  var $78 = {};
-                  for (var $79 in model) {
-                      if (model.hasOwnProperty($79)) {
-                          $78[$79] = model[$79];
+                  var $80 = {};
+                  for (var $81 in model) {
+                      if (model.hasOwnProperty($81)) {
+                          $80[$81] = model[$81];
                       };
                   };
-                  $78.startAnimation = new Data_Maybe.Just(v.value0);
-                  $78.animationPhase = 0.0;
-                  return $78;
+                  $80.startAnimation = new Data_Maybe.Just(v.value0);
+                  $80.animationPhase = 0.0;
+                  return $80;
               })());
           };
           if (v instanceof Empty) {
-              return updateQueue(model)(Structures_Queue.empty)("empty");
+              return updateQueue(model)(Structures_Purs_Queue.empty)("empty");
           };
           if (v instanceof Top) {
-              var mtail = Structures_Queue.pop(model.queue);
-              var mhead = Structures_Queue.top(model.queue);
-              var $82 = new Data_Tuple.Tuple(mhead, mtail);
-              if ($82.value0 instanceof Data_Maybe.Nothing) {
+              var mtail = Structures_Purs_Queue.pop(model.queue);
+              var mhead = Structures_Purs_Queue.top(model.queue);
+              var $84 = new Data_Tuple.Tuple(mhead, mtail);
+              if ($84.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("top"));
               };
-              if ($82.value1 instanceof Data_Maybe.Nothing) {
+              if ($84.value1 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("top"));
               };
-              if ($82.value0 instanceof Data_Maybe.Just && $82.value1 instanceof Data_Maybe.Just) {
-                  var newTail = wipeClasses(Structures_Queue.functorQueue)($82.value1.value0);
-                  var newHead = changeClass("head")($82.value0.value0);
-                  var newQ = Structures_Queue.push(newHead)(newTail);
+              if ($84.value0 instanceof Data_Maybe.Just && $84.value1 instanceof Data_Maybe.Just) {
+                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($84.value1.value0);
+                  var newHead = changeClass("head")($84.value0.value0);
+                  var newQ = Structures_Purs_Queue.push(newHead)(newTail);
                   return updateQueue(model)(newQ)("top");
               };
-              throw new Error("Failed pattern match at Views.Queue line 218, column 4 - line 228, column 1: " + [ $82.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 219, column 4 - line 229, column 1: " + [ $84.constructor.name ]);
           };
           if (v instanceof Pop) {
-              var mtail = Structures_Queue.pop(model.queue);
+              var mtail = Structures_Purs_Queue.pop(model.queue);
               if (mtail instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("pop"));
               };
               if (mtail instanceof Data_Maybe.Just) {
-                  var newTail = changeAllClasses(Structures_Queue.functorQueue)("tail")(mtail.value0);
+                  var newTail = changeAllClasses(Structures_Purs_Queue.functorQueue)("tail")(mtail.value0);
                   return updateQueue(model)(newTail)("pop");
               };
-              throw new Error("Failed pattern match at Views.Queue line 232, column 4 - line 240, column 1: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 233, column 4 - line 241, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Bottom) {
-              var mtail = Structures_Queue.eject(model.queue);
-              var mhead = Structures_Queue.back(model.queue);
-              var $93 = new Data_Tuple.Tuple(mhead, mtail);
-              if ($93.value0 instanceof Data_Maybe.Nothing) {
+              var mtail = Structures_Purs_Queue.eject(model.queue);
+              var mhead = Structures_Purs_Queue.back(model.queue);
+              var $95 = new Data_Tuple.Tuple(mhead, mtail);
+              if ($95.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("back"));
               };
-              if ($93.value1 instanceof Data_Maybe.Nothing) {
+              if ($95.value1 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("back"));
               };
-              if ($93.value0 instanceof Data_Maybe.Just && $93.value1 instanceof Data_Maybe.Just) {
-                  var newTail = wipeClasses(Structures_Queue.functorQueue)($93.value1.value0);
-                  var newHead = changeClass("head")($93.value0.value0);
-                  var newQ = Structures_Queue.inject(newHead)(newTail);
+              if ($95.value0 instanceof Data_Maybe.Just && $95.value1 instanceof Data_Maybe.Just) {
+                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($95.value1.value0);
+                  var newHead = changeClass("head")($95.value0.value0);
+                  var newQ = Structures_Purs_Queue.inject(newHead)(newTail);
                   return updateQueue(model)(newQ)("back");
               };
-              throw new Error("Failed pattern match at Views.Queue line 245, column 4 - line 255, column 1: " + [ $93.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 246, column 4 - line 256, column 1: " + [ $95.constructor.name ]);
           };
           if (v instanceof Eject) {
-              var mtail = Structures_Queue.eject(model.queue);
+              var mtail = Structures_Purs_Queue.eject(model.queue);
               if (mtail instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("eject"));
               };
               if (mtail instanceof Data_Maybe.Just) {
-                  var newTail = changeAllClasses(Structures_Queue.functorQueue)("tail")(mtail.value0);
+                  var newTail = changeAllClasses(Structures_Purs_Queue.functorQueue)("tail")(mtail.value0);
                   return updateQueue(model)(newTail)("eject");
               };
-              throw new Error("Failed pattern match at Views.Queue line 259, column 4 - line 267, column 1: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 260, column 4 - line 268, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Inject) {
               var mnode = mkNode(Back.value)(model);
-              var cleanQueue = wipeClasses(Structures_Queue.functorQueue)(model.queue);
+              var cleanQueue = wipeClasses(Structures_Purs_Queue.functorQueue)(model.queue);
               if (mnode instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("inject"));
               };
               if (mnode instanceof Data_Maybe.Just) {
-                  return updateQueue(mnode.value0.value1)(Structures_Queue.inject(mnode.value0.value0)(cleanQueue))("inject");
+                  return updateQueue(mnode.value0.value1)(Structures_Purs_Queue.inject(mnode.value0.value0)(cleanQueue))("inject");
               };
-              throw new Error("Failed pattern match at Views.Queue line 272, column 4 - line 276, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 273, column 4 - line 277, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof Push) {
               var mnode = mkNode(Front.value)(model);
-              var cleanQueue = wipeClasses(Structures_Queue.functorQueue)(model.queue);
+              var cleanQueue = wipeClasses(Structures_Purs_Queue.functorQueue)(model.queue);
               if (mnode instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("push"));
               };
               if (mnode instanceof Data_Maybe.Just) {
-                  return updateQueue(mnode.value0.value1)(Structures_Queue.push(mnode.value0.value0)(cleanQueue))("push");
+                  return updateQueue(mnode.value0.value1)(Structures_Purs_Queue.push(mnode.value0.value0)(cleanQueue))("push");
               };
-              throw new Error("Failed pattern match at Views.Queue line 281, column 4 - line 285, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 282, column 4 - line 286, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
-                  var $112 = {};
-                  for (var $113 in model) {
-                      if (model.hasOwnProperty($113)) {
-                          $112[$113] = model[$113];
+                  var $114 = {};
+                  for (var $115 in model) {
+                      if (model.hasOwnProperty($115)) {
+                          $114[$115] = model[$115];
                       };
                   };
-                  $112.currInput = Data_Int.fromString(v.value0);
-                  return $112;
+                  $114.currInput = Data_Int.fromString(v.value0);
+                  return $114;
               })());
           };
-          throw new Error("Failed pattern match at Views.Queue line 187, column 1 - line 187, column 45: " + [ v.constructor.name, model.constructor.name ]);
+          if (v instanceof ShowStructure) {
+              return Data_Function.apply(Pux.noEffects)(changeFn(model)("Queue"));
+          };
+          throw new Error("Failed pattern match at Views.Queue line 188, column 1 - line 188, column 45: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
@@ -27001,6 +27065,7 @@ var PS = {};
   exports["Push"] = Push;
   exports["Inject"] = Inject;
   exports["CurrentInput"] = CurrentInput;
+  exports["ShowStructure"] = ShowStructure;
   exports["StartTimer"] = StartTimer;
   exports["LoadCode"] = LoadCode;
   exports["Failure"] = Failure;

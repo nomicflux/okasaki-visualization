@@ -4,7 +4,7 @@ import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Structures.Queue as Q
+import Structures.Purs.Queue as Q
 import CodeSnippet as CS
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
@@ -153,6 +153,7 @@ data Action = Empty
             | Push
             | Inject
             | CurrentInput String
+            | ShowStructure
             | StartTimer Time
             | LoadCode (Either String CS.SourceCode)
             | Failure Error
@@ -284,6 +285,8 @@ update Push model =
        updateQueue newModel (Q.push node cleanQueue) "push"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
+update ShowStructure model =
+  noEffects $ changeFn model "Queue"
 
 svgText :: forall a. Array (H.Attribute a) -> Array (H.Html a) -> H.Html a
 svgText = runFn3 H.element "text"
@@ -368,6 +371,10 @@ view model =
     nodes = concatMap showNodes (fromFoldable keys)
     stackDiv = H.div [ HA.className "render" ] [ H.svg [HA.height (show maxHeight)
                                                        , HA.width (show maxWidth)  ] nodes ]
+    dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
+                                   , HE.onClick $ const ShowStructure
+                                   ] [ H.text "Stack Structure" ]
+                        ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
@@ -396,16 +403,22 @@ view model =
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
-    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ emptyBtn
+    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
+                                                     , emptyBtn
                                                      , frontDiv
                                                      , backDiv
                                                      , consSpan
                                                      ]
-    codeDiv = H.div [ HA.className "pure-u-1-2" ] [ H.code [ ]
-                                                    [ H.pre [ ]
-                                                      [ H.text (fromMaybe "" model.currFn) ]
-                                                    ]
-                                                  ]
+    codeDiv = H.div [ HA.className "pure-u-1-2" ]
+                    [ H.code [ ]
+                      [ H.pre [ ]
+                        [ case model.currFn of
+                             Nothing ->
+                               H.i []
+                                   [ H.text "No implementation given or no function selected"]
+                             Just fn -> H.text fn ]
+                      ]
+                    ]
   in
    H.div [ HA.className "pure-g" ] [ stackDiv
                                    , controlDiv
