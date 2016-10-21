@@ -115,8 +115,8 @@ maxRadius = 40.0
 buffer :: Number
 buffer = 10.0
 
-mkNodePos :: Int -> Node -> Tuple Int NodeMap -> Tuple Int NodeMap
-mkNodePos total (Node node) (Tuple pos acc) =
+mkNodePos :: Int -> Number -> Node -> Tuple Int NodeMap -> Tuple Int NodeMap
+mkNodePos total ypos (Node node) (Tuple pos acc) =
   let
     ftotal = toNumber total
     fpos = toNumber pos
@@ -124,7 +124,7 @@ mkNodePos total (Node node) (Tuple pos acc) =
     offset x = x + buffer + r
     calcPos x = offset $ x * maxWidth
     circPos = { x : calcPos $ fpos / ftotal
-              , y : maxHeight / 2.0
+              , y : ypos
               , r : r
               , value : node.value
               , connections : node.connections
@@ -133,8 +133,13 @@ mkNodePos total (Node node) (Tuple pos acc) =
   in
    Tuple (pos + 1) (M.insert node.id circPos acc)
 
-getNodeMap :: forall f. Foldable f => Int -> f Node -> NodeMap
-getNodeMap total stack = snd $ foldr (mkNodePos total) (Tuple 0 M.empty) stack
+getNodeMap :: Int -> Q.Queue Node -> NodeMap
+getNodeMap total (Q.Queue queue) =
+  let
+    front = snd $ foldr (mkNodePos total (maxHeight / 4.0)) (Tuple 0 M.empty) queue.front
+    back = snd $ foldr (mkNodePos total (3.0 * maxHeight / 4.0)) (Tuple 0 M.empty) queue.back
+  in
+   M.union front back
 
 changeClass :: Classes -> Node -> Node
 changeClass classes (Node node) = Node (node { classes = classes })
@@ -167,8 +172,8 @@ updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
 updateQueue model queue fn =
   let
     bict = Q.biCount queue
-    -- ct = max (fst bict) (snd bict)
-    ct = (fst bict) + (snd bict)
+    ct = max (fst bict) (snd bict)
+    -- ct = (fst bict) + (snd bict)
     newMap = getNodeMap ct queue
   in
    { state: model { prevNodes = model.currNodes
