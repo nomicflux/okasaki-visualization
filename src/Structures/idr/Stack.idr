@@ -7,6 +7,8 @@ module Stack
 data Stack : Nat -> Type -> Type where
      Nil : Stack Z a
      Cons : (x : a) -> (xs : Stack k a) -> Stack (S k) a
+
+%name Stack stack
 -- .end
 
 -- | *empty
