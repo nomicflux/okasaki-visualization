@@ -26,7 +26,7 @@ tail (Cons _x xs) = xs
 
 -- | *cons
 cons : a -> Stack k a -> Stack (S k) a
-cons x [] = Cons x []
+cons x Nil = Cons x Nil
 cons x (Cons y xs) = Cons x (Cons y xs)
 -- .end
 
