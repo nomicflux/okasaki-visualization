@@ -133,11 +133,11 @@ mkNodePos total ypos (Node node) (Tuple pos acc) =
   in
    Tuple (pos + 1) (M.insert node.id circPos acc)
 
-getNodeMap :: Int -> Q.Queue Node -> NodeMap
-getNodeMap total (Q.Queue queue) =
+getNodeMap :: Int -> Int -> Q.Queue Node -> NodeMap
+getNodeMap totalFront totalBack (Q.Queue queue) =
   let
-    front = snd $ foldr (mkNodePos total (maxHeight / 4.0)) (Tuple 0 M.empty) queue.front
-    back = snd $ foldr (mkNodePos total (3.0 * maxHeight / 4.0)) (Tuple 0 M.empty) queue.back
+    front = snd $ foldr (mkNodePos totalFront (maxHeight / 4.0)) (Tuple 0 M.empty) queue.front
+    back = snd $ foldr (mkNodePos totalBack (3.0 * maxHeight / 4.0)) (Tuple 0 M.empty) queue.back
   in
    M.union front back
 
@@ -172,9 +172,9 @@ updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
 updateQueue model queue fn =
   let
     bict = Q.biCount queue
-    ct = max (fst bict) (snd bict)
+    -- ct = max (fst bict) (snd bict)
     -- ct = (fst bict) + (snd bict)
-    newMap = getNodeMap ct queue
+    newMap = getNodeMap (fst bict) (snd bict) queue
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
