@@ -21321,23 +21321,6 @@ var PS = {};
   var compare = function (dict) {
       return dict.compare;
   };
-  var max = function (dictOrd) {
-      return function (x) {
-          return function (y) {
-              var $27 = compare(dictOrd)(x)(y);
-              if ($27 instanceof Data_Ordering.LT) {
-                  return y;
-              };
-              if ($27 instanceof Data_Ordering.EQ) {
-                  return x;
-              };
-              if ($27 instanceof Data_Ordering.GT) {
-                  return x;
-              };
-              throw new Error("Failed pattern match at Data.Ord line 122, column 3 - line 125, column 12: " + [ $27.constructor.name ]);
-          };
-      };
-  };
   var min = function (dictOrd) {
       return function (x) {
           return function (y) {
@@ -21357,7 +21340,6 @@ var PS = {};
   };
   exports["Ord"] = Ord;
   exports["compare"] = compare;
-  exports["max"] = max;
   exports["min"] = min;
   exports["ordInt"] = ordInt;
   exports["ordNumber"] = ordNumber;
@@ -26988,11 +26970,13 @@ var PS = {};
           };
       };
   };
-  var getNodeMap = function (total) {
-      return function (v) {
-          var front = Data_Function.apply(Data_Tuple.snd)(Data_Foldable.foldr(Structures_Purs_Stack.foldableStack)(mkNodePos(total)(maxHeight / 4.0))(new Data_Tuple.Tuple(0, Data_Map.empty))(v.value0.front));
-          var back = Data_Function.apply(Data_Tuple.snd)(Data_Foldable.foldr(Structures_Purs_Stack.foldableStack)(mkNodePos(total)((3.0 * maxHeight) / 4.0))(new Data_Tuple.Tuple(0, Data_Map.empty))(v.value0.back));
-          return Data_Map.union(Data_Ord.ordInt)(front)(back);
+  var getNodeMap = function (totalFront) {
+      return function (totalBack) {
+          return function (v) {
+              var front = Data_Function.apply(Data_Tuple.snd)(Data_Foldable.foldr(Structures_Purs_Stack.foldableStack)(mkNodePos(totalFront)(maxHeight / 4.0))(new Data_Tuple.Tuple(0, Data_Map.empty))(v.value0.front));
+              var back = Data_Function.apply(Data_Tuple.snd)(Data_Foldable.foldr(Structures_Purs_Stack.foldableStack)(mkNodePos(totalBack)((3.0 * maxHeight) / 4.0))(new Data_Tuple.Tuple(0, Data_Map.empty))(v.value0.back));
+              return Data_Map.union(Data_Ord.ordInt)(front)(back);
+          };
       };
   };
   var updateQueue = function (model) {
@@ -27000,26 +26984,26 @@ var PS = {};
           return function (fn) {
             
               /**
+             *  ct = max (fst bict) (snd bict)
              *  ct = (fst bict) + (snd bict)
              */  
               var bict = Structures_Purs_Queue.biCount(queue);
-              var ct = Data_Ord.max(Data_Ord.ordInt)(Data_Tuple.fst(bict))(Data_Tuple.snd(bict));
-              var newMap = getNodeMap(ct)(queue);
+              var newMap = getNodeMap(Data_Tuple.fst(bict))(Data_Tuple.snd(bict))(queue);
               return {
                   state: (function () {
-                      var $58 = {};
-                      for (var $59 in model) {
-                          if (model.hasOwnProperty($59)) {
-                              $58[$59] = model[$59];
+                      var $59 = {};
+                      for (var $60 in model) {
+                          if (model.hasOwnProperty($60)) {
+                              $59[$60] = model[$60];
                           };
                       };
-                      $58.prevNodes = model.currNodes;
-                      $58.currNodes = newMap;
-                      $58.queue = queue;
-                      $58.animationPhase = 0.0;
-                      $58.currFnName = new Data_Maybe.Just(fn);
-                      $58.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
-                      return $58;
+                      $59.prevNodes = model.currNodes;
+                      $59.currNodes = newMap;
+                      $59.queue = queue;
+                      $59.animationPhase = 0.0;
+                      $59.currFnName = new Data_Maybe.Just(fn);
+                      $59.currFn = Data_Map.lookup(Data_Ord.ordString)(fn)(model.sourceCode);
+                      return $59;
                   })(), 
                   effects: [ Control_Bind.bind(Control_Monad_Aff.bindAff)(Control_Monad_Eff_Class.liftEff(Control_Monad_Aff.monadEffAff)(Signal_Time.now))(function (v) {
                       return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(new StartTimer(v));
@@ -27038,14 +27022,14 @@ var PS = {};
           };
           if (v instanceof LoadCode && v.value0 instanceof Data_Either.Right) {
               var sourceCodeModel = (function () {
-                  var $67 = {};
-                  for (var $68 in model) {
-                      if (model.hasOwnProperty($68)) {
-                          $67[$68] = model[$68];
+                  var $68 = {};
+                  for (var $69 in model) {
+                      if (model.hasOwnProperty($69)) {
+                          $68[$69] = model[$69];
                       };
                   };
-                  $67.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
-                  return $67;
+                  $68.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
+                  return $68;
               })();
               var newModel = (function () {
                   if (model.currFnName instanceof Data_Maybe.Nothing) {
@@ -27064,46 +27048,46 @@ var PS = {};
               };
               if (model.startAnimation instanceof Data_Maybe.Just) {
                   var timeDiff = v.value0 - model.startAnimation.value0;
-                  var $75 = model.delay < timeDiff;
-                  if ($75) {
+                  var $76 = model.delay < timeDiff;
+                  if ($76) {
                       return Data_Function.apply(Pux.noEffects)((function () {
-                          var $76 = {};
-                          for (var $77 in model) {
-                              if (model.hasOwnProperty($77)) {
-                                  $76[$77] = model[$77];
+                          var $77 = {};
+                          for (var $78 in model) {
+                              if (model.hasOwnProperty($78)) {
+                                  $77[$78] = model[$78];
                               };
                           };
-                          $76.animationPhase = 1.0;
-                          return $76;
+                          $77.animationPhase = 1.0;
+                          return $77;
                       })());
                   };
-                  if (!$75) {
+                  if (!$76) {
                       return Data_Function.apply(Pux.noEffects)((function () {
-                          var $79 = {};
-                          for (var $80 in model) {
-                              if (model.hasOwnProperty($80)) {
-                                  $79[$80] = model[$80];
+                          var $80 = {};
+                          for (var $81 in model) {
+                              if (model.hasOwnProperty($81)) {
+                                  $80[$81] = model[$81];
                               };
                           };
-                          $79.animationPhase = $$Math.sin(((timeDiff / model.delay) * $$Math.pi) / 2.0);
-                          return $79;
+                          $80.animationPhase = $$Math.sin(((timeDiff / model.delay) * $$Math.pi) / 2.0);
+                          return $80;
                       })());
                   };
-                  throw new Error("Failed pattern match at Views.Queue line 211, column 8 - line 213, column 91: " + [ $75.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Queue line 211, column 8 - line 213, column 91: " + [ $76.constructor.name ]);
               };
               throw new Error("Failed pattern match at Views.Queue line 205, column 3 - line 213, column 91: " + [ model.startAnimation.constructor.name ]);
           };
           if (v instanceof StartTimer) {
               return Data_Function.apply(Pux.noEffects)((function () {
-                  var $84 = {};
-                  for (var $85 in model) {
-                      if (model.hasOwnProperty($85)) {
-                          $84[$85] = model[$85];
+                  var $85 = {};
+                  for (var $86 in model) {
+                      if (model.hasOwnProperty($86)) {
+                          $85[$86] = model[$86];
                       };
                   };
-                  $84.startAnimation = new Data_Maybe.Just(v.value0);
-                  $84.animationPhase = 0.0;
-                  return $84;
+                  $85.startAnimation = new Data_Maybe.Just(v.value0);
+                  $85.animationPhase = 0.0;
+                  return $85;
               })());
           };
           if (v instanceof Empty) {
@@ -27112,20 +27096,20 @@ var PS = {};
           if (v instanceof Top) {
               var mtail = Structures_Purs_Queue.pop(model.queue);
               var mhead = Structures_Purs_Queue.top(model.queue);
-              var $88 = new Data_Tuple.Tuple(mhead, mtail);
-              if ($88.value0 instanceof Data_Maybe.Nothing) {
+              var $89 = new Data_Tuple.Tuple(mhead, mtail);
+              if ($89.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("top"));
               };
-              if ($88.value1 instanceof Data_Maybe.Nothing) {
+              if ($89.value1 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("top"));
               };
-              if ($88.value0 instanceof Data_Maybe.Just && $88.value1 instanceof Data_Maybe.Just) {
-                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($88.value1.value0);
-                  var newHead = changeClass("head")($88.value0.value0);
+              if ($89.value0 instanceof Data_Maybe.Just && $89.value1 instanceof Data_Maybe.Just) {
+                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($89.value1.value0);
+                  var newHead = changeClass("head")($89.value0.value0);
                   var newQ = Structures_Purs_Queue.push(newHead)(newTail);
                   return updateQueue(model)(newQ)("top");
               };
-              throw new Error("Failed pattern match at Views.Queue line 224, column 4 - line 234, column 1: " + [ $88.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 224, column 4 - line 234, column 1: " + [ $89.constructor.name ]);
           };
           if (v instanceof Pop) {
               var mtail = Structures_Purs_Queue.pop(model.queue);
@@ -27141,20 +27125,20 @@ var PS = {};
           if (v instanceof Bottom) {
               var mtail = Structures_Purs_Queue.eject(model.queue);
               var mhead = Structures_Purs_Queue.back(model.queue);
-              var $99 = new Data_Tuple.Tuple(mhead, mtail);
-              if ($99.value0 instanceof Data_Maybe.Nothing) {
+              var $100 = new Data_Tuple.Tuple(mhead, mtail);
+              if ($100.value0 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("back"));
               };
-              if ($99.value1 instanceof Data_Maybe.Nothing) {
+              if ($100.value1 instanceof Data_Maybe.Nothing) {
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("back"));
               };
-              if ($99.value0 instanceof Data_Maybe.Just && $99.value1 instanceof Data_Maybe.Just) {
-                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($99.value1.value0);
-                  var newHead = changeClass("head")($99.value0.value0);
+              if ($100.value0 instanceof Data_Maybe.Just && $100.value1 instanceof Data_Maybe.Just) {
+                  var newTail = wipeClasses(Structures_Purs_Queue.functorQueue)($100.value1.value0);
+                  var newHead = changeClass("head")($100.value0.value0);
                   var newQ = Structures_Purs_Queue.inject(newHead)(newTail);
                   return updateQueue(model)(newQ)("back");
               };
-              throw new Error("Failed pattern match at Views.Queue line 251, column 4 - line 261, column 1: " + [ $99.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 251, column 4 - line 261, column 1: " + [ $100.constructor.name ]);
           };
           if (v instanceof Eject) {
               var mtail = Structures_Purs_Queue.eject(model.queue);
@@ -27191,14 +27175,14 @@ var PS = {};
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
-                  var $118 = {};
-                  for (var $119 in model) {
-                      if (model.hasOwnProperty($119)) {
-                          $118[$119] = model[$119];
+                  var $119 = {};
+                  for (var $120 in model) {
+                      if (model.hasOwnProperty($120)) {
+                          $119[$120] = model[$120];
                       };
                   };
-                  $118.currInput = Data_Int.fromString(v.value0);
-                  return $118;
+                  $119.currInput = Data_Int.fromString(v.value0);
+                  return $119;
               })());
           };
           if (v instanceof ShowStructure) {
