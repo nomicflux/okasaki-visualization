@@ -2,15 +2,21 @@
 abstract class Stack[A]
 // .end
 {
+  // | *head
   def head: A
+  //.end
+  // | *tail
   def tail: Stack[A]
+  //.end
+  // | *reverse
   def reverse: Stack[A]
+  //.end
   // | *cons
   def cons(x : A) = Cons(x, this)
   // .end
 }
 
-// | *Stack
+// | *Stack empty head tail reverse
 case class Nil[Nothing]() extends Stack[Nothing]
 // .end
 {
@@ -25,16 +31,10 @@ case class Nil[Nothing]() extends Stack[Nothing]
   // .end
 }
 
-// | *Stack
+// | *Stack head tail reverse
 case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
 // .end
 {
-  // | *head
-  // case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
-  // .end
-  // | *tail
-  // case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
-  // .end
   // | *reverse
   def reverse = {
     def reverseHelp(curr: Stack[A], acc: Stack[A]): Stack[A] = curr match {
