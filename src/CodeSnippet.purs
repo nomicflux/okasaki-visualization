@@ -101,7 +101,7 @@ endComment :: Language -> ParserS String
 endComment lang = string (comment lang <> " .end")
 
 anyChar :: ParserS Char
-anyChar = alphanum <|> space <|> newline <|> anyOf "=:-+*!@$%^(){}[]\"\'`~|/.,;?<>_"
+anyChar = alphanum <|> space <|> newline <|> anyOf "=:-+*!@$%^(){}[]\"\'`~|/.,;?<>_#"
 
 notBeginning :: Language -> ParserS String
 notBeginning lang =
