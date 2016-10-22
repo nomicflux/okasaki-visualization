@@ -4,13 +4,13 @@ abstract class Stack[A]
 {
   // | *head
   def head: A
-  //.end
+  // .end
   // | *tail
   def tail: Stack[A]
-  //.end
+  // .end
   // | *reverse
   def reverse: Stack[A]
-  //.end
+  // .end
   // | *cons
   def cons(x : A) = Cons(x, this)
   // .end
