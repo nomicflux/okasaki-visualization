@@ -1,22 +1,22 @@
 module CodeSnippet where
 
-import Data.Array as A
+-- import Data.Array as A
 import Control.Monad.Aff (Aff, attempt)
 import Control.Alternative ((<|>))
 import Data.Either (either, Either(..))
 import Data.Eq (class Eq)
 import Data.Functor (map)
 import Data.List (List(..), concatMap)
-import Data.Map (Map, fromFoldableWith, empty)
+import Data.Map (Map, fromFoldableWith)
 -- import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord)
 import Data.Show (class Show)
-import Data.String (fromCharArray)
+import Data.String (trim)
 import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (get, AJAX)
 import Network.HTTP.StatusCode (StatusCode(..))
-import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit, Unit)
-import Text.Parsing.Simple (Parser, parse, string, fromCharList, alphanum, sepBy, space, eof, char, word, manyChar, many, lookahead, notFollowedBy, (>>), (<<), newline, isn't, anyOf)
+import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit)
+import Text.Parsing.Simple (Parser, parse, string, alphanum, sepBy, space, eof, char, word, manyChar, notFollowedBy, (>>), (<<), newline, isn't, anyOf, skip)
 
 type ParserS = Parser String
 
@@ -122,9 +122,6 @@ functionBody lang = do
 functions :: Language -> ParserS (List FunctionBlock)
 functions lang = sepBy (functionBody lang) (notBeginning lang)
 
--- nextFunction :: Language -> ParserS Unit
--- nextFunction lang = manyChar notFollowedBy (functionTag lang)
-
 parseFunctions :: SourceCode -> Map String String
 parseFunctions (SourceCode code) =
   let
@@ -132,7 +129,8 @@ parseFunctions (SourceCode code) =
     fns = either (const Nil) id res
   in
    fromFoldableWith (\a b -> b <> a) (concatMap (\ (FunctionBlock f) ->
-                                            map (\ n -> Tuple n f.body) f.names)
+                                                  let body = f.body <> "\n"
+                                                  in  map (\ n -> Tuple n body) f.names)
                                       fns)
 
 testString :: String

@@ -20581,107 +20581,163 @@ var PS = {};
   /* global exports */
   "use strict";
 
-  exports.fromFoldableImpl = (function () {
-    // jshint maxparams: 2
-    function Cons(head, tail) {
-      this.head = head;
-      this.tail = tail;
+  exports._setTimeout = function (nonCanceler, millis, aff) {
+    var set = setTimeout, clear = clearTimeout;
+    if (millis <= 0 && typeof setImmediate === "function") {
+      set = setImmediate;
+      clear = clearImmediate;
     }
-    var emptyList = {};
+    return function(success, error) {
+      var canceler;
 
-    function curryCons(head) {
-      return function (tail) {
-        return new Cons(head, tail);
-      };
-    }
+      var timeout = set(function() {
+        canceler = aff(success, error);
+      }, millis);
 
-    function listToArray(list) {
-      var result = [];
-      var count = 0;
-      while (list !== emptyList) {
-        result[count++] = list.head;
-        list = list.tail;
-      }
-      return result;
-    }
-
-    return function (foldr) {
-      return function (xs) {
-        return listToArray(foldr(curryCons)(emptyList)(xs));
+      return function(e) {
+        return function(s, f) {
+          if (canceler !== undefined) {
+            return canceler(e)(s, f);
+          } else {
+            clear(timeout);
+            s(true);
+            return nonCanceler;
+          }
+        };
       };
     };
-  })();
+  }
 
-  //------------------------------------------------------------------------------
-  // Array size ------------------------------------------------------------------
-  //------------------------------------------------------------------------------
+  exports._unsafeInterleaveAff = function (aff) {
+    return aff;
+  }
 
-  exports.length = function (xs) {
-    return xs.length;
-  };
-
-  //------------------------------------------------------------------------------
-  // Extending arrays ------------------------------------------------------------
-  //------------------------------------------------------------------------------
-
-  exports.cons = function (e) {
-    return function (l) {
-      return [e].concat(l);
-    };
-  };
-
-  exports.snoc = function (l) {
-    return function (e) {
-      var l1 = l.slice();
-      l1.push(e);
-      return l1;
-    };
-  };
-
-  exports.concat = function (xss) {
-    var result = [];
-    for (var i = 0, l = xss.length; i < l; i++) {
-      var xs = xss[i];
-      for (var j = 0, m = xs.length; j < m; j++) {
-        result.push(xs[j]);
+  exports._makeAff = function (cb) {
+    return function(success, error) {
+      try {
+        return cb(function(e) {
+          return function() {
+            error(e);
+          };
+        })(function(v) {
+          return function() {
+            success(v);
+          };
+        })();
+      } catch (err) {
+        error(err);
       }
     }
-    return result;
-  };
+  }
 
-  exports.filter = function (f) {
-    return function (xs) {
-      return xs.filter(f);
+  exports._pure = function (nonCanceler, v) {
+    return function(success, error) {
+      success(v);
+      return nonCanceler;
     };
-  };
+  }
 
-  exports.partition = function (f) {
-    return function (xs) {
-      var yes = [];
-      var no  = [];
-      for (var i = 0; i < xs.length; i++) {
-        var x = xs[i];
-        if (f(x))
-          yes.push(x);
-        else
-          no.push(x);
+  exports._fmap = function (f, aff) {
+    return function(success, error) {
+      try {
+        return aff(function(v) {
+          try {
+            var v2 = f(v);
+          } catch (err) {
+            error(err)
+          }
+          success(v2);
+        }, error);
+      } catch (err) {
+        error(err);
       }
-      return { yes: yes, no: no };
     };
-  };
+  }
 
-  //------------------------------------------------------------------------------
-  // Subarrays -------------------------------------------------------------------
-  //------------------------------------------------------------------------------
+  exports._bind = function (alwaysCanceler, aff, f) {
+    return function(success, error) {
+      var canceler1, canceler2;
 
-  exports.slice = function (s) {
-    return function (e) {
-      return function (l) {
-        return l.slice(s, e);
+      var isCanceled    = false;
+      var requestCancel = false;
+
+      var onCanceler = function(){};
+
+      canceler1 = aff(function(v) {
+        if (requestCancel) {
+          isCanceled = true;
+
+          return alwaysCanceler;
+        } else {
+          canceler2 = f(v)(success, error);
+
+          onCanceler(canceler2);
+
+          return canceler2;
+        }
+      }, error);
+
+      return function(e) {
+        return function(s, f) {
+          requestCancel = true;
+
+          if (canceler2 !== undefined) {
+            return canceler2(e)(s, f);
+          } else {
+            return canceler1(e)(function(bool) {
+              if (bool || isCanceled) {
+                s(true);
+              } else {
+                onCanceler = function(canceler) {
+                  canceler(e)(s, f);
+                };
+              }
+            }, f);
+          }
+        };
       };
     };
-  };
-})(PS["Data.Array"] = PS["Data.Array"] || {});
+  }
+
+  exports._attempt = function (Left, Right, aff) {
+    return function(success, error) {
+      try {
+        return aff(function(v) {
+          success(Right(v));
+        }, function(e) {
+          success(Left(e));
+        });
+      } catch (err) {
+        success(Left(err));
+      }
+    };
+  }
+
+  exports._runAff = function (errorT, successT, aff) {
+    return function() {
+      return aff(function(v) {
+        successT(v)();
+      }, function(e) {
+        errorT(e)();
+      });
+    };
+  }
+
+  exports._liftEff = function (nonCanceler, e) {
+    return function(success, error) {
+      var result;
+      try {
+        result = e();
+      } catch (err) {
+        error(err);
+        return nonCanceler;
+      }
+
+      success(result);
+      return nonCanceler;
+    };
+  }
+})(PS["Control.Monad.Aff"] = PS["Control.Monad.Aff"] || {});
 (function(exports) {
     "use strict";
 
@@ -20937,32 +20993,22 @@ var PS = {};
 (function(exports) {
     "use strict";
 
-  exports.foldrArray = function (f) {
-    return function (init) {
-      return function (xs) {
-        var acc = init;
-        var len = xs.length;
-        for (var i = len - 1; i >= 0; i--) {
-          acc = f(xs[i])(acc);
-        }
-        return acc;
-      };
+  // module Control.Monad.Eff
+
+  exports.pureE = function (a) {
+    return function () {
+      return a;
     };
   };
 
-  exports.foldlArray = function (f) {
-    return function (init) {
-      return function (xs) {
-        var acc = init;
-        var len = xs.length;
-        for (var i = 0; i < len; i++) {
-          acc = f(acc)(xs[i]);
-        }
-        return acc;
+  exports.bindE = function (a) {
+    return function (f) {
+      return function () {
+        return f(a())();
       };
     };
   };
-})(PS["Data.Foldable"] = PS["Data.Foldable"] || {});
+})(PS["Control.Monad.Eff"] = PS["Control.Monad.Eff"] || {});
 (function(exports) {
     "use strict";
 
@@ -21051,6 +21097,211 @@ var PS = {};
 (function(exports) {
     "use strict";
 
+  // module Control.Bind
+
+  exports.arrayBind = function (arr) {
+    return function (f) {
+      var result = [];
+      for (var i = 0, l = arr.length; i < l; i++) {
+        Array.prototype.push.apply(result, f(arr[i]));
+      }
+      return result;
+    };
+  };
+})(PS["Control.Bind"] = PS["Control.Bind"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Control.Bind"];
+  var Control_Applicative = PS["Control.Applicative"];
+  var Control_Apply = PS["Control.Apply"];
+  var Control_Category = PS["Control.Category"];
+  var Data_Function = PS["Data.Function"];
+  var Data_Functor = PS["Data.Functor"];        
+  var Bind = function (__superclass_Control$dotApply$dotApply_0, bind) {
+      this["__superclass_Control.Apply.Apply_0"] = __superclass_Control$dotApply$dotApply_0;
+      this.bind = bind;
+  }; 
+  var bindArray = new Bind(function () {
+      return Control_Apply.applyArray;
+  }, $foreign.arrayBind);
+  var bind = function (dict) {
+      return dict.bind;
+  };
+  var bindFlipped = function (dictBind) {
+      return Data_Function.flip(bind(dictBind));
+  };
+  var composeKleisliFlipped = function (dictBind) {
+      return function (f) {
+          return function (g) {
+              return function (a) {
+                  return bindFlipped(dictBind)(f)(g(a));
+              };
+          };
+      };
+  };
+  exports["Bind"] = Bind;
+  exports["bind"] = bind;
+  exports["bindFlipped"] = bindFlipped;
+  exports["composeKleisliFlipped"] = composeKleisliFlipped;
+  exports["bindArray"] = bindArray;
+})(PS["Control.Bind"] = PS["Control.Bind"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var Control_Applicative = PS["Control.Applicative"];
+  var Control_Apply = PS["Control.Apply"];
+  var Control_Bind = PS["Control.Bind"];
+  var Data_Functor = PS["Data.Functor"];        
+  var Monad = function (__superclass_Control$dotApplicative$dotApplicative_0, __superclass_Control$dotBind$dotBind_1) {
+      this["__superclass_Control.Applicative.Applicative_0"] = __superclass_Control$dotApplicative$dotApplicative_0;
+      this["__superclass_Control.Bind.Bind_1"] = __superclass_Control$dotBind$dotBind_1;
+  };
+  var ap = function (dictMonad) {
+      return function (f) {
+          return function (a) {
+              return Control_Bind.bind(dictMonad["__superclass_Control.Bind.Bind_1"]())(f)(function (v) {
+                  return Control_Bind.bind(dictMonad["__superclass_Control.Bind.Bind_1"]())(a)(function (v1) {
+                      return Control_Applicative.pure(dictMonad["__superclass_Control.Applicative.Applicative_0"]())(v(v1));
+                  });
+              });
+          };
+      };
+  };
+  exports["Monad"] = Monad;
+  exports["ap"] = ap;
+})(PS["Control.Monad"] = PS["Control.Monad"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Control.Monad.Eff"];
+  var Control_Applicative = PS["Control.Applicative"];
+  var Control_Apply = PS["Control.Apply"];
+  var Control_Bind = PS["Control.Bind"];
+  var Control_Monad = PS["Control.Monad"];
+  var Data_Functor = PS["Data.Functor"];
+  var Data_Unit = PS["Data.Unit"];        
+  var monadEff = new Control_Monad.Monad(function () {
+      return applicativeEff;
+  }, function () {
+      return bindEff;
+  });
+  var bindEff = new Control_Bind.Bind(function () {
+      return applyEff;
+  }, $foreign.bindE);
+  var applyEff = new Control_Apply.Apply(function () {
+      return functorEff;
+  }, Control_Monad.ap(monadEff));
+  var applicativeEff = new Control_Applicative.Applicative(function () {
+      return applyEff;
+  }, $foreign.pureE);
+  var functorEff = new Data_Functor.Functor(Control_Applicative.liftA1(applicativeEff));
+  exports["functorEff"] = functorEff;
+  exports["applyEff"] = applyEff;
+  exports["applicativeEff"] = applicativeEff;
+  exports["bindEff"] = bindEff;
+  exports["monadEff"] = monadEff;
+})(PS["Control.Monad.Eff"] = PS["Control.Monad.Eff"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var Control_Category = PS["Control.Category"];
+  var Control_Monad = PS["Control.Monad"];
+  var Control_Monad_Eff = PS["Control.Monad.Eff"];        
+  var MonadEff = function (__superclass_Control$dotMonad$dotMonad_0, liftEff) {
+      this["__superclass_Control.Monad.Monad_0"] = __superclass_Control$dotMonad$dotMonad_0;
+      this.liftEff = liftEff;
+  };                                                   
+  var liftEff = function (dict) {
+      return dict.liftEff;
+  };
+  exports["MonadEff"] = MonadEff;
+  exports["liftEff"] = liftEff;
+})(PS["Control.Monad.Eff.Class"] = PS["Control.Monad.Eff.Class"] || {});
+(function(exports) {
+  /* global exports */
+  "use strict";
+
+  // module Control.Monad.Eff.Exception
+
+  exports.showErrorImpl = function (err) {
+    return err.stack || err.toString();
+  };
+
+  exports.error = function (msg) {
+    return new Error(msg);
+  };
+
+  exports.throwException = function (e) {
+    return function () {
+      throw e;
+    };
+  };
+})(PS["Control.Monad.Eff.Exception"] = PS["Control.Monad.Eff.Exception"] || {});
+(function(exports) {
+    "use strict";
+
+  // module Data.Eq
+
+  exports.refEq = function (r1) {
+    return function (r2) {
+      return r1 === r2;
+    };
+  };
+})(PS["Data.Eq"] = PS["Data.Eq"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Data.Eq"];
+  var Data_Unit = PS["Data.Unit"];
+  var Data_Void = PS["Data.Void"];        
+  var Eq = function (eq) {
+      this.eq = eq;
+  }; 
+  var eqString = new Eq($foreign.refEq);
+  var eqNumber = new Eq($foreign.refEq);
+  var eqInt = new Eq($foreign.refEq);    
+  var eq = function (dict) {
+      return dict.eq;
+  };
+  exports["Eq"] = Eq;
+  exports["eq"] = eq;
+  exports["eqInt"] = eqInt;
+  exports["eqNumber"] = eqNumber;
+  exports["eqString"] = eqString;
+})(PS["Data.Eq"] = PS["Data.Eq"] || {});
+(function(exports) {
+    "use strict";
+
+  exports.foldrArray = function (f) {
+    return function (init) {
+      return function (xs) {
+        var acc = init;
+        var len = xs.length;
+        for (var i = len - 1; i >= 0; i--) {
+          acc = f(xs[i])(acc);
+        }
+        return acc;
+      };
+    };
+  };
+
+  exports.foldlArray = function (f) {
+    return function (init) {
+      return function (xs) {
+        var acc = init;
+        var len = xs.length;
+        for (var i = 0; i < len; i++) {
+          acc = f(acc)(xs[i]);
+        }
+        return acc;
+      };
+    };
+  };
+})(PS["Data.Foldable"] = PS["Data.Foldable"] || {});
+(function(exports) {
+    "use strict";
+
   // module Data.HeytingAlgebra
 
   exports.boolConj = function (b1) {
@@ -21128,115 +21379,6 @@ var PS = {};
   exports["BooleanAlgebra"] = BooleanAlgebra;
   exports["booleanAlgebraBoolean"] = booleanAlgebraBoolean;
 })(PS["Data.BooleanAlgebra"] = PS["Data.BooleanAlgebra"] || {});
-(function(exports) {
-    "use strict";
-
-  // module Data.Eq
-
-  exports.refEq = function (r1) {
-    return function (r2) {
-      return r1 === r2;
-    };
-  };
-})(PS["Data.Eq"] = PS["Data.Eq"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var $foreign = PS["Data.Eq"];
-  var Data_Unit = PS["Data.Unit"];
-  var Data_Void = PS["Data.Void"];        
-  var Eq = function (eq) {
-      this.eq = eq;
-  }; 
-  var eqString = new Eq($foreign.refEq);
-  var eqNumber = new Eq($foreign.refEq);
-  var eqInt = new Eq($foreign.refEq);    
-  var eq = function (dict) {
-      return dict.eq;
-  };
-  exports["Eq"] = Eq;
-  exports["eq"] = eq;
-  exports["eqInt"] = eqInt;
-  exports["eqNumber"] = eqNumber;
-  exports["eqString"] = eqString;
-})(PS["Data.Eq"] = PS["Data.Eq"] || {});
-(function(exports) {
-    "use strict";
-
-  // module Control.Bind
-
-  exports.arrayBind = function (arr) {
-    return function (f) {
-      var result = [];
-      for (var i = 0, l = arr.length; i < l; i++) {
-        Array.prototype.push.apply(result, f(arr[i]));
-      }
-      return result;
-    };
-  };
-})(PS["Control.Bind"] = PS["Control.Bind"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var $foreign = PS["Control.Bind"];
-  var Control_Applicative = PS["Control.Applicative"];
-  var Control_Apply = PS["Control.Apply"];
-  var Control_Category = PS["Control.Category"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Functor = PS["Data.Functor"];        
-  var Bind = function (__superclass_Control$dotApply$dotApply_0, bind) {
-      this["__superclass_Control.Apply.Apply_0"] = __superclass_Control$dotApply$dotApply_0;
-      this.bind = bind;
-  }; 
-  var bindArray = new Bind(function () {
-      return Control_Apply.applyArray;
-  }, $foreign.arrayBind);
-  var bind = function (dict) {
-      return dict.bind;
-  };
-  var bindFlipped = function (dictBind) {
-      return Data_Function.flip(bind(dictBind));
-  };
-  var composeKleisliFlipped = function (dictBind) {
-      return function (f) {
-          return function (g) {
-              return function (a) {
-                  return bindFlipped(dictBind)(f)(g(a));
-              };
-          };
-      };
-  };
-  exports["Bind"] = Bind;
-  exports["bind"] = bind;
-  exports["bindFlipped"] = bindFlipped;
-  exports["composeKleisliFlipped"] = composeKleisliFlipped;
-  exports["bindArray"] = bindArray;
-})(PS["Control.Bind"] = PS["Control.Bind"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var Control_Applicative = PS["Control.Applicative"];
-  var Control_Apply = PS["Control.Apply"];
-  var Control_Bind = PS["Control.Bind"];
-  var Data_Functor = PS["Data.Functor"];        
-  var Monad = function (__superclass_Control$dotApplicative$dotApplicative_0, __superclass_Control$dotBind$dotBind_1) {
-      this["__superclass_Control.Applicative.Applicative_0"] = __superclass_Control$dotApplicative$dotApplicative_0;
-      this["__superclass_Control.Bind.Bind_1"] = __superclass_Control$dotBind$dotBind_1;
-  };
-  var ap = function (dictMonad) {
-      return function (f) {
-          return function (a) {
-              return Control_Bind.bind(dictMonad["__superclass_Control.Bind.Bind_1"]())(f)(function (v) {
-                  return Control_Bind.bind(dictMonad["__superclass_Control.Bind.Bind_1"]())(a)(function (v1) {
-                      return Control_Applicative.pure(dictMonad["__superclass_Control.Applicative.Applicative_0"]())(v(v1));
-                  });
-              });
-          };
-      };
-  };
-  exports["Monad"] = Monad;
-  exports["ap"] = ap;
-})(PS["Control.Monad"] = PS["Control.Monad"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
   "use strict";
@@ -21591,377 +21733,6 @@ var PS = {};
 (function(exports) {
   // Generated by psc version 0.9.3
   "use strict";
-  var Control_Applicative = PS["Control.Applicative"];
-  var Control_Apply = PS["Control.Apply"];
-  var Control_Biapplicative = PS["Control.Biapplicative"];
-  var Control_Biapply = PS["Control.Biapply"];
-  var Control_Bind = PS["Control.Bind"];
-  var Control_Comonad = PS["Control.Comonad"];
-  var Control_Extend = PS["Control.Extend"];
-  var Control_Lazy = PS["Control.Lazy"];
-  var Control_Monad = PS["Control.Monad"];
-  var Control_Semigroupoid = PS["Control.Semigroupoid"];
-  var Data_Bifoldable = PS["Data.Bifoldable"];
-  var Data_Bifunctor = PS["Data.Bifunctor"];
-  var Data_Bitraversable = PS["Data.Bitraversable"];
-  var Data_BooleanAlgebra = PS["Data.BooleanAlgebra"];
-  var Data_Bounded = PS["Data.Bounded"];
-  var Data_Eq = PS["Data.Eq"];
-  var Data_Foldable = PS["Data.Foldable"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Functor = PS["Data.Functor"];
-  var Data_Functor_Invariant = PS["Data.Functor.Invariant"];
-  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
-  var Data_Maybe = PS["Data.Maybe"];
-  var Data_Maybe_First = PS["Data.Maybe.First"];
-  var Data_Monoid = PS["Data.Monoid"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_Ordering = PS["Data.Ordering"];
-  var Data_Ring = PS["Data.Ring"];
-  var Data_CommutativeRing = PS["Data.CommutativeRing"];
-  var Data_Semigroup = PS["Data.Semigroup"];
-  var Data_Semiring = PS["Data.Semiring"];
-  var Data_Show = PS["Data.Show"];
-  var Data_Traversable = PS["Data.Traversable"];
-  var Data_Unit = PS["Data.Unit"];        
-  var Tuple = (function () {
-      function Tuple(value0, value1) {
-          this.value0 = value0;
-          this.value1 = value1;
-      };
-      Tuple.create = function (value0) {
-          return function (value1) {
-              return new Tuple(value0, value1);
-          };
-      };
-      return Tuple;
-  })();
-  var snd = function (v) {
-      return v.value1;
-  };                                                                                                    
-  var fst = function (v) {
-      return v.value0;
-  };
-  exports["Tuple"] = Tuple;
-  exports["fst"] = fst;
-  exports["snd"] = snd;
-})(PS["Data.Tuple"] = PS["Data.Tuple"] || {});
-(function(exports) {
-    "use strict";
-
-  // module Partial.Unsafe
-
-  exports.unsafePartial = function (f) {
-    return f();
-  };
-})(PS["Partial.Unsafe"] = PS["Partial.Unsafe"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var $foreign = PS["Partial.Unsafe"];
-  var Partial = PS["Partial"];
-  exports["unsafePartial"] = $foreign.unsafePartial;
-})(PS["Partial.Unsafe"] = PS["Partial.Unsafe"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var $foreign = PS["Data.Array"];
-  var Prelude = PS["Prelude"];
-  var Control_Alt = PS["Control.Alt"];
-  var Control_Alternative = PS["Control.Alternative"];
-  var Control_Lazy = PS["Control.Lazy"];
-  var Data_Foldable = PS["Data.Foldable"];
-  var Data_Maybe = PS["Data.Maybe"];
-  var Data_Traversable = PS["Data.Traversable"];
-  var Data_Tuple = PS["Data.Tuple"];
-  var Data_Unfoldable = PS["Data.Unfoldable"];
-  var Partial_Unsafe = PS["Partial.Unsafe"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Ordering = PS["Data.Ordering"];
-  var Data_Ring = PS["Data.Ring"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_Eq = PS["Data.Eq"];
-  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
-  var Control_Apply = PS["Control.Apply"];
-  var Data_Functor = PS["Data.Functor"];
-  var Control_Applicative = PS["Control.Applicative"];
-  var Data_Boolean = PS["Data.Boolean"];
-  var Data_Semiring = PS["Data.Semiring"];
-  var Control_Semigroupoid = PS["Control.Semigroupoid"];
-  var Control_Bind = PS["Control.Bind"];
-  var Data_Semigroup = PS["Data.Semigroup"];
-  var Control_Category = PS["Control.Category"];
-  var singleton = function (a) {
-      return [ a ];
-  };
-  var fromFoldable = function (dictFoldable) {
-      return $foreign.fromFoldableImpl(Data_Foldable.foldr(dictFoldable));
-  };
-  var concatMap = Data_Function.flip(Control_Bind.bind(Control_Bind.bindArray));
-  var mapMaybe = function (f) {
-      return concatMap(function ($70) {
-          return Data_Maybe.maybe([  ])(singleton)(f($70));
-      });
-  };
-  exports["concatMap"] = concatMap;
-  exports["fromFoldable"] = fromFoldable;
-  exports["mapMaybe"] = mapMaybe;
-  exports["singleton"] = singleton;
-  exports["cons"] = $foreign.cons;
-  exports["filter"] = $foreign.filter;
-  exports["partition"] = $foreign.partition;
-  exports["snoc"] = $foreign.snoc;
-})(PS["Data.Array"] = PS["Data.Array"] || {});
-(function(exports) {
-  /* global exports */
-  "use strict";
-
-  exports._setTimeout = function (nonCanceler, millis, aff) {
-    var set = setTimeout, clear = clearTimeout;
-    if (millis <= 0 && typeof setImmediate === "function") {
-      set = setImmediate;
-      clear = clearImmediate;
-    }
-    return function(success, error) {
-      var canceler;
-
-      var timeout = set(function() {
-        canceler = aff(success, error);
-      }, millis);
-
-      return function(e) {
-        return function(s, f) {
-          if (canceler !== undefined) {
-            return canceler(e)(s, f);
-          } else {
-            clear(timeout);
-            s(true);
-            return nonCanceler;
-          }
-        };
-      };
-    };
-  }
-
-  exports._unsafeInterleaveAff = function (aff) {
-    return aff;
-  }
-
-  exports._makeAff = function (cb) {
-    return function(success, error) {
-      try {
-        return cb(function(e) {
-          return function() {
-            error(e);
-          };
-        })(function(v) {
-          return function() {
-            success(v);
-          };
-        })();
-      } catch (err) {
-        error(err);
-      }
-    }
-  }
-
-  exports._pure = function (nonCanceler, v) {
-    return function(success, error) {
-      success(v);
-      return nonCanceler;
-    };
-  }
-
-  exports._fmap = function (f, aff) {
-    return function(success, error) {
-      try {
-        return aff(function(v) {
-          try {
-            var v2 = f(v);
-          } catch (err) {
-            error(err)
-          }
-          success(v2);
-        }, error);
-      } catch (err) {
-        error(err);
-      }
-    };
-  }
-
-  exports._bind = function (alwaysCanceler, aff, f) {
-    return function(success, error) {
-      var canceler1, canceler2;
-
-      var isCanceled    = false;
-      var requestCancel = false;
-
-      var onCanceler = function(){};
-
-      canceler1 = aff(function(v) {
-        if (requestCancel) {
-          isCanceled = true;
-
-          return alwaysCanceler;
-        } else {
-          canceler2 = f(v)(success, error);
-
-          onCanceler(canceler2);
-
-          return canceler2;
-        }
-      }, error);
-
-      return function(e) {
-        return function(s, f) {
-          requestCancel = true;
-
-          if (canceler2 !== undefined) {
-            return canceler2(e)(s, f);
-          } else {
-            return canceler1(e)(function(bool) {
-              if (bool || isCanceled) {
-                s(true);
-              } else {
-                onCanceler = function(canceler) {
-                  canceler(e)(s, f);
-                };
-              }
-            }, f);
-          }
-        };
-      };
-    };
-  }
-
-  exports._attempt = function (Left, Right, aff) {
-    return function(success, error) {
-      try {
-        return aff(function(v) {
-          success(Right(v));
-        }, function(e) {
-          success(Left(e));
-        });
-      } catch (err) {
-        success(Left(err));
-      }
-    };
-  }
-
-  exports._runAff = function (errorT, successT, aff) {
-    return function() {
-      return aff(function(v) {
-        successT(v)();
-      }, function(e) {
-        errorT(e)();
-      });
-    };
-  }
-
-  exports._liftEff = function (nonCanceler, e) {
-    return function(success, error) {
-      var result;
-      try {
-        result = e();
-      } catch (err) {
-        error(err);
-        return nonCanceler;
-      }
-
-      success(result);
-      return nonCanceler;
-    };
-  }
-})(PS["Control.Monad.Aff"] = PS["Control.Monad.Aff"] || {});
-(function(exports) {
-    "use strict";
-
-  // module Control.Monad.Eff
-
-  exports.pureE = function (a) {
-    return function () {
-      return a;
-    };
-  };
-
-  exports.bindE = function (a) {
-    return function (f) {
-      return function () {
-        return f(a())();
-      };
-    };
-  };
-})(PS["Control.Monad.Eff"] = PS["Control.Monad.Eff"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var $foreign = PS["Control.Monad.Eff"];
-  var Control_Applicative = PS["Control.Applicative"];
-  var Control_Apply = PS["Control.Apply"];
-  var Control_Bind = PS["Control.Bind"];
-  var Control_Monad = PS["Control.Monad"];
-  var Data_Functor = PS["Data.Functor"];
-  var Data_Unit = PS["Data.Unit"];        
-  var monadEff = new Control_Monad.Monad(function () {
-      return applicativeEff;
-  }, function () {
-      return bindEff;
-  });
-  var bindEff = new Control_Bind.Bind(function () {
-      return applyEff;
-  }, $foreign.bindE);
-  var applyEff = new Control_Apply.Apply(function () {
-      return functorEff;
-  }, Control_Monad.ap(monadEff));
-  var applicativeEff = new Control_Applicative.Applicative(function () {
-      return applyEff;
-  }, $foreign.pureE);
-  var functorEff = new Data_Functor.Functor(Control_Applicative.liftA1(applicativeEff));
-  exports["functorEff"] = functorEff;
-  exports["applyEff"] = applyEff;
-  exports["applicativeEff"] = applicativeEff;
-  exports["bindEff"] = bindEff;
-  exports["monadEff"] = monadEff;
-})(PS["Control.Monad.Eff"] = PS["Control.Monad.Eff"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
-  var Control_Category = PS["Control.Category"];
-  var Control_Monad = PS["Control.Monad"];
-  var Control_Monad_Eff = PS["Control.Monad.Eff"];        
-  var MonadEff = function (__superclass_Control$dotMonad$dotMonad_0, liftEff) {
-      this["__superclass_Control.Monad.Monad_0"] = __superclass_Control$dotMonad$dotMonad_0;
-      this.liftEff = liftEff;
-  };                                                   
-  var liftEff = function (dict) {
-      return dict.liftEff;
-  };
-  exports["MonadEff"] = MonadEff;
-  exports["liftEff"] = liftEff;
-})(PS["Control.Monad.Eff.Class"] = PS["Control.Monad.Eff.Class"] || {});
-(function(exports) {
-  /* global exports */
-  "use strict";
-
-  // module Control.Monad.Eff.Exception
-
-  exports.showErrorImpl = function (err) {
-    return err.stack || err.toString();
-  };
-
-  exports.error = function (msg) {
-    return new Error(msg);
-  };
-
-  exports.throwException = function (e) {
-    return function () {
-      throw e;
-    };
-  };
-})(PS["Control.Monad.Eff.Exception"] = PS["Control.Monad.Eff.Exception"] || {});
-(function(exports) {
-  // Generated by psc version 0.9.3
-  "use strict";
   var Control_Alt = PS["Control.Alt"];
   var Control_Applicative = PS["Control.Applicative"];
   var Control_Apply = PS["Control.Apply"];
@@ -22254,6 +22025,64 @@ var PS = {};
 (function(exports) {
   // Generated by psc version 0.9.3
   "use strict";
+  var Control_Applicative = PS["Control.Applicative"];
+  var Control_Apply = PS["Control.Apply"];
+  var Control_Biapplicative = PS["Control.Biapplicative"];
+  var Control_Biapply = PS["Control.Biapply"];
+  var Control_Bind = PS["Control.Bind"];
+  var Control_Comonad = PS["Control.Comonad"];
+  var Control_Extend = PS["Control.Extend"];
+  var Control_Lazy = PS["Control.Lazy"];
+  var Control_Monad = PS["Control.Monad"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Data_Bifoldable = PS["Data.Bifoldable"];
+  var Data_Bifunctor = PS["Data.Bifunctor"];
+  var Data_Bitraversable = PS["Data.Bitraversable"];
+  var Data_BooleanAlgebra = PS["Data.BooleanAlgebra"];
+  var Data_Bounded = PS["Data.Bounded"];
+  var Data_Eq = PS["Data.Eq"];
+  var Data_Foldable = PS["Data.Foldable"];
+  var Data_Function = PS["Data.Function"];
+  var Data_Functor = PS["Data.Functor"];
+  var Data_Functor_Invariant = PS["Data.Functor.Invariant"];
+  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
+  var Data_Maybe = PS["Data.Maybe"];
+  var Data_Maybe_First = PS["Data.Maybe.First"];
+  var Data_Monoid = PS["Data.Monoid"];
+  var Data_Ord = PS["Data.Ord"];
+  var Data_Ordering = PS["Data.Ordering"];
+  var Data_Ring = PS["Data.Ring"];
+  var Data_CommutativeRing = PS["Data.CommutativeRing"];
+  var Data_Semigroup = PS["Data.Semigroup"];
+  var Data_Semiring = PS["Data.Semiring"];
+  var Data_Show = PS["Data.Show"];
+  var Data_Traversable = PS["Data.Traversable"];
+  var Data_Unit = PS["Data.Unit"];        
+  var Tuple = (function () {
+      function Tuple(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      Tuple.create = function (value0) {
+          return function (value1) {
+              return new Tuple(value0, value1);
+          };
+      };
+      return Tuple;
+  })();
+  var snd = function (v) {
+      return v.value1;
+  };                                                                                                    
+  var fst = function (v) {
+      return v.value0;
+  };
+  exports["Tuple"] = Tuple;
+  exports["fst"] = fst;
+  exports["snd"] = snd;
+})(PS["Data.Tuple"] = PS["Data.Tuple"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
   var Prelude = PS["Prelude"];
   var Control_Alt = PS["Control.Alt"];
   var Control_Alternative = PS["Control.Alternative"];
@@ -22449,6 +22278,22 @@ var PS = {};
   exports["applyList"] = applyList;
   exports["applicativeList"] = applicativeList;
 })(PS["Data.List"] = PS["Data.List"] || {});
+(function(exports) {
+    "use strict";
+
+  // module Partial.Unsafe
+
+  exports.unsafePartial = function (f) {
+    return f();
+  };
+})(PS["Partial.Unsafe"] = PS["Partial.Unsafe"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Partial.Unsafe"];
+  var Partial = PS["Partial"];
+  exports["unsafePartial"] = $foreign.unsafePartial;
+})(PS["Partial.Unsafe"] = PS["Partial.Unsafe"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
   "use strict";
@@ -23346,6 +23191,161 @@ var PS = {};
     };
   };
 })(PS["Network.HTTP.Affjax"] = PS["Network.HTTP.Affjax"] || {});
+(function(exports) {
+  /* global exports */
+  "use strict";
+
+  exports.fromFoldableImpl = (function () {
+    // jshint maxparams: 2
+    function Cons(head, tail) {
+      this.head = head;
+      this.tail = tail;
+    }
+    var emptyList = {};
+
+    function curryCons(head) {
+      return function (tail) {
+        return new Cons(head, tail);
+      };
+    }
+
+    function listToArray(list) {
+      var result = [];
+      var count = 0;
+      while (list !== emptyList) {
+        result[count++] = list.head;
+        list = list.tail;
+      }
+      return result;
+    }
+
+    return function (foldr) {
+      return function (xs) {
+        return listToArray(foldr(curryCons)(emptyList)(xs));
+      };
+    };
+  })();
+
+  //------------------------------------------------------------------------------
+  // Array size ------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+
+  exports.length = function (xs) {
+    return xs.length;
+  };
+
+  //------------------------------------------------------------------------------
+  // Extending arrays ------------------------------------------------------------
+  //------------------------------------------------------------------------------
+
+  exports.cons = function (e) {
+    return function (l) {
+      return [e].concat(l);
+    };
+  };
+
+  exports.snoc = function (l) {
+    return function (e) {
+      var l1 = l.slice();
+      l1.push(e);
+      return l1;
+    };
+  };
+
+  exports.concat = function (xss) {
+    var result = [];
+    for (var i = 0, l = xss.length; i < l; i++) {
+      var xs = xss[i];
+      for (var j = 0, m = xs.length; j < m; j++) {
+        result.push(xs[j]);
+      }
+    }
+    return result;
+  };
+
+  exports.filter = function (f) {
+    return function (xs) {
+      return xs.filter(f);
+    };
+  };
+
+  exports.partition = function (f) {
+    return function (xs) {
+      var yes = [];
+      var no  = [];
+      for (var i = 0; i < xs.length; i++) {
+        var x = xs[i];
+        if (f(x))
+          yes.push(x);
+        else
+          no.push(x);
+      }
+      return { yes: yes, no: no };
+    };
+  };
+
+  //------------------------------------------------------------------------------
+  // Subarrays -------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+
+  exports.slice = function (s) {
+    return function (e) {
+      return function (l) {
+        return l.slice(s, e);
+      };
+    };
+  };
+})(PS["Data.Array"] = PS["Data.Array"] || {});
+(function(exports) {
+  // Generated by psc version 0.9.3
+  "use strict";
+  var $foreign = PS["Data.Array"];
+  var Prelude = PS["Prelude"];
+  var Control_Alt = PS["Control.Alt"];
+  var Control_Alternative = PS["Control.Alternative"];
+  var Control_Lazy = PS["Control.Lazy"];
+  var Data_Foldable = PS["Data.Foldable"];
+  var Data_Maybe = PS["Data.Maybe"];
+  var Data_Traversable = PS["Data.Traversable"];
+  var Data_Tuple = PS["Data.Tuple"];
+  var Data_Unfoldable = PS["Data.Unfoldable"];
+  var Partial_Unsafe = PS["Partial.Unsafe"];
+  var Data_Function = PS["Data.Function"];
+  var Data_Ordering = PS["Data.Ordering"];
+  var Data_Ring = PS["Data.Ring"];
+  var Data_Ord = PS["Data.Ord"];
+  var Data_Eq = PS["Data.Eq"];
+  var Data_HeytingAlgebra = PS["Data.HeytingAlgebra"];
+  var Control_Apply = PS["Control.Apply"];
+  var Data_Functor = PS["Data.Functor"];
+  var Control_Applicative = PS["Control.Applicative"];
+  var Data_Boolean = PS["Data.Boolean"];
+  var Data_Semiring = PS["Data.Semiring"];
+  var Control_Semigroupoid = PS["Control.Semigroupoid"];
+  var Control_Bind = PS["Control.Bind"];
+  var Data_Semigroup = PS["Data.Semigroup"];
+  var Control_Category = PS["Control.Category"];
+  var singleton = function (a) {
+      return [ a ];
+  };
+  var fromFoldable = function (dictFoldable) {
+      return $foreign.fromFoldableImpl(Data_Foldable.foldr(dictFoldable));
+  };
+  var concatMap = Data_Function.flip(Control_Bind.bind(Control_Bind.bindArray));
+  var mapMaybe = function (f) {
+      return concatMap(function ($70) {
+          return Data_Maybe.maybe([  ])(singleton)(f($70));
+      });
+  };
+  exports["concatMap"] = concatMap;
+  exports["fromFoldable"] = fromFoldable;
+  exports["mapMaybe"] = mapMaybe;
+  exports["singleton"] = singleton;
+  exports["cons"] = $foreign.cons;
+  exports["filter"] = $foreign.filter;
+  exports["partition"] = $foreign.partition;
+  exports["snoc"] = $foreign.snoc;
+})(PS["Data.Array"] = PS["Data.Array"] || {});
 (function(exports) {
   /* global exports */
   "use strict";
@@ -24543,7 +24543,6 @@ var PS = {};
 })(PS["Text.Parsing.Simple"] = PS["Text.Parsing.Simple"] || {});
 (function(exports) {
     "use strict";
-  var Data_Array = PS["Data.Array"];
   var Control_Monad_Aff = PS["Control.Monad.Aff"];
   var Control_Alternative = PS["Control.Alternative"];
   var Data_Either = PS["Data.Either"];
@@ -24852,11 +24851,6 @@ var PS = {};
   var functions = function (lang) {
       return Text_Parsing_Simple.sepBy(functionBody(lang))(notBeginning(lang));
   };
-
-  /**
- *  nextFunction :: Language -> ParserS Unit
- *  nextFunction lang = manyChar notFollowedBy (functionTag lang)
- */  
   var parseFunctions = function (v) {
       var res = Text_Parsing_Simple.parse(Text_Parsing_Simple.applyR(notBeginning(v.value0.language))(functions(v.value0.language)))(v.value0.getSourceCode);
       var fns = Data_Either.either(Data_Function["const"](Data_List.Nil.value))(Control_Category.id(Control_Category.categoryFn))(res);
@@ -24865,8 +24859,9 @@ var PS = {};
               return b + a;
           };
       })(Data_List.concatMap(function (v1) {
+          var body = v1.value0.body + "\n";
           return Data_Functor.map(Data_List.functorList)(function (n) {
-              return new Data_Tuple.Tuple(n, v1.value0.body);
+              return new Data_Tuple.Tuple(n, body);
           })(v1.value0.names);
       })(fns));
   };
