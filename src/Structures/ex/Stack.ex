@@ -1,4 +1,4 @@
-defmodule Structures.Stack do
+defmodule Stack do
   # | *empty
   def empty, do: []
   # .end
