@@ -9,7 +9,7 @@ import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Control.Monad.Aff (Aff)
--- import Control.Monad.Eff (runPure)
+import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array ((:))
 import Data.Either (Either(..))
@@ -80,15 +80,8 @@ checkSources QueuePage =
 update :: Action -> State
        -> EffModel State Action _
 update (PageCheck lang (Right code)) state =
-  let
-    res = spy code
-    res2 = spy (CS.parseFunctions code)
-  in
    noEffects $ state { availableLanguages = insert lang state.availableLanguages}
 update (PageCheck lang (Left err)) state =
-  let
-    res = spy err
-  in
    noEffects $ state { availableLanguages = delete lang state.availableLanguages}
 update (ChangeLanguage lang) state =
   case state.currPage of
