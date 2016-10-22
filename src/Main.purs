@@ -2,6 +2,7 @@ module Main where
 
 import Views.Stack as Stack
 import Views.Queue as Queue
+import Views.Set as Set
 import CodeSnippet as CS
 import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>))
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
@@ -23,12 +24,15 @@ import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time())
 
-data Page = StackPage | QueuePage
+data Page = StackPage
+          | QueuePage
+          | SetPage
 
 derive instance eqPage :: Eq Page
 
 type State = { stackModel :: Stack.Model
              , queueModel :: Queue.Model
+             , setModel :: Set.Model
              , currPage :: Maybe Page
              , currLanguage :: CS.Language
              , availableLanguages :: Set CS.Language
@@ -37,6 +41,7 @@ type State = { stackModel :: Stack.Model
 initialState :: State
 initialState = { stackModel : Stack.initModel
                , queueModel : Queue.initModel
+               , setModel : Set.initModel
                , currPage : Nothing
                , currLanguage : CS.Purescript
                , availableLanguages : empty
@@ -47,6 +52,7 @@ data Action = ChangePage Page
             | PageCheck CS.Language (Either String CS.SourceCode)
             | StackAction Stack.Action
             | QueueAction Queue.Action
+            | SetAction Set.Action
             | Tick Time
 
 updateStack :: State -> Stack.Action
@@ -65,17 +71,29 @@ updateQueue state quaction =
   in
    mapEffects QueueAction $ mapState (\s -> state { queueModel = s}) $ updated
 
+updateSet :: State -> Set.Action
+          -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+updateSet state saction =
+  let
+    updated = Set.update saction state.setModel
+  in
+   mapEffects SetAction $ mapState (\s -> state { setModel = s}) $ updated
+
 getSource :: forall eff. Page -> CS.Language -> Aff (ajax :: AJAX | eff) Action
 getSource StackPage lang =
   StackAction <<< Stack.LoadCode <$> CS.getFile "Stack" lang
 getSource QueuePage lang =
   QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue" lang
+getSource SetPage lang =
+  SetAction <<< Set.LoadCode <$> CS.getFile "Set" lang
 
 checkSources :: forall eff. Page -> Array (Aff (ajax :: AJAX | eff) Action)
 checkSources StackPage =
   map (\lang -> PageCheck lang <$> CS.getFile "Stack" lang) CS.allLangs
 checkSources QueuePage =
   map (\lang -> PageCheck lang <$> CS.getFile "Queue" lang) CS.allLangs
+checkSources SetPage =
+  map (\lang -> PageCheck lang <$> CS.getFile "Set" lang) CS.allLangs
 
 update :: Action -> State
        -> EffModel State Action _
@@ -98,6 +116,8 @@ update (StackAction staction) state =
   updateStack state staction
 update (QueueAction quaction) state =
   updateQueue state quaction
+update (SetAction saction) state =
+  updateSet state saction
 update (Tick time) state =
   case state.currPage of
     Nothing -> noEffects state
@@ -105,6 +125,8 @@ update (Tick time) state =
       updateStack state (Stack.Tick time)
     Just QueuePage ->
       updateQueue state (Queue.Tick time)
+    Just SetPage ->
+      updateSet state (Set.Tick time)
 
 dsBtn :: State -> String -> Page -> H.Html Action
 dsBtn state name token =
@@ -140,8 +162,10 @@ view state =
   let
     dbf = dsBtn state
     lbf = langBtn state
-    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dbf "Stack" StackPage
-                                                  , dbf "Queue" QueuePage ]
+    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dbf "Stack / List" StackPage
+                                                  , dbf "Queue" QueuePage
+                                                  , dbf "Set / Binary Tree" SetPage
+                                                  ]
     langDiv = H.div [ HA.className "pure-u-1-1" ] [ lbf "Purescript" CS.Purescript
                                                   , lbf "Elm" CS.Elm
                                                   , lbf "Haskell" CS.Haskell
@@ -156,6 +180,7 @@ view state =
         Nothing -> H.div [ HA.className "pure-u-1-1" ] [ H.text "Please select a data structure"]
         Just StackPage -> StackAction <$> Stack.view state.stackModel
         Just QueuePage -> QueueAction <$> Queue.view state.queueModel
+        Just SetPage -> SetAction <$> Set.view state.setModel
   in
    H.div [ ] [ dataDiv, langDiv, renderDiv ]
 
