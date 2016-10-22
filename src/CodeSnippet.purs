@@ -2,11 +2,12 @@ module CodeSnippet where
 
 import Data.Array as A
 import Control.Monad.Aff (Aff, attempt)
+import Control.Alternative ((<|>))
 import Data.Either (either, Either(..))
 import Data.Eq (class Eq)
 import Data.Functor (map)
-import Data.List (List(..))
-import Data.Map (Map, fromFoldableWith)
+import Data.List (List(..), concatMap)
+import Data.Map (Map, fromFoldableWith, empty)
 -- import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord)
 import Data.Show (class Show)
@@ -14,10 +15,10 @@ import Data.String (fromCharArray)
 import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (get, AJAX)
 import Network.HTTP.StatusCode (StatusCode(..))
-import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit)
-import Text.Parsing.StringParser (Parser, runParser)
-import Text.Parsing.StringParser.Combinators (sepEndBy, manyTill, many, choice, lookAhead)
-import Text.Parsing.StringParser.String (string, anyChar, noneOf, eof)
+import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit, Unit)
+import Text.Parsing.Simple (Parser, parse, string, fromCharList, alphanum, sepBy, space, eof, char, word, manyChar, many, lookahead, notFollowedBy, (>>), (<<), newline, isn't, anyOf)
+
+type ParserS = Parser String
 
 data Language = Purescript
               | Elm
@@ -65,7 +66,7 @@ suffix Scala = "scala"
 data SourceCode = SourceCode { getSourceCode :: String
                              , language :: Language
                              }
-data FunctionBlock = FunctionBlock { name :: String
+data FunctionBlock = FunctionBlock { names :: List String
                                    , body :: String
                                    }
 
@@ -73,7 +74,7 @@ instance showSourceCode :: Show SourceCode where
   show (SourceCode sc) = sc.getSourceCode
 
 instance showFunctionBlock :: Show FunctionBlock where
-  show (FunctionBlock f) = f.name <> ": " <> f.body
+  show (FunctionBlock f) = show f.names <> ": " <> f.body
 
 getFile :: forall eff. String -> Language -> Aff (ajax :: AJAX | eff) (Either String SourceCode)
 getFile fname lang = do
@@ -87,48 +88,61 @@ getFile fname lang = do
                                   }
         StatusCode status -> Left $ show status) res
 
-docComment :: Language -> Parser String
+docComment :: Language -> ParserS String
 docComment lang = string (comment lang <> " | *")
 
-fromCharList :: List Char -> String
-fromCharList = fromCharArray <<< A.fromFoldable
+words :: ParserS (List String)
+words = sepBy word space
 
-functionTag :: Language -> Parser String
-functionTag lang = fromCharList <$> (docComment lang *> many (noneOf ['\n']))
+functionTag :: Language -> ParserS (List String)
+functionTag lang = docComment lang *> words <* (eof <|> (const unit <$> char '\n'))
 
-endComment :: Language -> Parser String
+endComment :: Language -> ParserS String
 endComment lang = string (comment lang <> " .end")
 
-functionBody :: Language -> Parser FunctionBlock
+anyChar :: ParserS Char
+anyChar = alphanum <|> space <|> newline <|> anyOf "=:-+*!@$%^(){}[]\"\'`~|/.,;?<>_"
+
+notBeginning :: Language -> ParserS String
+notBeginning lang =
+  manyChar ((isn't $ docComment lang) >> anyChar)
+
+notEnd :: Language -> ParserS String
+notEnd lang = manyChar ((notFollowedBy $ endComment lang) >> anyChar)
+
+functionBody :: Language -> ParserS FunctionBlock
 functionBody lang = do
-  name <- functionTag lang
-  body <- manyTill anyChar $ endComment lang
-  pure $ FunctionBlock { name : name
-                       , body : fromCharList body
+  names <- functionTag lang
+  body <- notEnd lang
+  endComment lang
+  pure $ FunctionBlock { names : names
+                       , body : body
                        }
 
-functions :: Language -> Parser (List FunctionBlock)
-functions lang = sepEndBy (functionBody lang) (nextFunction lang)
+functions :: Language -> ParserS (List FunctionBlock)
+functions lang = sepBy (functionBody lang) (notBeginning lang)
 
-nextFunction :: Language -> Parser (List Char)
-nextFunction lang = manyTill anyChar (choice [eof, (const unit <$> lookAhead (functionTag lang))])
+-- nextFunction :: Language -> ParserS Unit
+-- nextFunction lang = manyChar notFollowedBy (functionTag lang)
 
 parseFunctions :: SourceCode -> Map String String
 parseFunctions (SourceCode code) =
   let
-    res = runParser (nextFunction code.language *> functions code.language) code.getSourceCode
+    res = parse (notBeginning code.language >> functions code.language) code.getSourceCode
     fns = either (const Nil) id res
   in
-   fromFoldableWith (\a b -> b <> a) (map (\ (FunctionBlock f) -> Tuple f.name f.body) fns)
+   fromFoldableWith (\a b -> b <> a) (concatMap (\ (FunctionBlock f) ->
+                                            map (\ n -> Tuple n f.body) f.names)
+                                      fns)
 
 testString :: String
 testString = """
--- | *DataStructure Stack
+-- | *Stack
 data Stack a = Nil
              | Cons a (Stack a)
 -- .end
 
--- | *empty
+-- | *empty head tail
 empty :: forall a. Stack a
 empty = Nil
 -- .end

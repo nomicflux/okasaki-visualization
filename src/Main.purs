@@ -82,6 +82,7 @@ update :: Action -> State
 update (PageCheck lang (Right code)) state =
   let
     res = spy code
+    res2 = spy (CS.parseFunctions code)
   in
    noEffects $ state { availableLanguages = insert lang state.availableLanguages}
 update (PageCheck lang (Left err)) state =
