@@ -1,4 +1,4 @@
-// | *Stack
+// | *Stack head tail reverse cons
 abstract class Stack[A]
 // .end
 {
