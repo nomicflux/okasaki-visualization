@@ -264,14 +264,17 @@ update Insert model =
    case mnode of
      Nothing -> noEffects $ changeFn model "insert"
      Just (Tuple node newModel) ->
-       let
-         midSet = S.insertWithParent cleanSet node
-         finalSet = case snd midSet of
-           Nothing -> fst midSet
-           Just parent ->
-             S.update (fst midSet) (changeConn node [getID parent])
-       in
-        updateSet newModel finalSet "insert"
+       if S.member model.set node
+       then noEffects model
+       else
+         let
+           midSet = S.insertWithParent cleanSet node
+           finalSet = case snd midSet of
+             Nothing -> fst midSet
+             Just parent ->
+               S.update (fst midSet) (changeConn node [getID parent])
+         in
+          updateSet newModel finalSet "insert"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =

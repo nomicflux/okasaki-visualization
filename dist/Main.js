@@ -27342,6 +27342,46 @@ var PS = {};
           throw new Error("Failed pattern match at Structures.Purs.Set line 130, column 1 - line 131, column 1: " + [ v.constructor.name ]);
       };
   };
+  var member = function (__copy_dictOrd) {
+      return function (__copy_v) {
+          return function (__copy_v1) {
+              var dictOrd = __copy_dictOrd;
+              var v = __copy_v;
+              var v1 = __copy_v1;
+              tco: while (true) {
+                  if (v instanceof Leaf) {
+                      return false;
+                  };
+                  if (v instanceof Node) {
+                      var $59 = Data_Ord.compare(dictOrd)(v1)(v.value0.value);
+                      if ($59 instanceof Data_Ordering.EQ) {
+                          return true;
+                      };
+                      if ($59 instanceof Data_Ordering.LT) {
+                          var __tco_dictOrd = dictOrd;
+                          var __tco_v = v.value0.left;
+                          var __tco_v1 = v1;
+                          dictOrd = __tco_dictOrd;
+                          v = __tco_v;
+                          v1 = __tco_v1;
+                          continue tco;
+                      };
+                      if ($59 instanceof Data_Ordering.GT) {
+                          var __tco_dictOrd = dictOrd;
+                          var __tco_v = v.value0.right;
+                          var __tco_v1 = v1;
+                          dictOrd = __tco_dictOrd;
+                          v = __tco_v;
+                          v1 = __tco_v1;
+                          continue tco;
+                      };
+                      throw new Error("Failed pattern match at Structures.Purs.Set line 61, column 3 - line 64, column 31: " + [ $59.constructor.name ]);
+                  };
+                  throw new Error("Failed pattern match at Structures.Purs.Set line 59, column 1 - line 59, column 22: " + [ v.constructor.name, v1.constructor.name ]);
+              };
+          };
+      };
+  };
   var leftWidth = function (dictOrd) {
       return function (v) {
           if (v instanceof Leaf) {
@@ -27508,6 +27548,7 @@ var PS = {};
   exports["insertWithParent"] = insertWithParent;
   exports["leftWidth"] = leftWidth;
   exports["maxWidth"] = maxWidth;
+  exports["member"] = member;
   exports["rightWidth"] = rightWidth;
   exports["update"] = update;
   exports["functorSet"] = functorSet;
@@ -27748,7 +27789,7 @@ var PS = {};
                               if (!$27) {
                                   return -1.0;
                               };
-                              throw new Error("Failed pattern match at Views.Set line 343, column 40 - line 344, column 32: " + [ $27.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Set line 346, column 40 - line 347, column 32: " + [ $27.constructor.name ]);
                           })();
                           var signY = (function () {
                               var $28 = node.y < edgeNode.y;
@@ -27758,11 +27799,11 @@ var PS = {};
                               if (!$28) {
                                   return -1.0 * signX;
                               };
-                              throw new Error("Failed pattern match at Views.Set line 344, column 40 - line 344, column 91: " + [ $28.constructor.name ]);
+                              throw new Error("Failed pattern match at Views.Set line 347, column 40 - line 347, column 91: " + [ $28.constructor.name ]);
                           })();
                           return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes_1.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes_1.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y - signY * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes_1.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes_1.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y + signY * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes_1.className("edge") ])([  ]));
                       };
-                      throw new Error("Failed pattern match at Views.Set line 337, column 26 - line 351, column 71: " + [ mnode.constructor.name ]);
+                      throw new Error("Failed pattern match at Views.Set line 340, column 26 - line 354, column 71: " + [ mnode.constructor.name ]);
                   })(node.connections);
                   var val = svgText([ Pux_Html_Attributes_1.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes_1.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + 6.0)), Pux_Html_Attributes_1.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
                   var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes_1.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes_1.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes_1.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes_1.className(node.classes + " node") ])([  ]);
@@ -27789,7 +27830,7 @@ var PS = {};
           if (model.currFn instanceof Data_Maybe.Just) {
               return Pux_Html_Elements.text(model.currFn.value0);
           };
-          throw new Error("Failed pattern match at Views.Set line 388, column 27 - line 392, column 50: " + [ model.currFn.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Set line 391, column 27 - line 395, column 50: " + [ model.currFn.constructor.name ]);
       })() ]) ]) ]);
       return Pux_Html_Elements.div([ Pux_Html_Attributes_1.className("pure-g") ])([ stackDiv, controlDiv, codeDiv ]);
   };
@@ -28096,31 +28137,38 @@ var PS = {};
                   return Data_Function.apply(Pux.noEffects)(changeFn(model)("insert"));
               };
               if (mnode instanceof Data_Maybe.Just) {
-                  var midSet = Structures_Purs_Set.insertWithParent(ordNode)(cleanSet)(mnode.value0.value0);
-                  var finalSet = (function () {
-                      var $109 = Data_Tuple.snd(midSet);
-                      if ($109 instanceof Data_Maybe.Nothing) {
-                          return Data_Tuple.fst(midSet);
-                      };
-                      if ($109 instanceof Data_Maybe.Just) {
-                          return Structures_Purs_Set.update(ordNode)(Data_Tuple.fst(midSet))(changeConn(mnode.value0.value0)([ getID($109.value0) ]));
-                      };
-                      throw new Error("Failed pattern match at Views.Set line 269, column 21 - line 272, column 68: " + [ $109.constructor.name ]);
-                  })();
-                  return updateSet(mnode.value0.value1)(finalSet)("insert");
+                  var $109 = Structures_Purs_Set.member(ordNode)(model.set)(mnode.value0.value0);
+                  if ($109) {
+                      return Pux.noEffects(model);
+                  };
+                  if (!$109) {
+                      var midSet = Structures_Purs_Set.insertWithParent(ordNode)(cleanSet)(mnode.value0.value0);
+                      var finalSet = (function () {
+                          var $110 = Data_Tuple.snd(midSet);
+                          if ($110 instanceof Data_Maybe.Nothing) {
+                              return Data_Tuple.fst(midSet);
+                          };
+                          if ($110 instanceof Data_Maybe.Just) {
+                              return Structures_Purs_Set.update(ordNode)(Data_Tuple.fst(midSet))(changeConn(mnode.value0.value0)([ getID($110.value0) ]));
+                          };
+                          throw new Error("Failed pattern match at Views.Set line 272, column 23 - line 275, column 70: " + [ $110.constructor.name ]);
+                      })();
+                      return updateSet(mnode.value0.value1)(finalSet)("insert");
+                  };
+                  throw new Error("Failed pattern match at Views.Set line 267, column 8 - line 278, column 1: " + [ $109.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Views.Set line 264, column 4 - line 275, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Set line 264, column 4 - line 278, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
-                  var $114 = {};
-                  for (var $115 in model) {
-                      if (model.hasOwnProperty($115)) {
-                          $114[$115] = model[$115];
+                  var $115 = {};
+                  for (var $116 in model) {
+                      if (model.hasOwnProperty($116)) {
+                          $115[$116] = model[$116];
                       };
                   };
-                  $114.currInput = Data_Int.fromString(v.value0);
-                  return $114;
+                  $115.currInput = Data_Int.fromString(v.value0);
+                  return $115;
               })());
           };
           if (v instanceof ShowStructure) {
