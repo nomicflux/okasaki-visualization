@@ -18,6 +18,12 @@ empty :: forall a. Stack a
 empty = Nil
 -- .end
 
+-- | *isEmpty
+isEmpty :: forall a. Stack a -> Boolean
+isEmpty Nil = true
+isEmpty (Cons _ _) = false
+-- .end
+
 -- | *head
 head :: forall a. Stack a -> Maybe a
 head Nil = Nothing

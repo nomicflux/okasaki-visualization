@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid ((<>))
 import Data.Show (class Show, show)
 import Data.Tuple (Tuple(..))
+import Prelude ((&&))
 
 import Structures.Purs.Stack as S
 
@@ -24,9 +25,23 @@ empty = Queue { front : S.empty
               }
 -- .end
 
+-- | *isEmpty
+isEmpty :: forall a. Queue a -> Boolean
+isEmpty (Queue queue) =
+  S.isEmpty queue.front && S.isEmpty queue.back
+-- .end
+
+-- | *rotate
+rotate :: forall a. Queue a -> Queue a
+rotate (Queue queue) =
+  Queue { front : S.reverse queue.back
+        , back : S.reverse queue.front
+        }
+-- .end
+
 -- | *top
 top :: forall a. Queue a -> Maybe a
-top (Queue queue) =
+top q@(Queue queue) =
   case S.head (queue.front) of
     Just x -> Just x
     Nothing ->

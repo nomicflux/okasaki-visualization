@@ -151,6 +151,7 @@ wipeClasses :: forall f. Functor f => f Node -> f Node
 wipeClasses = changeAllClasses ""
 
 data Action = Empty
+            | Rotate
             | Top
             | Bottom
             | Pop
@@ -216,6 +217,8 @@ update (StartTimer time) model = noEffects $ model { startAnimation = Just time
                                                    }
 update Empty model =
   updateQueue model Q.empty "empty"
+update Rotate model =
+  updateQueue model (Q.rotate model.queue) "rotate"
 update Top model =
   let
     mhead = Q.top model.queue
@@ -384,6 +387,10 @@ view model =
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
                          ]
+    rotateBtn = H.div [ ] [ H.button [ HA.className "pure-button"
+                                     , HE.onClick $ const Rotate
+                                     ] [ H.text "Rotate" ]
+                          ]
     topBtn = H.button [ HA.className "pure-button"
                       , HE.onClick $ const Top
                       ] [ H.text "Top" ]
@@ -410,6 +417,7 @@ view model =
                          ]
     controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
                                                      , emptyBtn
+                                                     , rotateBtn
                                                      , frontDiv
                                                      , backDiv
                                                      , consSpan

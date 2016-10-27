@@ -325,13 +325,15 @@ viewNodePos phase prevmap currmap nid =
     prev = fromMaybe (initialNode nid) (M.lookup nid prevmap)
     curr = fromMaybe (finalNode nid) (M.lookup nid currmap)
     node = interphase prev curr
+    fontSize = min (node.r * 2.0 - 1.0) 16.0
     circ = H.circle [ HA.cx (show $ node.x)
                     , HA.cy (show $ node.y)
                     , HA.r (show $ node.r)
                     , HA.className (node.classes <> " node")
                     ] [ ]
     val = svgText [ HA.x (show $ node.x)
-                  , HA.y (show $ node.y + 6.0)
+                  , HA.y (show $ node.y + (fontSize / 2.0) - 1.0)
+                  , HA.fontSize (show fontSize)
                   , HA.textAnchor "middle" ] [ H.text (show node.value)]
     edges = filterMap (\n ->
                         let
