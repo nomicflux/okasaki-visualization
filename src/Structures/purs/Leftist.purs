@@ -9,7 +9,7 @@ import Data.Ord (class Ord)
 import Data.Semigroup (append)
 import Data.Show (class Show, show)
 -- import Data.Tuple (Tuple(..), fst, snd)
-import Prelude (($), (+), (<>), (*), (-), max, (>=), (<), (==), (<<<))
+import Prelude (($), (+), (<>), (*), (-), max, (>=), (<=), (<), (==), (<<<))
 
 import Structures.Purs.Stack as S
 
@@ -54,12 +54,12 @@ makeNode x a b =
 
 -- | *merge insert deleteMin
 merge :: forall a. Ord a => Leftist a -> Leftist a -> Leftist a
-merge leftist Leaf = leftist
-merge Leaf leftist = leftist
-merge la@(Node a) lb@(Node b) =
-  if a.value < b.value
-  then makeNode a.value a.left (merge a.right lb)
-  else makeNode b.value b.left (merge la b.right)
+merge heap Leaf = heap
+merge Leaf heap = heap
+merge ha@(Node a) hb@(Node b) =
+  if a.value <= b.value
+  then makeNode a.value a.left (merge a.right hb)
+  else makeNode b.value b.left (merge ha b.right)
 -- .end
 
 -- | *insert
@@ -98,31 +98,40 @@ toStack (Node set) =
    append left (S.cons set.value right)
 
 get :: forall a. Ord a => Leftist a -> a -> Maybe a
-get leftist val = S.toMaybe $
-                  filterMap (\n -> if n == val then Just n else Nothing) (toStack leftist)
+get heap val = S.toMaybe $
+               filterMap (\n -> if n == val then Just n else Nothing) (toStack heap)
 
 update :: forall a. Ord a => Leftist a -> a -> Leftist a
-update leftist val = map (\n -> if n == val then val else n) leftist
+update heap val = map (\n -> if n == val then val else n) heap
+
+depth :: forall a. Leftist a -> Int
+depth Leaf = 0
+depth (Node node) =
+  let
+    leftDepth = depth node.left
+    rightDepth = depth node.right
+  in
+   1 + max leftDepth rightDepth
 
 instance functorLeftist :: Functor Leftist where
   map _ Leaf = Leaf
-  map f (Node leftist) = Node (leftist { left = map f leftist.left
-                                       , value = f leftist.value
-                                       , right = map f leftist.right
-                                       })
+  map f (Node node) = Node (node { left = map f node.left
+                                 , value = f node.value
+                                 , right = map f node.right
+                                 })
 
 instance foldableLeftist :: Foldable Leftist where
   foldr f def = foldr f def <<< toStack
   foldl f def = foldl f def <<< toStack
 
   foldMap _ Leaf = mempty
-  foldMap f (Node leftist) =
+  foldMap f (Node node) =
     let
-      left = foldMap f leftist.left
-      right = foldMap f leftist.right
+      left = foldMap f node.left
+      right = foldMap f node.right
     in
-     append (f leftist.value) (append left right)
+     append (f node.value) (append left right)
 
 instance showLeftist :: Show a => Show (Leftist a) where
   show Leaf = "."
-  show (Node leftist) = show leftist.left <> " / " <> show leftist.value <> " \\ " <> show leftist.right
+  show (Node node) = show node.left <> " / " <> show node.value <> " \\ " <> show node.right
