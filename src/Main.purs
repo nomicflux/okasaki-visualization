@@ -4,7 +4,7 @@ import Views.Stack as Stack
 import Views.Queue as Queue
 import Views.Set as Set
 import CodeSnippet as CS
-import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>))
+import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>), Unit)
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
@@ -184,6 +184,7 @@ view state =
   in
    H.div [ ] [ dataDiv, langDiv, renderDiv ]
 
+main :: Eff (channel :: CHANNEL, ajax :: AJAX, err :: EXCEPTION) Unit
 main = do
   app <- start
     { initialState: initialState
