@@ -38,6 +38,9 @@ instance eqNode :: Eq Node where
 instance ordNode :: Ord Node where
   compare (Node a) (Node b) = compare a.value b.value
 
+getID :: Node -> NodeID
+getID (Node n) = n.id
+
 maxWidth :: Number
 maxWidth = 800.0
 

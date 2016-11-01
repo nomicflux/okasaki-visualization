@@ -1,5 +1,7 @@
 module Structures.Purs.Stack where
 
+import Data.Either (Either(..))
+import Data.Filterable (class Filterable, filterMap, filter, partitionMap, partition)
 import Data.Foldable (class Foldable, foldr, foldl, foldMap)
 import Data.Functor (class Functor, map)
 import Data.Maybe (Maybe(..))
@@ -77,3 +79,46 @@ count = foldr (\ _ acc -> acc + 1) 0
 instance showStack :: (Show a) => Show (Stack a) where
   show Nil = "[]"
   show (Cons x xs) = show x <> " : " <> show xs
+
+toMaybe :: forall a. Stack a -> Maybe a
+toMaybe Nil = Nothing
+toMaybe (Cons x _) = Just x
+
+instance filterableStack :: Filterable Stack where
+  filter p Nil = Nil
+  filter p (Cons x xs) =
+    if p x
+    then Cons x (filter p xs)
+    else filter p xs
+
+  filterMap f Nil = Nil
+  filterMap f (Cons x xs) =
+    case f x of
+      Nothing -> filterMap f xs
+      Just y -> Cons y (filterMap f xs)
+
+  partition p Nil = { no : Nil, yes : Nil }
+  partition p (Cons x xs) =
+    let
+      rest = partition p xs
+    in
+     if (p x)
+     then { no : rest.no
+          , yes : Cons x rest.yes
+          }
+     else { no : Cons x rest.no
+          , yes : rest.yes
+          }
+
+  partitionMap p Nil = { left : Nil, right : Nil}
+  partitionMap p (Cons x xs) =
+    let
+      rest = partitionMap p xs
+    in
+     case p x of
+       Left l -> { left : Cons l rest.left
+                 , right : rest.right
+                 }
+       Right r -> { left : rest.left
+                  , right : Cons r rest.right
+                  }

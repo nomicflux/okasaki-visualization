@@ -119,7 +119,8 @@ data Action = Empty
 
 changeFn :: Model -> String -> Model
 changeFn model fn = model { currFn = M.lookup fn model.sourceCode
-                          , currFnName = Just fn}
+                          , currFnName = Just fn
+                          }
 
 updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
 updateQueue model queue fn =
@@ -254,7 +255,7 @@ view model =
     keys = M.keys $ M.union model.prevNodes model.currNodes
     showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
     nodes = concatMap showNodes (fromFoldable keys)
-    stackDiv = H.div [ HA.className "render" ] [ H.svg [HA.height (show maxHeight)
+    stackDiv = H.div [ HA.className "render" ] [ H.svg [ HA.height (show maxHeight)
                                                        , HA.width (show maxWidth)  ] nodes ]
     dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
                                    , HE.onClick $ const ShowStructure

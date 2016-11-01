@@ -3,6 +3,7 @@ module Main where
 import Views.Stack as Stack
 import Views.Queue as Queue
 import Views.Set as Set
+import Views.Leftist as Leftist
 import CodeSnippet as CS
 import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>))
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
@@ -27,12 +28,14 @@ import Signal.Time (every, second, Time())
 data Page = StackPage
           | QueuePage
           | SetPage
+          | LeftistPage
 
 derive instance eqPage :: Eq Page
 
 type State = { stackModel :: Stack.Model
              , queueModel :: Queue.Model
              , setModel :: Set.Model
+             , leftistModel :: Leftist.Model
              , currPage :: Maybe Page
              , currLanguage :: CS.Language
              , availableLanguages :: Set CS.Language
@@ -42,6 +45,7 @@ initialState :: State
 initialState = { stackModel : Stack.initModel
                , queueModel : Queue.initModel
                , setModel : Set.initModel
+               , leftistModel : Leftist.initModel
                , currPage : Nothing
                , currLanguage : CS.Purescript
                , availableLanguages : empty
@@ -53,6 +57,7 @@ data Action = ChangePage Page
             | StackAction Stack.Action
             | QueueAction Queue.Action
             | SetAction Set.Action
+            | LeftistAction Leftist.Action
             | Tick Time
 
 updateStack :: State -> Stack.Action
@@ -79,21 +84,33 @@ updateSet state saction =
   in
    mapEffects SetAction $ mapState (\s -> state { setModel = s}) $ updated
 
+updateLeftist :: State -> Leftist.Action
+          -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+updateLeftist state laction =
+  let
+    updated = Leftist.update laction state.leftistModel
+  in
+   mapEffects LeftistAction $ mapState (\s -> state { leftistModel = s}) $ updated
+
+loadAction :: Page -> (Either String CS.SourceCode -> Action)
+loadAction StackPage = StackAction <<< Stack.LoadCode
+loadAction QueuePage = QueueAction <<< Queue.LoadCode
+loadAction SetPage = SetAction <<< Set.LoadCode
+loadAction LeftistPage = LeftistAction <<< Leftist.LoadCode
+
+fileName :: Page -> String
+fileName StackPage = "Stack"
+fileName QueuePage = "Queue"
+fileName SetPage = "Set"
+fileName LeftistPage = "Leftist"
+
 getSource :: forall eff. Page -> CS.Language -> Aff (ajax :: AJAX | eff) Action
-getSource StackPage lang =
-  StackAction <<< Stack.LoadCode <$> CS.getFile "Stack" lang
-getSource QueuePage lang =
-  QueueAction <<< Queue.LoadCode <$> CS.getFile "Queue" lang
-getSource SetPage lang =
-  SetAction <<< Set.LoadCode <$> CS.getFile "Set" lang
+getSource page lang =
+  (loadAction page) <$> CS.getFile (fileName page) lang
 
 checkSources :: forall eff. Page -> Array (Aff (ajax :: AJAX | eff) Action)
-checkSources StackPage =
-  map (\lang -> PageCheck lang <$> CS.getFile "Stack" lang) CS.allLangs
-checkSources QueuePage =
-  map (\lang -> PageCheck lang <$> CS.getFile "Queue" lang) CS.allLangs
-checkSources SetPage =
-  map (\lang -> PageCheck lang <$> CS.getFile "Set" lang) CS.allLangs
+checkSources page =
+  map (\lang -> PageCheck lang <$> CS.getFile (fileName page) lang) CS.allLangs
 
 update :: Action -> State
        -> EffModel State Action _
@@ -118,6 +135,8 @@ update (QueueAction quaction) state =
   updateQueue state quaction
 update (SetAction saction) state =
   updateSet state saction
+update (LeftistAction laction) state =
+  updateLeftist state laction
 update (Tick time) state =
   case state.currPage of
     Nothing -> noEffects state
@@ -127,6 +146,8 @@ update (Tick time) state =
       updateQueue state (Queue.Tick time)
     Just SetPage ->
       updateSet state (Set.Tick time)
+    Just LeftistPage ->
+      updateLeftist state (Leftist.Tick time)
 
 dsBtn :: State -> String -> Page -> H.Html Action
 dsBtn state name token =
@@ -165,6 +186,7 @@ view state =
     dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dbf "Stack / List" StackPage
                                                   , dbf "Queue" QueuePage
                                                   , dbf "Set / Binary Tree" SetPage
+                                                  , dbf "Leftist Heap" LeftistPage
                                                   ]
     langDiv = H.div [ HA.className "pure-u-1-1" ] [ lbf "Purescript" CS.Purescript
                                                   , lbf "Elm" CS.Elm
@@ -181,6 +203,7 @@ view state =
         Just StackPage -> StackAction <$> Stack.view state.stackModel
         Just QueuePage -> QueueAction <$> Queue.view state.queueModel
         Just SetPage -> SetAction <$> Set.view state.setModel
+        Just LeftistPage -> LeftistAction <$> Leftist.view state.leftistModel
   in
    H.div [ ] [ dataDiv, langDiv, renderDiv ]
 
