@@ -1,7 +1,6 @@
 module Structures.Purs.Queue where
 
 import Data.Semigroup (append)
--- import Data.Monoid (mempty)
 import Data.Foldable (class Foldable, foldr, foldl, foldMap)
 import Data.Functor (class Functor, map)
 import Data.Maybe (Maybe(..))

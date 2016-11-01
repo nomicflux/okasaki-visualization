@@ -1,11 +1,11 @@
-module Views.Set where
+module Views.Leftist where
 
 import CodeSnippet as CS
 import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
-import Structures.Purs.Set as S
+import Structures.Purs.Leftist as L
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
 import Data.Array (foldM, (:), concatMap, fromFoldable)
@@ -23,7 +23,7 @@ import Signal.Time (now, Time, millisecond)
 
 import Views.Node
 
-type Model = { set :: S.Set Node
+type Model = { heap :: L.Leftist Node
              , currId :: NodeID
              , currInput :: Maybe NodeValue
              , currNodes :: NodeMap
@@ -37,7 +37,7 @@ type Model = { set :: S.Set Node
              }
 
 initModel :: Model
-initModel = { set : S.empty
+initModel = { heap : L.empty
             , currId : 0
             , currInput : Nothing
             , currNodes : M.empty
@@ -65,21 +65,18 @@ mkNode model =
       in
        Just $ Tuple newNode newModel
 
-type Dimensions = { width :: Int
-                  , depth :: Int
-                  }
 type Position = { x :: Int
                 , y :: Int
                 }
 
-mkNodePos :: Dimensions -> Position -> Node -> NodePos
-mkNodePos dim pos (Node node) =
+mkNodePos :: Int -> Position -> Node -> Array NodeID -> NodePos
+mkNodePos depth pos (Node node) conns =
   let
-    fwidth = toNumber (dim.width + 1)
-    fheight = toNumber (dim.depth + 1)
-    ftotal = max fwidth fheight
-    rY = maxWidth / 2.0 / (pow 2.0 (toNumber pos.y))
-    rH = maxWidth / 2.0 / (max fwidth fheight)
+    -- fwidth = toNumber (dim.width + 1)
+    fheight = toNumber (depth + 1)
+    -- ftotal = max fwidth fheight
+    rY = maxWidth / 1.0 / (pow 2.0 (toNumber pos.y))
+    rH = maxWidth / 1.0 / (pow 2.0 fheight)
     r = min maxRadius (min rY rH)
     offset x = x + buffer + r
     calcPosY y = offset $ (y * maxHeight / fheight)
@@ -94,29 +91,31 @@ mkNodePos dim pos (Node node) =
               , y : calcPosY (toNumber pos.y)
               , r : r
               , value : node.value
-              , connections : node.connections
+              , connections : conns
               , classes : node.classes
               }
   in
    circPos
 
-getNodeMap :: Dimensions -> S.Set Node -> NodeMap
-getNodeMap dim set = go set {x: 0, y: 0}
+getNodeMap :: Int -> L.Leftist Node -> NodeMap
+getNodeMap depth heap = go heap {x: 0, y: 0} []
   where
-    go :: S.Set Node -> Position -> NodeMap
-    go S.Leaf _ = M.empty
-    go (S.Node s) pos =
+    go :: L.Leftist Node -> Position -> Array NodeID -> NodeMap
+    go L.Leaf _ _ = M.empty
+    go (L.Node s) pos parents =
       let
-        left = go s.left (pos {x = 2*pos.x, y = pos.y + 1})
-        right = go s.right (pos { x = 2*pos.x + 1, y = pos.y + 1})
+        currId = getID s.value
+        left = go s.left (pos {x = 2*pos.x, y = pos.y + 1}) [currId]
+        right = go s.right (pos { x = 2*pos.x + 1, y = pos.y + 1}) [currId]
         combined = M.union left right
-        curr = mkNodePos dim pos s.value
+        curr = mkNodePos depth pos s.value parents
       in
        M.insert (getID s.value) curr combined
 
 data Action = Empty
-            | Member
             | Insert
+            | FindMin
+            | DeleteMin
             | CurrentInput String
             | ShowStructure
             | StartTimer Time
@@ -128,18 +127,15 @@ changeFn :: Model -> String -> Model
 changeFn model fn = model { currFn = M.lookup fn model.sourceCode
                           , currFnName = Just fn}
 
-updateSet :: Model -> S.Set Node -> String -> EffModel Model Action _
-updateSet model set fn =
+updateHeap :: Model -> L.Leftist Node -> String -> EffModel Model Action _
+updateHeap model heap fn =
   let
-    depth = S.depth set
-    width = S.maxWidth set
-    -- leftWidth = S.leftMaxWidth set
-    -- rightWidth = S.rightMaxWidth set
-    newMap = getNodeMap {width : width, depth : depth} set
+    depth = L.depth heap
+    newMap = getNodeMap depth heap
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
-                  , set = set
+                  , heap = heap
                   , animationPhase = 0.0
                   , currFnName = Just fn
                   , currFn = M.lookup fn model.sourceCode
@@ -189,43 +185,42 @@ update (StartTimer time) model = noEffects $ model { startAnimation = Just time
                                                    , animationPhase = 0.0
                                                    }
 update Empty model =
-  updateSet model S.empty "empty"
-update Member model =
-  case model.currInput of
-    Nothing ->
-      updateSet model (wipeClasses model.set) "member"
-    Just val ->
-      let
-        node = S.get model.set (blankNode val)
-      in
-       case node of
-         Nothing ->
-           updateSet model (wipeClasses model.set) "member"
-         Just oldNode ->
-           updateSet model (S.update (wipeClasses model.set) $ changeClasses oldNode "head") "member"
+  updateHeap model L.empty "empty"
 update Insert model =
   let
-    cleanSet = wipeClasses model.set
+    cleanHeap = wipeClasses model.heap
     mnode = mkNode model
   in
    case mnode of
      Nothing -> noEffects $ changeFn model "insert"
      Just (Tuple node newModel) ->
-       if S.member model.set node
-       then noEffects model
-       else
-         let
-           midSet = S.insertWithParent cleanSet node
-           finalSet = case snd midSet of
-             Nothing -> fst midSet
-             Just parent ->
-               S.update (fst midSet) (changeConn node [getID parent])
-         in
-          updateSet newModel finalSet "insert"
+       let
+         newHeap = L.insert cleanHeap node
+       in
+        updateHeap newModel newHeap "insert"
+update FindMin model =
+  let
+    mheapMin = L.findMin model.heap
+  in
+   case mheapMin of
+     Nothing -> noEffects $ changeFn model "findMin"
+     Just heapMin ->
+       let
+         newNode = changeClass "head" heapMin
+         newHeap = L.update (wipeClasses model.heap) newNode
+       in
+        updateHeap model newHeap "findMin"
+update DeleteMin model =
+  let
+    cleanHeap = wipeClasses model.heap
+  in
+   case L.deleteMin cleanHeap of
+     Nothing -> noEffects $ changeFn model "deleteMin"
+     Just heap -> updateHeap model heap "deleteMin"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =
-  noEffects $ changeFn model "Set"
+  noEffects $ changeFn model "LeftistHeap"
 
 view :: Model -> H.Html Action
 view model =
@@ -237,24 +232,31 @@ view model =
                                                        , HA.width (show maxWidth)  ] nodes ]
     dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
                                    , HE.onClick $ const ShowStructure
-                                   ] [ H.text "Set Structure" ]
+                                   ] [ H.text "Leftist Heap Structure" ]
                         ]
     emptyBtn = H.div [ ] [ H.button [ HA.className "pure-button"
                                     , HE.onClick $ const Empty
                                     ] [ H.text "Empty" ]
                          ]
+    findMinBtn = H.button [ HA.className "pure-button"
+                                      , HE.onClick $ const FindMin
+                                      ] [ H.text "Find Min"]
+    delMinBtn = H.button [ HA.className "pure-button"
+                                      , HE.onClick $ const DeleteMin
+                                      ] [ H.text "Delete Min"]
+    minSpan = H.div [ ] [ findMinBtn
+                        , delMinBtn
+                        ]
     insertSpan = H.div [ ] [ H.span [ ] [ H.button [ HA.className "pure-button"
                                                    , HE.onClick $ const Insert
                                                    ] [ H.text "Insert"]
-                                        , H.button [ HA.className "pure-button"
-                                                   , HE.onClick $ const Member
-                                                   ] [ H.text "Member"]
                                         , H.input [ HA.type_ "number"
                                                   , HE.onChange $ \t -> CurrentInput t.target.value
                                                   ] [ ]]
                          ]
     controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
                                                      , emptyBtn
+                                                     , minSpan
                                                      , insertSpan
                                                      ]
     codeDiv = H.div [ HA.className "pure-u-1-2" ]

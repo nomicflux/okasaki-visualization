@@ -5,8 +5,8 @@ defmodule Queue do
   defstruct front: Stack.empty, back: Stack.empty
   # .end
 
-  # | *top bottom pop eject
-  defp rotate(%Queue{front: front, back: back}) do
+  # | *rotate
+  def rotate(%Queue{front: front, back: back}) do
     %Queue{front: Stack.reverse(back), back: Stack.reverse(front)}
   end
   # .end
