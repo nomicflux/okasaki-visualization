@@ -45,7 +45,7 @@ maxWidth :: Number
 maxWidth = 800.0
 
 maxHeight :: Number
-maxHeight = 200.0
+maxHeight = 600.0
 
 maxRadius :: Number
 maxRadius = 40.0
