@@ -16,6 +16,13 @@ empty = Queue { front = Stack.empty
               }
 -- .end
 
+-- | *rotate
+rotate : Queue a -> Queue a
+rotate (Queue queue) =
+    Queue { front = Stack.reverse queue.back
+          , back = Stack.reverse queue.front}
+-- .end
+
 -- | *top
 top : Queue a -> Maybe a
 top (Queue queue) =
