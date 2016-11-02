@@ -75,11 +75,9 @@ type Position = { x :: Int
 mkNodePos :: Dimensions -> Position -> Node -> NodePos
 mkNodePos dim pos (Node node) =
   let
-    fwidth = toNumber (dim.width + 1)
-    fheight = toNumber (dim.depth + 1)
-    ftotal = max fwidth fheight
+    fheight = toNumber (dim.depth)
     rY = maxWidth / 2.0 / (pow 2.0 (toNumber pos.y))
-    rH = maxWidth / 2.0 / (max fwidth fheight)
+    rH = maxWidth / 4.0 / fheight
     r = min maxRadius (min rY rH)
     offset x = x + buffer + r
     calcPosY y = offset $ (y * maxHeight / fheight)
