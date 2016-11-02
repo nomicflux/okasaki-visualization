@@ -29,3 +29,34 @@ svg .edge {
 button {
     margin: 1px;
 }
+
+.sidebar {
+    padding: 5px;
+    background: black;
+    color: white;
+    border-right: 2px ridge grey;
+    height: 100%;
+    padding-bottom: 400%;
+    margin-bottom: -400%;
+}
+
+.sidebar button {
+    font-size: 0.8em;
+}
+
+input[type=number] {
+    width: 36px;
+}
+
+.sidebar input,
+.sidebar select {
+    color: black;
+}
+
+.pure-container {
+    width: 1024px;
+}
+
+.code-snippet {
+    padding: 10px;
+}

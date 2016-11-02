@@ -128,13 +128,13 @@ viewNodePos phase prevmap currmap nid =
                                prevEdge = fromMaybe (initialNode n) (M.lookup n prevmap)
                                edgeNode = interphase prevEdge currEdge
                                signX = if node.x < edgeNode.x then 1.0 else -1.0
-                               signY = if node.y < edgeNode.y then signX else -1.0 * signX
+                               -- signY = if node.y < edgeNode.y then -1.0 * signX else -1.0 * signX
                                invtan = atan ((node.y - edgeNode.y) / (node.x - edgeNode.x))
                              in
                               Just $ H.line [ HA.x1 (show $ node.x + signX*cos invtan * node.r)
-                                            , HA.y1 (show $ node.y - signY*sin invtan * node.r)
+                                            , HA.y1 (show $ node.y + signX*sin invtan * node.r)
                                             , HA.x2 (show $ edgeNode.x - signX*cos invtan * edgeNode.r)
-                                            , HA.y2 (show $ edgeNode.y + signY*sin invtan * edgeNode.r)
+                                            , HA.y2 (show $ edgeNode.y - signX*sin invtan * edgeNode.r)
                                             , HA.className "edge"] [ ]) node.connections
   in
    circ : val : edges

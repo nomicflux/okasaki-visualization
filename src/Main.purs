@@ -1,34 +1,42 @@
 module Main where
 
-import Views.Stack as Stack
-import Views.Queue as Queue
-import Views.Set as Set
-import Views.Leftist as Leftist
 import CodeSnippet as CS
-import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>), Unit)
-import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
+import Views.Leftist as Leftist
+import Views.Queue as Queue
+import Views.Set as Set
+import Views.Stack as Stack
 import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION)
-import Data.Array ((:))
+import Data.Array ((:), catMaybes)
 import Data.Either (Either(..))
 import Data.Eq (class Eq)
 import Data.Functor (map)
 import Data.Maybe (Maybe(..))
 import Data.Set (Set, insert, delete, empty, member)
+import Data.Show (show, class Show)
 import Debug.Trace (spy)
 import Network.HTTP.Affjax (AJAX)
+import Prelude (bind, (/), ($), (<$>), const, pure, (<<<), (==), (<>), Unit)
+import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
+import Pux.Html.Attributes (offset)
 import Signal ((~>))
 import Signal.Channel (CHANNEL)
-import Signal.Time (every, second, Time())
+import Signal.Time (every, second, Time)
 
 data Page = StackPage
           | QueuePage
           | SetPage
           | LeftistPage
+
+instance showPage :: Show Page where
+  show StackPage = "StackPage"
+  show QueuePage = "QueuePage"
+  show SetPage = "SetPage"
+  show LeftistPage = "LeftistPage"
 
 derive instance eqPage :: Eq Page
 
@@ -51,8 +59,8 @@ initialState = { stackModel : Stack.initModel
                , availableLanguages : empty
                }
 
-data Action = ChangePage Page
-            | ChangeLanguage CS.Language
+data Action = ChangePage (Maybe Page)
+            | ChangeLanguage (Maybe CS.Language)
             | PageCheck CS.Language (Either String CS.SourceCode)
             | StackAction Stack.Action
             | QueueAction Queue.Action
@@ -115,17 +123,21 @@ checkSources page =
 update :: Action -> State
        -> EffModel State Action _
 update (PageCheck lang (Right code)) state =
-   noEffects $ state { availableLanguages = insert lang state.availableLanguages}
+  noEffects $ state { availableLanguages = insert lang state.availableLanguages}
 update (PageCheck lang (Left err)) state =
-   noEffects $ state { availableLanguages = delete lang state.availableLanguages}
-update (ChangeLanguage lang) state =
+  noEffects $ state { availableLanguages = delete lang state.availableLanguages}
+update (ChangeLanguage Nothing) state =
+  noEffects state
+update (ChangeLanguage (Just lang)) state =
   case state.currPage of
     Nothing -> noEffects $ state { currLanguage = lang }
     Just page ->
       { state: state { currLanguage = lang }
       , effects: pure $ getSource page lang
       }
-update (ChangePage page) state =
+update (ChangePage Nothing) state =
+  noEffects $ state { currPage = Nothing }
+update (ChangePage (Just page)) state =
   { state: state { currPage = Just page }
   , effects: getSource page state.currLanguage : checkSources page
   }
@@ -149,63 +161,111 @@ update (Tick time) state =
     Just LeftistPage ->
       updateLeftist state (Leftist.Tick time)
 
-dsBtn :: State -> String -> Page -> H.Html Action
-dsBtn state name token =
+dsOption :: State -> String -> Maybe Page -> H.Html Action
+dsOption state name token =
   let
-    baseClasses = "pure-button pure-button-primary"
-    allClasses =
-      case state.currPage of
-        Nothing -> baseClasses
-        Just page -> if page == token
-                     then baseClasses <> " pure-button-active"
-                     else baseClasses
+    -- baseClasses = "pure-button pure-button-primary"
+    value =
+      case token of
+        Nothing -> ""
+        Just page -> show page
+    -- allClasses =
+    --   case state.currPage of
+    --     Nothing -> baseClasses
+    --     Just page -> if page == token
+    --                  then baseClasses <> " pure-button-active"
+    --                  else baseClasses
   in
-   H.button [ HA.className allClasses
-            , HE.onClick (const $ ChangePage token)
+   H.option [ HA.value value
             ] [ H.text name ]
 
-langBtn :: State -> String -> CS.Language -> H.Html Action
-langBtn state name token =
-  let
-    baseClasses = "pure-button pure-button-danger"
-    allClasses = if state.currLanguage == token
-                 then baseClasses <> " pure-button-active"
-                 else if member token state.availableLanguages
-                      then baseClasses
-                      else baseClasses <> " pure-button-disabled"
-  in
-   H.button [ HA.className allClasses
-            , HE. onClick (const $ ChangeLanguage token)
-            ] [ H.text name ]
+langOption :: State -> String -> Maybe CS.Language -> Maybe (H.Html Action)
+langOption _ _ Nothing = Just $ H.option [ HA.value "" ] [ H.text "" ]
+langOption state name (Just lang) =
+  if member lang state.availableLanguages
+  then
+    let
+      value = CS.suffix lang
+    in
+     Just $ H.option [ HA.value value
+                     ] [ H.text name ]
+  else Nothing
+
+stringToPage :: String -> Maybe Page
+stringToPage str =
+  case str of
+    "StackPage" -> Just StackPage
+    "QueuePage" -> Just QueuePage
+    "SetPage" -> Just SetPage
+    "LeftistPage" -> Just LeftistPage
+    _ -> Nothing
 
 view :: State -> H.Html Action
 view state =
   let
-    dbf = dsBtn state
-    lbf = langBtn state
-    dataDiv = H.div [ HA.className "pure-u-1-1" ] [ dbf "Stack / List" StackPage
-                                                  , dbf "Queue" QueuePage
-                                                  , dbf "Set / Binary Tree" SetPage
-                                                  , dbf "Leftist Heap" LeftistPage
-                                                  ]
-    langDiv = H.div [ HA.className "pure-u-1-1" ] [ lbf "Purescript" CS.Purescript
-                                                  , lbf "Elm" CS.Elm
-                                                  , lbf "Haskell" CS.Haskell
-                                                  , lbf "Idris" CS.Idris
-                                                  , lbf "Clojure" CS.Clojure
-                                                  , lbf "Scheme" CS.Scheme
-                                                  , lbf "Elixir" CS.Elixir
-                                                  , lbf "Scala" CS.Scala
-                                                  ]
-    renderDiv =
+    dbf = dsOption state
+    lbf = langOption state
+    dataDiv = H.div [ HE.onChange (\page -> ChangePage $ stringToPage page.target.value)]
+                    [ H.label [ HA.htmlFor "structure" ] [ H.text "Structure: "]
+                    , H.select [ HA.name "structure" ]
+                      [ dbf "" Nothing
+                      , dbf "Stack / List" (Just StackPage)
+                      , dbf "Queue" (Just QueuePage)
+                      , dbf "Set / Binary Tree" (Just SetPage)
+                      , dbf "Leftist Heap" (Just LeftistPage)
+                      ]
+                    ]
+    langDiv = H.div [ HE.onChange (\lang -> ChangeLanguage $ CS.stringToLang lang.target.value)]
+                    [ H.label [ HA.htmlFor "language" ] [ H.text "Language: " ]
+                    , H.select [ HA.name "language" ]
+                      (catMaybes
+                       [ lbf "" Nothing
+                       , lbf "Purescript" $ Just CS.Purescript
+                       , lbf "Elm" $ Just CS.Elm
+                       , lbf "Haskell" $ Just CS.Haskell
+                       , lbf "Idris" $ Just CS.Idris
+                       , lbf "Clojure" $ Just CS.Clojure
+                       , lbf "Scheme" $ Just CS.Scheme
+                       , lbf "Elixir" $ Just CS.Elixir
+                       , lbf "Scala" $ Just CS.Scala
+                       ])
+                    ]
+    blank = H.div [ ] [ ]
+    pageBtns =
       case state.currPage of
-        Nothing -> H.div [ HA.className "pure-u-1-1" ] [ H.text "Please select a data structure"]
-        Just StackPage -> StackAction <$> Stack.view state.stackModel
-        Just QueuePage -> QueueAction <$> Queue.view state.queueModel
-        Just SetPage -> SetAction <$> Set.view state.setModel
-        Just LeftistPage -> LeftistAction <$> Leftist.view state.leftistModel
+        Nothing -> blank
+        Just StackPage -> StackAction <$> Stack.viewCtrl state.stackModel
+        Just QueuePage -> QueueAction <$> Queue.viewCtrl state.queueModel
+        Just SetPage -> SetAction <$> Set.viewCtrl state.setModel
+        Just LeftistPage -> LeftistAction <$> Leftist.viewCtrl state.leftistModel
+    modelRendered =
+      case state.currPage of
+        Nothing -> blank
+        Just StackPage -> StackAction <$> Stack.viewModel state.stackModel
+        Just QueuePage -> QueueAction <$> Queue.viewModel state.queueModel
+        Just SetPage -> SetAction <$> Set.viewModel state.setModel
+        Just LeftistPage -> LeftistAction <$> Leftist.viewModel state.leftistModel
+    codeSnippets =
+      case state.currPage of
+        Nothing -> blank
+        Just StackPage -> StackAction <$> Stack.viewCode state.stackModel
+        Just QueuePage -> QueueAction <$> Queue.viewCode state.queueModel
+        Just SetPage -> SetAction <$> Set.viewCode state.setModel
+        Just LeftistPage -> LeftistAction <$> Leftist.viewCode state.leftistModel
+    sideBar = H.div [ HA.className "pure-u-1-4" ] [ H.div [ HA.className "sidebar" ]
+                                                    [ dataDiv
+                                                    , langDiv
+                                                    , pageBtns
+                                                    ]
+                                                  ]
+    render = H.div [ HA.className "pure-u-3-4 render" ]
+             [ H.div [ HA.className "render" ] [ modelRendered ]
+             , H.div [ HA.className "code-snippet" ] [ codeSnippets ]
+             ]
   in
-   H.div [ ] [ dataDiv, langDiv, renderDiv ]
+   H.div [ HA.className "pure-g pure-container" ] [ sideBar
+                                                  , render
+                                                  ]
 
 main :: Eff (channel :: CHANNEL, ajax :: AJAX, err :: EXCEPTION) Unit
 main = do

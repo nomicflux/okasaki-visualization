@@ -78,7 +78,7 @@ mkNodePos total (Node node) (Tuple pos acc) =
     fpos = toNumber pos
     r = min maxRadius (maxWidth / 3.0 / ftotal)
     offset x = x + buffer + r
-    calcPos x = offset $ x * maxWidth
+    calcPos x = maxWidth - (offset $ x * maxWidth)
     circPos = { x : calcPos $ fpos / ftotal
               , y : maxHeight / 2.0
               , r : r
@@ -216,15 +216,9 @@ update (CurrentInput s) model =
 update ShowStructure model =
   noEffects $ changeFn model "Stack"
 
-view :: Model -> H.Html Action
-view model =
-  let
-    keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
-    nodes = concatMap showNodes (fromFoldable keys)
-    stackDiv = H.div [ HA.className "render pure-u-1-1" ]
-               [ H.svg [HA.height (show maxHeight)
-                       , HA.width (show maxWidth)  ] nodes ]
+viewCtrl :: Model -> H.Html Action
+viewCtrl model =
+   let
     dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
                                    , HE.onClick $ const ShowStructure
                                    ] [ H.text "Stack Structure" ]
@@ -252,28 +246,41 @@ view model =
                                                  , HE.onClick $ const Insert
                                                  ] [ H.text "Cons"]
                                       , H.input [ HA.type_ "number"
+                                                , HA.maxLength "3"
+                                                , HA.size 3
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]
-    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
-                                                     , emptyBtn
-                                                     , viewsDiv
-                                                     , revBtn
-                                                     , popBtn
-                                                     , consSpan
-                                                     ]
-    codeDiv = H.div [ HA.className "pure-u-1-2" ]
-                    [ H.code [ ]
-                      [ H.pre [ ]
-                        [ case model.currFn of
-                             Nothing ->
-                               H.i []
-                                   [ H.text "No implementation given or no function selected"]
-                             Just fn -> H.text fn ]
-                      ]
-                    ]
+   in
+    H.div [ ] [ dataBtn
+              , emptyBtn
+              , viewsDiv
+              , revBtn
+              , popBtn
+              , consSpan
+              ]
+
+viewCode :: Model -> H.Html Action
+viewCode model =
+  H.div [ ]
+        [ H.code [ ]
+          [ H.pre [ ]
+            [ case model.currFn of
+                 Nothing ->
+                   H.i []
+                       [ H.text "No implementation given or no function selected"]
+                 Just fn -> H.text fn ]
+            ]
+          ]
+
+viewModel :: Model -> H.Html Action
+viewModel model =
+  let
+    keys = M.keys $ M.union model.prevNodes model.currNodes
+    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
+    nodes = concatMap showNodes (fromFoldable keys)
   in
-   H.div [ HA.className "pure-g" ] [ stackDiv
-                                   , controlDiv
-                                   , codeDiv
-                                   ]
+    H.div [ ]
+          [ H.svg [HA.height (show maxHeight)
+                  , HA.width (show maxWidth)  ] nodes
+          ]

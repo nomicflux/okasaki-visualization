@@ -8,7 +8,7 @@ import Data.Eq (class Eq)
 import Data.Functor (map)
 import Data.List (List(..), concatMap)
 import Data.Map (Map, fromFoldableWith)
--- import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord)
 import Data.Show (class Show)
 import Data.String (trim)
@@ -63,6 +63,19 @@ suffix Clojure = "clj"
 suffix Scheme = "scm"
 suffix Elixir = "ex"
 suffix Scala = "scala"
+
+stringToLang :: String -> Maybe Language
+stringToLang str =
+  case str of
+    "purs" -> Just Purescript
+    "elm" -> Just Elm
+    "hs" -> Just Haskell
+    "idr" -> Just Idris
+    "clj" -> Just Clojure
+    "scm" -> Just Scheme
+    "ex" -> Just Elixir
+    "scala" -> Just Scala
+    _ -> Nothing
 
 data SourceCode = SourceCode { getSourceCode :: String
                              , language :: Language

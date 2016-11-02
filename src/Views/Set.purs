@@ -227,14 +227,9 @@ update (CurrentInput s) model =
 update ShowStructure model =
   noEffects $ changeFn model "Set"
 
-view :: Model -> H.Html Action
-view model =
+viewCtrl :: Model -> H.Html Action
+viewCtrl model =
   let
-    keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
-    nodes = concatMap showNodes (fromFoldable keys)
-    stackDiv = H.div [ HA.className "render" ] [ H.svg [HA.height (show maxHeight)
-                                                       , HA.width (show maxWidth)  ] nodes ]
     dataBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-warning"
                                    , HE.onClick $ const ShowStructure
                                    ] [ H.text "Set Structure" ]
@@ -250,25 +245,36 @@ view model =
                                                    , HE.onClick $ const Member
                                                    ] [ H.text "Member"]
                                         , H.input [ HA.type_ "number"
+                                                  , HA.maxLength "3"
+                                                  , HA.size 3
                                                   , HE.onChange $ \t -> CurrentInput t.target.value
                                                   ] [ ]]
                          ]
-    controlDiv = H.div [ HA.className "pure-u-1-2" ] [ dataBtn
-                                                     , emptyBtn
-                                                     , insertSpan
-                                                     ]
-    codeDiv = H.div [ HA.className "pure-u-1-2" ]
-                    [ H.code [ ]
-                      [ H.pre [ ]
-                        [ case model.currFn of
-                             Nothing ->
-                               H.i []
-                                   [ H.text "No implementation given or no function selected"]
-                             Just fn -> H.text fn ]
-                      ]
-                    ]
   in
-   H.div [ HA.className "pure-g" ] [ stackDiv
-                                   , controlDiv
-                                   , codeDiv
-                                   ]
+    H.div [ ] [ dataBtn
+              , emptyBtn
+              , insertSpan
+              ]
+
+viewCode :: Model -> H.Html Action
+viewCode model =
+    H.div [ ]
+          [ H.code [ ]
+            [ H.pre [ ]
+              [ case model.currFn of
+                   Nothing ->
+                     H.i []
+                     [ H.text "No implementation given or no function selected"]
+                   Just fn -> H.text fn ]
+            ]
+          ]
+
+viewModel :: Model -> H.Html Action
+viewModel model =
+  let
+    keys = M.keys $ M.union model.prevNodes model.currNodes
+    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
+    nodes = concatMap showNodes (fromFoldable keys)
+  in
+    H.div [ ] [ H.svg [HA.height (show maxHeight)
+                      , HA.width (show maxWidth)  ] nodes ]
