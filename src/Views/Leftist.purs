@@ -73,7 +73,7 @@ mkNodePos :: Int -> Position -> Node -> Array NodeID -> NodePos
 mkNodePos depth pos (Node node) conns =
   let
     -- fwidth = toNumber (dim.width + 1)
-    fheight = toNumber (depth + 1)
+    fheight = toNumber depth
     -- ftotal = max fwidth fheight
     rY = maxWidth / 1.0 / (pow 2.0 (toNumber pos.y))
     rH = maxWidth / 1.0 / (pow 2.0 fheight)
