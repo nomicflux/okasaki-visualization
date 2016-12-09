@@ -2,7 +2,7 @@ package okasaki
 
 // | *Queue empty
 object Queue
-//.end
+// .end
 {
   // | *empty
   def empty = new Queue(Nil, Nil)
