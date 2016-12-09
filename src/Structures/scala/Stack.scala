@@ -1,5 +1,7 @@
+package okasaki
+
 // | *Stack head tail reverse cons
-abstract class Stack[A]
+abstract class Stack[+A]
 // .end
 {
   // | *head
@@ -12,12 +14,15 @@ abstract class Stack[A]
   def reverse: Stack[A]
   // .end
   // | *cons
-  def cons(x : A) = Cons(x, this)
+  def cons[B >: A](x : B): Stack[B] = Cons(x, this)
+  // .end
+  // | *isEmpty
+  def isEmpty: Boolean
   // .end
 }
 
 // | *Stack empty head tail reverse
-case class Nil[Nothing]() extends Stack[Nothing]
+case object Nil extends Stack[Nothing]
 // .end
 {
   // | *head
@@ -29,6 +34,10 @@ case class Nil[Nothing]() extends Stack[Nothing]
   // | *reverse
   def reverse = this
   // .end
+  // | *isEmpty
+  def isEmpty = true
+  // .end
+  override def toString = "[]"
 }
 
 // | *Stack head tail reverse
@@ -38,10 +47,15 @@ case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
   // | *reverse
   def reverse = {
     def reverseHelp(curr: Stack[A], acc: Stack[A]): Stack[A] = curr match {
-      case Nil() => acc
+      case Nil => acc
       case Cons(h, t) => reverseHelp(t, Cons(h, acc))
     }
-    reverseHelp(this, Nil())
+    reverseHelp(this, Nil)
   }
   // .end
+  // | *isEmpty
+  def isEmpty = false
+  // .end
+
+  override def toString = head.toString ++ " : " ++ tail.toString
 }
