@@ -26171,17 +26171,19 @@ var PS = {};
   var Data_Filterable = PS["Data.Filterable"];
   var Data_Function_Uncurried = PS["Data.Function.Uncurried"];
   var Data_Functor = PS["Data.Functor"];
+  var Data_List = PS["Data.List"];
   var Data_Map = PS["Data.Map"];
   var Data_Maybe = PS["Data.Maybe"];
   var Data_Ord = PS["Data.Ord"];
   var Data_Show = PS["Data.Show"];
   var $$Math = PS["Math"];
   var Prelude = PS["Prelude"];
+  var Views_Animation = PS["Views.Animation"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
   var Data_Ring = PS["Data.Ring"];
   var Data_Semiring = PS["Data.Semiring"];
-  var Data_EuclideanRing = PS["Data.EuclideanRing"];
   var Data_Function = PS["Data.Function"];
+  var Data_EuclideanRing = PS["Data.EuclideanRing"];
   var Data_Semigroup = PS["Data.Semigroup"];        
   var Node = (function () {
       function Node(value0) {
@@ -26192,7 +26194,32 @@ var PS = {};
       };
       return Node;
   })();
+  var updateNodes = function (nodes) {
+      return function (newNodes) {
+          var $9 = {};
+          for (var $10 in nodes) {
+              if (nodes.hasOwnProperty($10)) {
+                  $9[$10] = nodes[$10];
+              };
+          };
+          $9.prevNodes = nodes.currNodes;
+          $9.currNodes = newNodes;
+          return $9;
+      };
+  };
   var svgText = Data_Function_Uncurried.runFn3(Pux_Html_Elements.element)("text");
+  var setInput = function (nodes) {
+      return function (minput) {
+          var $12 = {};
+          for (var $13 in nodes) {
+              if (nodes.hasOwnProperty($13)) {
+                  $12[$13] = nodes[$13];
+              };
+          };
+          $12.currInput = minput;
+          return $12;
+      };
+  };
   var maxWidth = 800.0;
   var maxRadius = 40.0;
   var maxHeight = 600.0;
@@ -26208,16 +26235,16 @@ var PS = {};
       return function (old) {
           return function ($$new) {
               var intphase = interpolate(phase);
-              var $9 = {};
-              for (var $10 in $$new) {
-                  if ($$new.hasOwnProperty($10)) {
-                      $9[$10] = $$new[$10];
+              var $15 = {};
+              for (var $16 in $$new) {
+                  if ($$new.hasOwnProperty($16)) {
+                      $15[$16] = $$new[$16];
                   };
               };
-              $9.x = intphase(old.x)($$new.x);
-              $9.y = intphase(old.y)($$new.y);
-              $9.r = intphase(old.r)($$new.r);
-              return $9;
+              $15.x = intphase(old.x)($$new.x);
+              $15.y = intphase(old.y)($$new.y);
+              $15.r = intphase(old.r)($$new.r);
+              return $15;
           };
       };
   };
@@ -26231,8 +26258,27 @@ var PS = {};
           classes: ""
       };
   };
+  var incId = function (nodes) {
+      var $18 = {};
+      for (var $19 in nodes) {
+          if (nodes.hasOwnProperty($19)) {
+              $18[$19] = nodes[$19];
+          };
+      };
+      $18.currId = nodes.currId + 1 | 0;
+      return $18;
+  };
+  var getNextId = function (nodes) {
+      return nodes.currId;
+  };
+  var getInput = function (nodes) {
+      return nodes.currInput;
+  };
   var getID = function (v) {
       return v.value0.id;
+  };
+  var getAllNodeKeys = function (nodes) {
+      return Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(nodes.prevNodes)(nodes.currNodes));
   };
   var finalNode = function (v) {
       return {
@@ -26245,42 +26291,48 @@ var PS = {};
       };
   };
   var viewNodePos = function (phase) {
-      return function (prevmap) {
-          return function (currmap) {
-              return function (nid) {
-                  var prev = Data_Maybe.fromMaybe(initialNode(nid))(Data_Map.lookup(Data_Ord.ordInt)(nid)(prevmap));
-                  var interphase = interpolateNodes(phase);
-                  var curr = Data_Maybe.fromMaybe(finalNode(nid))(Data_Map.lookup(Data_Ord.ordInt)(nid)(currmap));
-                  var node = interphase(prev)(curr);
-                  var edges = Data_Filterable.filterMap(Data_Filterable.filterableArray)(function (n) {
-                      var mnode = Data_Map.lookup(Data_Ord.ordInt)(n)(currmap);
-                      if (mnode instanceof Data_Maybe.Nothing) {
-                          return Data_Maybe.Nothing.value;
-                      };
-                      if (mnode instanceof Data_Maybe.Just) {
-                          var prevEdge = Data_Maybe.fromMaybe(initialNode(n))(Data_Map.lookup(Data_Ord.ordInt)(n)(prevmap));
-                          var edgeNode = interphase(prevEdge)(mnode.value0);
-                          var invtan = $$Math.atan((node.y - edgeNode.y) / (node.x - edgeNode.x));
-                          var signX = (function () {
-                              var $15 = node.x < edgeNode.x;
-                              if ($15) {
-                                  return 1.0;
-                              };
-                              if (!$15) {
-                                  return -1.0;
-                              };
-                              throw new Error("Failed pattern match at Views.Node line 130, column 40 - line 131, column 32: " + [ $15.constructor.name ]);
-                          })();
-                          return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + signX * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y - signX * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes.className("edge") ])([  ]));
-                      };
-                      throw new Error("Failed pattern match at Views.Node line 124, column 26 - line 138, column 71: " + [ mnode.constructor.name ]);
-                  })(node.connections);
-                  var fontSize = Data_Ord.min(Data_Ord.ordNumber)(node.r * 2.0 - 1.0)(16.0);
-                  var val = svgText([ Pux_Html_Attributes.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))((node.y + fontSize / 2.0) - 1.0)), Pux_Html_Attributes.fontSize(Data_Show.show(Data_Show.showNumber)(fontSize)), Pux_Html_Attributes.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
-                  var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes.className(node.classes + " node") ])([  ]);
-                  return Data_Array.cons(circ)(Data_Array.cons(val)(edges));
-              };
+      return function (nodes) {
+          return function (nid) {
+              var prev = Data_Maybe.fromMaybe(initialNode(nid))(Data_Map.lookup(Data_Ord.ordInt)(nid)(nodes.prevNodes));
+              var interphase = interpolateNodes(phase);
+              var curr = Data_Maybe.fromMaybe(finalNode(nid))(Data_Map.lookup(Data_Ord.ordInt)(nid)(nodes.currNodes));
+              var node = interphase(prev)(curr);
+              var edges = Data_Filterable.filterMap(Data_Filterable.filterableArray)(function (n) {
+                  var mnode = Data_Map.lookup(Data_Ord.ordInt)(n)(nodes.currNodes);
+                  if (mnode instanceof Data_Maybe.Nothing) {
+                      return Data_Maybe.Nothing.value;
+                  };
+                  if (mnode instanceof Data_Maybe.Just) {
+                      var prevEdge = Data_Maybe.fromMaybe(initialNode(n))(Data_Map.lookup(Data_Ord.ordInt)(n)(nodes.prevNodes));
+                      var edgeNode = interphase(prevEdge)(mnode.value0);
+                      var invtan = $$Math.atan((node.y - edgeNode.y) / (node.x - edgeNode.x));
+                      var signX = (function () {
+                          var $24 = node.x < edgeNode.x;
+                          if ($24) {
+                              return 1.0;
+                          };
+                          if (!$24) {
+                              return -1.0;
+                          };
+                          throw new Error("Failed pattern match at Views.Node line 168, column 40 - line 169, column 32: " + [ $24.constructor.name ]);
+                      })();
+                      return Data_Function.apply(Data_Maybe.Just.create)(Pux_Html_Elements.line([ Pux_Html_Attributes.x1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x + signX * $$Math.cos(invtan) * node.r)), Pux_Html_Attributes.y1(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y + signX * $$Math.sin(invtan) * node.r)), Pux_Html_Attributes.x2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.x - signX * $$Math.cos(invtan) * edgeNode.r)), Pux_Html_Attributes.y2(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(edgeNode.y - signX * $$Math.sin(invtan) * edgeNode.r)), Pux_Html_Attributes.className("edge") ])([  ]));
+                  };
+                  throw new Error("Failed pattern match at Views.Node line 162, column 26 - line 176, column 71: " + [ mnode.constructor.name ]);
+              })(node.connections);
+              var fontSize = Data_Ord.min(Data_Ord.ordNumber)(node.r * 2.0 - 1.0)(16.0);
+              var val = svgText([ Pux_Html_Attributes.x(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.y(Data_Function.apply(Data_Show.show(Data_Show.showNumber))((node.y + fontSize / 2.0) - 1.0)), Pux_Html_Attributes.fontSize(Data_Show.show(Data_Show.showNumber)(fontSize)), Pux_Html_Attributes.textAnchor("middle") ])([ Pux_Html_Elements.text(Data_Show.show(Data_Show.showInt)(node.value)) ]);
+              var circ = Pux_Html_Elements.circle([ Pux_Html_Attributes.cx(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.x)), Pux_Html_Attributes.cy(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.y)), Pux_Html_Attributes.r(Data_Function.apply(Data_Show.show(Data_Show.showNumber))(node.r)), Pux_Html_Attributes.className(node.classes + " node") ])([  ]);
+              return Data_Array.cons(circ)(Data_Array.cons(val)(edges));
           };
+      };
+  };
+  var viewModel = function (anim) {
+      return function (nodes) {
+          var showNodes = viewNodePos(Views_Animation.getPhase(anim))(nodes);
+          var keys = getAllNodeKeys(nodes);
+          var svgNodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
+          return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(maxWidth)) ])(svgNodes) ]);
       };
   };
   var eqNode = new Data_Eq.Eq(function (v) {
@@ -26298,14 +26350,14 @@ var PS = {};
   var changeClass = function (classes) {
       return function (v) {
           return new Node((function () {
-              var $27 = {};
-              for (var $28 in v.value0) {
-                  if (v.value0.hasOwnProperty($28)) {
-                      $27[$28] = v.value0[$28];
+              var $36 = {};
+              for (var $37 in v.value0) {
+                  if (v.value0.hasOwnProperty($37)) {
+                      $36[$37] = v.value0[$37];
                   };
               };
-              $27.classes = classes;
-              return $27;
+              $36.classes = classes;
+              return $36;
           })());
       };
   };
@@ -26318,19 +26370,33 @@ var PS = {};
       return changeAllClasses(dictFunctor)("");
   };
   var buffer = 10.0;
+  var blankNodes = {
+      currId: 0, 
+      currInput: Data_Maybe.Nothing.value, 
+      currNodes: Data_Map.empty, 
+      prevNodes: Data_Map.empty
+  };
   exports["Node"] = Node;
+  exports["blankNodes"] = blankNodes;
   exports["buffer"] = buffer;
   exports["changeAllClasses"] = changeAllClasses;
   exports["changeClass"] = changeClass;
   exports["finalNode"] = finalNode;
+  exports["getAllNodeKeys"] = getAllNodeKeys;
   exports["getID"] = getID;
+  exports["getInput"] = getInput;
+  exports["getNextId"] = getNextId;
+  exports["incId"] = incId;
   exports["initialNode"] = initialNode;
   exports["interpolate"] = interpolate;
   exports["interpolateNodes"] = interpolateNodes;
   exports["maxHeight"] = maxHeight;
   exports["maxRadius"] = maxRadius;
   exports["maxWidth"] = maxWidth;
+  exports["setInput"] = setInput;
   exports["svgText"] = svgText;
+  exports["updateNodes"] = updateNodes;
+  exports["viewModel"] = viewModel;
   exports["viewNodePos"] = viewNodePos;
   exports["wipeClasses"] = wipeClasses;
   exports["eqNode"] = eqNode;
@@ -26517,7 +26583,6 @@ var PS = {};
   var Data_Array = PS["Data.Array"];
   var Data_Int = PS["Data.Int"];
   var Data_Maybe = PS["Data.Maybe"];
-  var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
   var $$Math = PS["Math"];
   var Prelude = PS["Prelude"];
@@ -26527,12 +26592,11 @@ var PS = {};
   var Views_Animation = PS["Views.Animation"];
   var Views_Node = PS["Views.Node"];
   var Views_SourceCode = PS["Views.SourceCode"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_List = PS["Data.List"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
+  var Data_Function = PS["Data.Function"];
   var Data_Functor = PS["Data.Functor"];
   var Data_EuclideanRing = PS["Data.EuclideanRing"];
+  var Data_Ord = PS["Data.Ord"];
   var Data_Semiring = PS["Data.Semiring"];
   var Control_Bind = PS["Control.Bind"];
   var Control_Monad_Aff = PS["Control.Monad.Aff"];
@@ -26600,12 +26664,6 @@ var PS = {};
       };
       return Animate;
   })();
-  var viewModel = function (model) {
-      var showNodes = Views_Node.viewNodePos(Views_Animation.getPhase(model.animation))(model.prevNodes)(model.currNodes);
-      var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
-      var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
-      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(Views_Node.maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(Views_Node.maxWidth)) ])(nodes) ]);
-  };
   var viewCtrl = function (model) {
       var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
@@ -26653,14 +26711,15 @@ var PS = {};
       };
   };
   var mkNode = function (model) {
-      if (model.currInput instanceof Data_Maybe.Nothing) {
+      var $13 = Views_Node.getInput(model.nodes);
+      if ($13 instanceof Data_Maybe.Nothing) {
           return Data_Maybe.Nothing.value;
       };
-      if (model.currInput instanceof Data_Maybe.Just) {
+      if ($13 instanceof Data_Maybe.Just) {
           var newNode = new Views_Node.Node({
-              value: model.currInput.value0, 
+              value: $13.value0, 
               classes: "cons", 
-              id: model.currId, 
+              id: Views_Node.getNextId(model.nodes), 
               connections: [  ]
           });
           var newModel = (function () {
@@ -26670,19 +26729,16 @@ var PS = {};
                       $14[$15] = model[$15];
                   };
               };
-              $14.currId = model.currId + 1 | 0;
+              $14.nodes = Views_Node.incId(model.nodes);
               return $14;
           })();
           return Data_Function.apply(Data_Maybe.Just.create)(new Data_Tuple.Tuple(newNode, newModel));
       };
-      throw new Error("Failed pattern match at Views.Leftist line 46, column 3 - line 57, column 37: " + [ model.currInput.constructor.name ]);
+      throw new Error("Failed pattern match at Views.Leftist line 39, column 3 - line 50, column 37: " + [ $13.constructor.name ]);
   };
   var initModel = {
       heap: Structures_Purs_Leftist.empty, 
-      currId: 0, 
-      currInput: Data_Maybe.Nothing.value, 
-      currNodes: Data_Map.empty, 
-      prevNodes: Data_Map.empty, 
+      nodes: Views_Node.blankNodes, 
       animation: Views_Animation.defaultAnimation, 
       code: Views_SourceCode.blankSourceCode
   };
@@ -26722,7 +26778,7 @@ var PS = {};
                           var combined = Data_Map.union(Data_Ord.ordInt)(left)(right);
                           return Data_Map.insert(Data_Ord.ordInt)(Views_Node.getID(v.value0.value))(curr)(combined);
                       };
-                      throw new Error("Failed pattern match at Views.Leftist line 95, column 5 - line 95, column 28: " + [ v.constructor.name, v1.constructor.name, v2.constructor.name ]);
+                      throw new Error("Failed pattern match at Views.Leftist line 86, column 5 - line 86, column 28: " + [ v.constructor.name, v1.constructor.name, v2.constructor.name ]);
                   };
               };
           };
@@ -26746,8 +26802,7 @@ var PS = {};
                               $28[$29] = model[$29];
                           };
                       };
-                      $28.prevNodes = model.currNodes;
-                      $28.currNodes = newMap;
+                      $28.nodes = Views_Node.updateNodes(model.nodes)(newMap);
                       $28.heap = heap;
                       $28.animation = Views_Animation.resetAnimation(model.animation);
                       $28.code = newSource;
@@ -26808,7 +26863,7 @@ var PS = {};
                   var newHeap = Structures_Purs_Leftist.insert(Views_Node.ordNode)(cleanHeap)(mnode.value0.value0);
                   return updateHeap(mnode.value0.value1)(newHeap)("insert");
               };
-              throw new Error("Failed pattern match at Views.Leftist line 159, column 4 - line 166, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Leftist line 149, column 4 - line 156, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof FindMin) {
               var mheapMin = Structures_Purs_Leftist.findMin(model.heap);
@@ -26829,7 +26884,7 @@ var PS = {};
                   var newHeap = Structures_Purs_Leftist.update(Views_Node.ordNode)(Views_Node.wipeClasses(Structures_Purs_Leftist.functorLeftist)(model.heap))(newNode);
                   return updateHeap(model)(newHeap)("findMin");
               };
-              throw new Error("Failed pattern match at Views.Leftist line 170, column 4 - line 178, column 1: " + [ mheapMin.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Leftist line 160, column 4 - line 168, column 1: " + [ mheapMin.constructor.name ]);
           };
           if (v instanceof DeleteMin) {
               var cleanHeap = Views_Node.wipeClasses(Structures_Purs_Leftist.functorLeftist)(model.heap);
@@ -26849,7 +26904,7 @@ var PS = {};
               if ($54 instanceof Data_Maybe.Just) {
                   return updateHeap(model)($54.value0)("deleteMin");
               };
-              throw new Error("Failed pattern match at Views.Leftist line 182, column 4 - line 185, column 1: " + [ $54.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Leftist line 172, column 4 - line 175, column 1: " + [ $54.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -26859,7 +26914,7 @@ var PS = {};
                           $59[$60] = model[$60];
                       };
                   };
-                  $59.currInput = Data_Int.fromString(v.value0);
+                  $59.nodes = Views_Node.setInput(model.nodes)(Data_Int.fromString(v.value0));
                   return $59;
               })());
           };
@@ -26875,7 +26930,7 @@ var PS = {};
                   return $63;
               })());
           };
-          throw new Error("Failed pattern match at Views.Leftist line 148, column 1 - line 149, column 75: " + [ v.constructor.name, model.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Leftist line 138, column 1 - line 139, column 75: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
@@ -26893,7 +26948,6 @@ var PS = {};
   exports["update"] = update;
   exports["updateHeap"] = updateHeap;
   exports["viewCtrl"] = viewCtrl;
-  exports["viewModel"] = viewModel;
 })(PS["Views.Leftist"] = PS["Views.Leftist"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
@@ -27113,7 +27167,6 @@ var PS = {};
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Int = PS["Data.Int"];
   var Data_Maybe = PS["Data.Maybe"];
-  var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
   var Prelude = PS["Prelude"];
   var Pux = PS["Pux"];
@@ -27122,11 +27175,10 @@ var PS = {};
   var Views_Animation = PS["Views.Animation"];
   var Views_Node = PS["Views.Node"];
   var Views_SourceCode = PS["Views.SourceCode"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_List = PS["Data.List"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
+  var Data_Function = PS["Data.Function"];
   var Data_Functor = PS["Data.Functor"];
+  var Data_Ord = PS["Data.Ord"];
   var Data_EuclideanRing = PS["Data.EuclideanRing"];
   var Data_Semiring = PS["Data.Semiring"];
   var Data_Ring = PS["Data.Ring"];
@@ -27238,12 +27290,6 @@ var PS = {};
       };
       return Animate;
   })();
-  var viewModel = function (model) {
-      var showNodes = Views_Node.viewNodePos(Views_Animation.getPhase(model.animation))(model.prevNodes)(model.currNodes);
-      var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
-      var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
-      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(Views_Node.maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(Views_Node.maxWidth)) ])(nodes) ]);
-  };
   var viewCtrl = function (model) {
       var topBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Top.value)) ])([ Pux_Html_Elements.text("Top") ]);
       var rotateBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Rotate.value)) ])([ Pux_Html_Elements.text("Rotate") ]) ]);
@@ -27287,10 +27333,11 @@ var PS = {};
   };
   var mkNode = function (dir) {
       return function (model) {
-          if (model.currInput instanceof Data_Maybe.Nothing) {
+          var $12 = Views_Node.getInput(model.nodes);
+          if ($12 instanceof Data_Maybe.Nothing) {
               return Data_Maybe.Nothing.value;
           };
-          if (model.currInput instanceof Data_Maybe.Just) {
+          if ($12 instanceof Data_Maybe.Just) {
               var newModel = (function () {
                   var $13 = {};
                   for (var $14 in model) {
@@ -27298,7 +27345,7 @@ var PS = {};
                           $13[$14] = model[$14];
                       };
                   };
-                  $13.currId = model.currId + 1 | 0;
+                  $13.nodes = Views_Node.incId(model.nodes);
                   return $13;
               })();
               var mlastNode = (function () {
@@ -27308,7 +27355,7 @@ var PS = {};
                   if (dir instanceof Back) {
                       return Structures_Purs_Queue.backHead(model.queue);
                   };
-                  throw new Error("Failed pattern match at Views.Queue line 53, column 11 - line 55, column 43: " + [ dir.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Queue line 46, column 11 - line 48, column 43: " + [ dir.constructor.name ]);
               })();
               var connections = (function () {
                   if (mlastNode instanceof Data_Maybe.Nothing) {
@@ -27317,25 +27364,22 @@ var PS = {};
                   if (mlastNode instanceof Data_Maybe.Just) {
                       return [ mlastNode.value0.value0.id ];
                   };
-                  throw new Error("Failed pattern match at Views.Queue line 57, column 11 - line 59, column 36: " + [ mlastNode.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Queue line 50, column 11 - line 52, column 36: " + [ mlastNode.constructor.name ]);
               })();
               var newNode = new Views_Node.Node({
-                  value: model.currInput.value0, 
+                  value: $12.value0, 
                   classes: "cons", 
-                  id: model.currId, 
+                  id: Views_Node.getNextId(model.nodes), 
                   connections: connections
               });
               return Data_Function.apply(Data_Maybe.Just.create)(new Data_Tuple.Tuple(newNode, newModel));
           };
-          throw new Error("Failed pattern match at Views.Queue line 48, column 3 - line 67, column 37: " + [ model.currInput.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Queue line 41, column 3 - line 60, column 37: " + [ $12.constructor.name ]);
       };
   };
   var initModel = {
       queue: Structures_Purs_Queue.empty, 
-      currId: 0, 
-      currInput: Data_Maybe.Nothing.value, 
-      currNodes: Data_Map.empty, 
-      prevNodes: Data_Map.empty, 
+      nodes: Views_Node.blankNodes, 
       animation: Views_Animation.defaultAnimation, 
       code: Views_SourceCode.blankSourceCode
   };
@@ -27362,8 +27406,7 @@ var PS = {};
                               $25[$26] = model[$26];
                           };
                       };
-                      $25.prevNodes = model.currNodes;
-                      $25.currNodes = newMap;
+                      $25.nodes = Views_Node.updateNodes(model.nodes)(newMap);
                       $25.queue = queue;
                       $25.animation = Views_Animation.resetAnimation(model.animation);
                       $25.code = newSource;
@@ -27442,7 +27485,7 @@ var PS = {};
                   var newQ = Structures_Purs_Queue.push(newHead)(newTail);
                   return updateQueue(model)(newQ)("top");
               };
-              throw new Error("Failed pattern match at Views.Queue line 141, column 4 - line 151, column 1: " + [ $39.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 133, column 4 - line 143, column 1: " + [ $39.constructor.name ]);
           };
           if (v instanceof Pop) {
               var mtail = Structures_Purs_Queue.pop(model.queue);
@@ -27462,7 +27505,7 @@ var PS = {};
                   var newTail = Views_Node.changeAllClasses(Structures_Purs_Queue.functorQueue)("tail")(mtail.value0);
                   return updateQueue(model)(newTail)("pop");
               };
-              throw new Error("Failed pattern match at Views.Queue line 155, column 4 - line 163, column 1: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 147, column 4 - line 155, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Bottom) {
               var mtail = Structures_Purs_Queue.eject(model.queue);
@@ -27498,7 +27541,7 @@ var PS = {};
                   var newQ = Structures_Purs_Queue.inject(newHead)(newTail);
                   return updateQueue(model)(newQ)("back");
               };
-              throw new Error("Failed pattern match at Views.Queue line 168, column 4 - line 178, column 1: " + [ $59.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 160, column 4 - line 170, column 1: " + [ $59.constructor.name ]);
           };
           if (v instanceof Eject) {
               var mtail = Structures_Purs_Queue.eject(model.queue);
@@ -27518,7 +27561,7 @@ var PS = {};
                   var newTail = Views_Node.changeAllClasses(Structures_Purs_Queue.functorQueue)("tail")(mtail.value0);
                   return updateQueue(model)(newTail)("eject");
               };
-              throw new Error("Failed pattern match at Views.Queue line 182, column 4 - line 190, column 1: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 174, column 4 - line 182, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Inject) {
               var mnode = mkNode(Back.value)(model);
@@ -27538,7 +27581,7 @@ var PS = {};
               if (mnode instanceof Data_Maybe.Just) {
                   return updateQueue(mnode.value0.value1)(Structures_Purs_Queue.inject(mnode.value0.value0)(cleanQueue))("inject");
               };
-              throw new Error("Failed pattern match at Views.Queue line 195, column 4 - line 199, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 187, column 4 - line 191, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof Push) {
               var mnode = mkNode(Front.value)(model);
@@ -27558,7 +27601,7 @@ var PS = {};
               if (mnode instanceof Data_Maybe.Just) {
                   return updateQueue(mnode.value0.value1)(Structures_Purs_Queue.push(mnode.value0.value0)(cleanQueue))("push");
               };
-              throw new Error("Failed pattern match at Views.Queue line 204, column 4 - line 208, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Queue line 196, column 4 - line 200, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -27568,7 +27611,7 @@ var PS = {};
                           $93[$94] = model[$94];
                       };
                   };
-                  $93.currInput = Data_Int.fromString(v.value0);
+                  $93.nodes = Views_Node.setInput(model.nodes)(Data_Int.fromString(v.value0));
                   return $93;
               })());
           };
@@ -27584,7 +27627,7 @@ var PS = {};
                   return $97;
               })());
           };
-          throw new Error("Failed pattern match at Views.Queue line 128, column 1 - line 129, column 75: " + [ v.constructor.name, model.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Queue line 120, column 1 - line 121, column 75: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
@@ -27608,7 +27651,6 @@ var PS = {};
   exports["update"] = update;
   exports["updateQueue"] = updateQueue;
   exports["viewCtrl"] = viewCtrl;
-  exports["viewModel"] = viewModel;
 })(PS["Views.Queue"] = PS["Views.Queue"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
@@ -27921,7 +27963,6 @@ var PS = {};
   var Data_Array = PS["Data.Array"];
   var Data_Int = PS["Data.Int"];
   var Data_Maybe = PS["Data.Maybe"];
-  var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
   var $$Math = PS["Math"];
   var Prelude = PS["Prelude"];
@@ -27931,12 +27972,11 @@ var PS = {};
   var Views_Animation = PS["Views.Animation"];
   var Views_Node = PS["Views.Node"];
   var Views_SourceCode = PS["Views.SourceCode"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_List = PS["Data.List"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
+  var Data_Function = PS["Data.Function"];
   var Data_Functor = PS["Data.Functor"];
   var Data_EuclideanRing = PS["Data.EuclideanRing"];
+  var Data_Ord = PS["Data.Ord"];
   var Data_Semiring = PS["Data.Semiring"];
   var Control_Bind = PS["Control.Bind"];
   var Control_Monad_Aff = PS["Control.Monad.Aff"];
@@ -27997,12 +28037,6 @@ var PS = {};
       };
       return Animate;
   })();
-  var viewModel = function (model) {
-      var showNodes = Views_Node.viewNodePos(Views_Animation.getPhase(model.animation))(model.prevNodes)(model.currNodes);
-      var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
-      var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
-      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(Views_Node.maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(Views_Node.maxWidth)) ])(nodes) ]);
-  };
   var viewCtrl = function (model) {
       var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Member.value)) ])([ Pux_Html_Elements.text("Member") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
@@ -28045,14 +28079,15 @@ var PS = {};
       };
   };
   var mkNode = function (model) {
-      if (model.currInput instanceof Data_Maybe.Nothing) {
+      var $11 = Views_Node.getInput(model.nodes);
+      if ($11 instanceof Data_Maybe.Nothing) {
           return Data_Maybe.Nothing.value;
       };
-      if (model.currInput instanceof Data_Maybe.Just) {
+      if ($11 instanceof Data_Maybe.Just) {
           var newNode = new Views_Node.Node({
-              value: model.currInput.value0, 
+              value: $11.value0, 
               classes: "cons", 
-              id: model.currId, 
+              id: Views_Node.getNextId(model.nodes), 
               connections: [  ]
           });
           var newModel = (function () {
@@ -28062,19 +28097,16 @@ var PS = {};
                       $12[$13] = model[$13];
                   };
               };
-              $12.currId = model.currId + 1 | 0;
+              $12.nodes = Views_Node.incId(model.nodes);
               return $12;
           })();
           return Data_Function.apply(Data_Maybe.Just.create)(new Data_Tuple.Tuple(newNode, newModel));
       };
-      throw new Error("Failed pattern match at Views.Set line 46, column 3 - line 57, column 37: " + [ model.currInput.constructor.name ]);
+      throw new Error("Failed pattern match at Views.Set line 39, column 3 - line 50, column 37: " + [ $11.constructor.name ]);
   };
   var initModel = {
       set: Structures_Purs_Set.empty, 
-      currId: 0, 
-      currInput: Data_Maybe.Nothing.value, 
-      currNodes: Data_Map.empty, 
-      prevNodes: Data_Map.empty, 
+      nodes: Views_Node.blankNodes, 
       animation: Views_Animation.defaultAnimation, 
       code: Views_SourceCode.blankSourceCode
   };
@@ -28112,7 +28144,7 @@ var PS = {};
                       var combined = Data_Map.union(Data_Ord.ordInt)(left)(right);
                       return Data_Map.insert(Data_Ord.ordInt)(Views_Node.getID(v.value0.value))(curr)(combined);
                   };
-                  throw new Error("Failed pattern match at Views.Set line 96, column 5 - line 96, column 26: " + [ v.constructor.name, v1.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Set line 89, column 5 - line 89, column 26: " + [ v.constructor.name, v1.constructor.name ]);
               };
           };
           return go(set)({
@@ -28139,8 +28171,7 @@ var PS = {};
                               $25[$26] = model[$26];
                           };
                       };
-                      $25.prevNodes = model.currNodes;
-                      $25.currNodes = newMap;
+                      $25.nodes = Views_Node.updateNodes(model.nodes)(newMap);
                       $25.set = set;
                       $25.animation = Views_Animation.resetAnimation(model.animation);
                       $25.code = newSource;
@@ -28219,20 +28250,21 @@ var PS = {};
               return updateSet(model)(Structures_Purs_Set.empty)("empty");
           };
           if (v instanceof Member) {
-              if (model.currInput instanceof Data_Maybe.Nothing) {
+              var $51 = Views_Node.getInput(model.nodes);
+              if ($51 instanceof Data_Maybe.Nothing) {
                   return updateSet(model)(Views_Node.wipeClasses(Structures_Purs_Set.functorSet)(model.set))("member");
               };
-              if (model.currInput instanceof Data_Maybe.Just) {
-                  var node = Structures_Purs_Set.get(Views_Node.ordNode)(model.set)(blankNode(model.currInput.value0));
+              if ($51 instanceof Data_Maybe.Just) {
+                  var node = Structures_Purs_Set.get(Views_Node.ordNode)(model.set)(blankNode($51.value0));
                   if (node instanceof Data_Maybe.Nothing) {
                       return updateSet(model)(Views_Node.wipeClasses(Structures_Purs_Set.functorSet)(model.set))("member");
                   };
                   if (node instanceof Data_Maybe.Just) {
                       return updateSet(model)(Data_Function.apply(Structures_Purs_Set.update(Views_Node.ordNode)(Views_Node.wipeClasses(Structures_Purs_Set.functorSet)(model.set)))(changeClasses(node.value0)("head")))("member");
                   };
-                  throw new Error("Failed pattern match at Views.Set line 162, column 8 - line 167, column 1: " + [ node.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Set line 154, column 8 - line 159, column 1: " + [ node.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Views.Set line 155, column 3 - line 167, column 1: " + [ model.currInput.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Set line 147, column 3 - line 159, column 1: " + [ $51.constructor.name ]);
           };
           if (v instanceof Insert) {
               var mnode = mkNode(model);
@@ -28264,13 +28296,13 @@ var PS = {};
                           if ($60 instanceof Data_Maybe.Just) {
                               return Structures_Purs_Set.update(Views_Node.ordNode)(Data_Tuple.fst(midSet))(changeConn(mnode.value0.value0)([ Views_Node.getID($60.value0) ]));
                           };
-                          throw new Error("Failed pattern match at Views.Set line 180, column 23 - line 183, column 70: " + [ $60.constructor.name ]);
+                          throw new Error("Failed pattern match at Views.Set line 172, column 23 - line 175, column 70: " + [ $60.constructor.name ]);
                       })();
                       return updateSet(mnode.value0.value1)(finalSet)("insert");
                   };
-                  throw new Error("Failed pattern match at Views.Set line 175, column 8 - line 186, column 1: " + [ $59.constructor.name ]);
+                  throw new Error("Failed pattern match at Views.Set line 167, column 8 - line 178, column 1: " + [ $59.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Views.Set line 172, column 4 - line 186, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Set line 164, column 4 - line 178, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -28280,7 +28312,7 @@ var PS = {};
                           $65[$66] = model[$66];
                       };
                   };
-                  $65.currInput = Data_Int.fromString(v.value0);
+                  $65.nodes = Views_Node.setInput(model.nodes)(Data_Int.fromString(v.value0));
                   return $65;
               })());
           };
@@ -28296,7 +28328,7 @@ var PS = {};
                   return $69;
               })());
           };
-          throw new Error("Failed pattern match at Views.Set line 148, column 1 - line 149, column 75: " + [ v.constructor.name, model.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Set line 140, column 1 - line 141, column 75: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
@@ -28316,7 +28348,6 @@ var PS = {};
   exports["update"] = update;
   exports["updateSet"] = updateSet;
   exports["viewCtrl"] = viewCtrl;
-  exports["viewModel"] = viewModel;
 })(PS["Views.Set"] = PS["Views.Set"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
@@ -28332,7 +28363,6 @@ var PS = {};
   var Data_Int = PS["Data.Int"];
   var Data_Map = PS["Data.Map"];
   var Data_Maybe = PS["Data.Maybe"];
-  var Data_Show = PS["Data.Show"];
   var Data_Tuple = PS["Data.Tuple"];
   var Prelude = PS["Prelude"];
   var Pux = PS["Pux"];
@@ -28342,11 +28372,10 @@ var PS = {};
   var Views_Animation = PS["Views.Animation"];
   var Views_Node = PS["Views.Node"];
   var Views_SourceCode = PS["Views.SourceCode"];
-  var Data_Function = PS["Data.Function"];
-  var Data_Ord = PS["Data.Ord"];
-  var Data_List = PS["Data.List"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
+  var Data_Function = PS["Data.Function"];
   var Data_Functor = PS["Data.Functor"];
+  var Data_Ord = PS["Data.Ord"];
   var Data_EuclideanRing = PS["Data.EuclideanRing"];
   var Data_Semiring = PS["Data.Semiring"];
   var Data_Ring = PS["Data.Ring"];
@@ -28429,12 +28458,6 @@ var PS = {};
       };
       return Code;
   })();
-  var viewModel = function (model) {
-      var showNodes = Views_Node.viewNodePos(Views_Animation.getPhase(model.animation))(model.prevNodes)(model.currNodes);
-      var keys = Data_Function.apply(Data_Map.keys)(Data_Map.union(Data_Ord.ordInt)(model.prevNodes)(model.currNodes));
-      var nodes = Data_Array.concatMap(showNodes)(Data_Array.fromFoldable(Data_List.foldableList)(keys));
-      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.svg([ Pux_Html_Attributes.height(Data_Show.show(Data_Show.showNumber)(Views_Node.maxHeight)), Pux_Html_Attributes.width(Data_Show.show(Data_Show.showNumber)(Views_Node.maxWidth)) ])(nodes) ]);
-  };
   var viewCtrl = function (model) {
       var tailBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Tail.value)) ])([ Pux_Html_Elements.text("Tail") ]);
       var revBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Reverse.value)) ])([ Pux_Html_Elements.text("Reverse") ]) ]);
@@ -28473,10 +28496,11 @@ var PS = {};
       };
   };
   var mkNode = function (model) {
-      if (model.currInput instanceof Data_Maybe.Nothing) {
+      var $11 = Views_Node.getInput(model.nodes);
+      if ($11 instanceof Data_Maybe.Nothing) {
           return Data_Maybe.Nothing.value;
       };
-      if (model.currInput instanceof Data_Maybe.Just) {
+      if ($11 instanceof Data_Maybe.Just) {
           var newModel = (function () {
               var $12 = {};
               for (var $13 in model) {
@@ -28484,7 +28508,7 @@ var PS = {};
                       $12[$13] = model[$13];
                   };
               };
-              $12.currId = model.currId + 1 | 0;
+              $12.nodes = Views_Node.incId(model.nodes);
               return $12;
           })();
           var mlastNode = Structures_Purs_Stack.head(model.stack);
@@ -28495,24 +28519,21 @@ var PS = {};
               if (mlastNode instanceof Data_Maybe.Just) {
                   return [ mlastNode.value0.value0.id ];
               };
-              throw new Error("Failed pattern match at Views.Stack line 54, column 11 - line 56, column 36: " + [ mlastNode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 47, column 11 - line 49, column 36: " + [ mlastNode.constructor.name ]);
           })();
           var newNode = new Views_Node.Node({
-              value: model.currInput.value0, 
+              value: $11.value0, 
               classes: "cons", 
-              id: model.currId, 
+              id: Views_Node.getNextId(model.nodes), 
               connections: connections
           });
           return Data_Function.apply(Data_Maybe.Just.create)(new Data_Tuple.Tuple(newNode, newModel));
       };
-      throw new Error("Failed pattern match at Views.Stack line 48, column 3 - line 64, column 37: " + [ model.currInput.constructor.name ]);
+      throw new Error("Failed pattern match at Views.Stack line 41, column 3 - line 57, column 37: " + [ $11.constructor.name ]);
   };
   var initModel = {
       stack: Structures_Purs_Stack.empty, 
-      currId: 0, 
-      currInput: Data_Maybe.Nothing.value, 
-      currNodes: Data_Map.empty, 
-      prevNodes: Data_Map.empty, 
+      nodes: Views_Node.blankNodes, 
       animation: Views_Animation.defaultAnimation, 
       code: Views_SourceCode.blankSourceCode
   };
@@ -28537,8 +28558,7 @@ var PS = {};
                               $19[$20] = model[$20];
                           };
                       };
-                      $19.prevNodes = model.currNodes;
-                      $19.currNodes = newMap;
+                      $19.nodes = Views_Node.updateNodes(model.nodes)(newMap);
                       $19.stack = stack;
                       $19.animation = Views_Animation.resetAnimation(model.animation);
                       $19.code = newSource;
@@ -28615,7 +28635,7 @@ var PS = {};
                   var newStack = Structures_Purs_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack)("head");
               };
-              throw new Error("Failed pattern match at Views.Stack line 132, column 4 - line 142, column 1: " + [ $33.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 124, column 4 - line 134, column 1: " + [ $33.constructor.name ]);
           };
           if (v instanceof Tail) {
               var mtail = Structures_Purs_Stack.tail(model.stack);
@@ -28651,7 +28671,7 @@ var PS = {};
                   var newStack = Structures_Purs_Stack.cons(newHead)(newTail);
                   return updateStack(model)(newStack)("tail");
               };
-              throw new Error("Failed pattern match at Views.Stack line 147, column 4 - line 157, column 1: " + [ $48.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 139, column 4 - line 149, column 1: " + [ $48.constructor.name ]);
           };
           if (v instanceof Pop) {
               var mtail = Structures_Purs_Stack.tail(model.stack);
@@ -28671,7 +28691,7 @@ var PS = {};
                   var newTail = Views_Node.changeAllClasses(Structures_Purs_Stack.functorStack)("tail")(mtail.value0);
                   return updateStack(model)(newTail)("tail");
               };
-              throw new Error("Failed pattern match at Views.Stack line 161, column 4 - line 169, column 1: " + [ mtail.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 153, column 4 - line 161, column 1: " + [ mtail.constructor.name ]);
           };
           if (v instanceof Reverse) {
               return updateStack(model)(Structures_Purs_Stack.reverse(model.stack))("reverse");
@@ -28694,7 +28714,7 @@ var PS = {};
               if (mnode instanceof Data_Maybe.Just) {
                   return updateStack(mnode.value0.value1)(Structures_Purs_Stack.cons(mnode.value0.value0)(cleanStack))("cons");
               };
-              throw new Error("Failed pattern match at Views.Stack line 176, column 4 - line 180, column 1: " + [ mnode.constructor.name ]);
+              throw new Error("Failed pattern match at Views.Stack line 168, column 4 - line 172, column 1: " + [ mnode.constructor.name ]);
           };
           if (v instanceof CurrentInput) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -28704,7 +28724,7 @@ var PS = {};
                           $75[$76] = model[$76];
                       };
                   };
-                  $75.currInput = Data_Int.fromString(v.value0);
+                  $75.nodes = Views_Node.setInput(model.nodes)(Data_Int.fromString(v.value0));
                   return $75;
               })());
           };
@@ -28720,7 +28740,7 @@ var PS = {};
                   return $79;
               })());
           };
-          throw new Error("Failed pattern match at Views.Stack line 118, column 1 - line 119, column 75: " + [ v.constructor.name, model.constructor.name ]);
+          throw new Error("Failed pattern match at Views.Stack line 110, column 1 - line 111, column 75: " + [ v.constructor.name, model.constructor.name ]);
       };
   };
   exports["Empty"] = Empty;
@@ -28740,7 +28760,6 @@ var PS = {};
   exports["update"] = update;
   exports["updateStack"] = updateStack;
   exports["viewCtrl"] = viewCtrl;
-  exports["viewModel"] = viewModel;
 })(PS["Views.Stack"] = PS["Views.Stack"] || {});
 (function(exports) {
   // Generated by psc version 0.9.3
@@ -28770,6 +28789,7 @@ var PS = {};
   var Signal_Channel = PS["Signal.Channel"];
   var Signal_Time = PS["Signal.Time"];
   var Views_Animation = PS["Views.Animation"];
+  var Views_Node = PS["Views.Node"];
   var Views_SourceCode = PS["Views.SourceCode"];
   var Data_Function = PS["Data.Function"];
   var Control_Semigroupoid = PS["Control.Semigroupoid"];
@@ -28968,7 +28988,7 @@ var PS = {};
       if (v instanceof LeftistPage) {
           return "LeftistPage";
       };
-      throw new Error("Failed pattern match at Main line 37, column 3 - line 38, column 3: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Main line 38, column 3 - line 39, column 3: " + [ v.constructor.name ]);
   });
   var loadAction = function (v) {
       if (v instanceof StackPage) {
@@ -28991,7 +29011,7 @@ var PS = {};
               return LeftistAction.create(Views_Leftist.Code.create($98));
           };
       };
-      throw new Error("Failed pattern match at Main line 105, column 1 - line 105, column 50: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Main line 106, column 1 - line 106, column 50: " + [ v.constructor.name ]);
   };
   var langOption = function (v) {
       return function (v1) {
@@ -29008,9 +29028,9 @@ var PS = {};
                   if (!$28) {
                       return Data_Maybe.Nothing.value;
                   };
-                  throw new Error("Failed pattern match at Main line 179, column 3 - line 186, column 15: " + [ $28.constructor.name ]);
+                  throw new Error("Failed pattern match at Main line 180, column 3 - line 187, column 15: " + [ $28.constructor.name ]);
               };
-              throw new Error("Failed pattern match at Main line 177, column 1 - line 177, column 71: " + [ v.constructor.name, v1.constructor.name, v2.constructor.name ]);
+              throw new Error("Failed pattern match at Main line 178, column 1 - line 178, column 71: " + [ v.constructor.name, v1.constructor.name, v2.constructor.name ]);
           };
       };
   };
@@ -29036,7 +29056,7 @@ var PS = {};
       if (v instanceof LeftistPage) {
           return "Leftist";
       };
-      throw new Error("Failed pattern match at Main line 111, column 1 - line 112, column 1: " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Main line 112, column 1 - line 113, column 1: " + [ v.constructor.name ]);
   };
   var getSource = function (page) {
       return function (lang) {
@@ -29072,7 +29092,7 @@ var PS = {};
                   if (token instanceof Data_Maybe.Just) {
                       return Data_Show.show(showPage)(token.value0);
                   };
-                  throw new Error("Failed pattern match at Main line 169, column 7 - line 171, column 31: " + [ token.constructor.name ]);
+                  throw new Error("Failed pattern match at Main line 170, column 7 - line 172, column 31: " + [ token.constructor.name ]);
               })();
               return Pux_Html_Elements.option([ Pux_Html_Attributes.value(value) ])([ Pux_Html_Elements.text(name) ]);
           };
@@ -29112,25 +29132,25 @@ var PS = {};
                   return LeftistAction.create(Views_Leftist.Code.create($103));
               })(Views_SourceCode.viewCode(state.leftistModel.code));
           };
-          throw new Error("Failed pattern match at Main line 243, column 7 - line 248, column 101: " + [ state.currPage.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 244, column 7 - line 249, column 101: " + [ state.currPage.constructor.name ]);
       })();
       var modelRendered = (function () {
           if (state.currPage instanceof Data_Maybe.Nothing) {
               return blank;
           };
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof StackPage) {
-              return Data_Functor.map(Pux_Html_Elements.functorHtml)(StackAction.create)(Views_Stack.viewModel(state.stackModel));
+              return Data_Functor.map(Pux_Html_Elements.functorHtml)(StackAction.create)(Views_Node.viewModel(state.stackModel.animation)(state.stackModel.nodes));
           };
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof QueuePage) {
-              return Data_Functor.map(Pux_Html_Elements.functorHtml)(QueueAction.create)(Views_Queue.viewModel(state.queueModel));
+              return Data_Functor.map(Pux_Html_Elements.functorHtml)(QueueAction.create)(Views_Node.viewModel(state.queueModel.animation)(state.queueModel.nodes));
           };
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof SetPage) {
-              return Data_Functor.map(Pux_Html_Elements.functorHtml)(SetAction.create)(Views_Set.viewModel(state.setModel));
+              return Data_Functor.map(Pux_Html_Elements.functorHtml)(SetAction.create)(Views_Node.viewModel(state.setModel.animation)(state.setModel.nodes));
           };
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof LeftistPage) {
-              return Data_Functor.map(Pux_Html_Elements.functorHtml)(LeftistAction.create)(Views_Leftist.viewModel(state.leftistModel));
+              return Data_Functor.map(Pux_Html_Elements.functorHtml)(LeftistAction.create)(Views_Node.viewModel(state.leftistModel.animation)(state.leftistModel.nodes));
           };
-          throw new Error("Failed pattern match at Main line 236, column 7 - line 241, column 83: " + [ state.currPage.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 237, column 7 - line 242, column 112: " + [ state.currPage.constructor.name ]);
       })();
       var render = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-3-4 render") ])([ Pux_Html_Elements.div([ Pux_Html_Attributes.className("render") ])([ modelRendered ]), Pux_Html_Elements.div([ Pux_Html_Attributes.className("code-snippet") ])([ codeSnippets ]) ]);
       var pageBtns = (function () {
@@ -29149,7 +29169,7 @@ var PS = {};
           if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof LeftistPage) {
               return Data_Functor.map(Pux_Html_Elements.functorHtml)(LeftistAction.create)(Views_Leftist.viewCtrl(state.leftistModel));
           };
-          throw new Error("Failed pattern match at Main line 229, column 7 - line 234, column 82: " + [ state.currPage.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 230, column 7 - line 235, column 82: " + [ state.currPage.constructor.name ]);
       })();
       var sideBar = Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-u-1-4") ])([ Pux_Html_Elements.div([ Pux_Html_Attributes.className("sidebar") ])([ dataDiv, langDiv, pageBtns ]) ]);
       return Pux_Html_Elements.div([ Pux_Html_Attributes.className("pure-g pure-container") ])([ sideBar, render ]);
@@ -29216,7 +29236,7 @@ var PS = {};
                       effects: Data_Function.apply(Control_Applicative.pure(Control_Applicative.applicativeArray))(getSource(state.currPage.value0)(v.value0.value0))
                   };
               };
-              throw new Error("Failed pattern match at Main line 133, column 3 - line 138, column 8: " + [ state.currPage.constructor.name ]);
+              throw new Error("Failed pattern match at Main line 134, column 3 - line 139, column 8: " + [ state.currPage.constructor.name ]);
           };
           if (v instanceof ChangePage && v.value0 instanceof Data_Maybe.Nothing) {
               return Data_Function.apply(Pux.noEffects)((function () {
@@ -29273,9 +29293,9 @@ var PS = {};
               if (state.currPage instanceof Data_Maybe.Just && state.currPage.value0 instanceof LeftistPage) {
                   return updateLeftist(state)(Data_Function.apply(Views_Leftist.Animate.create)(new Views_Animation.Tick(v.value0)));
               };
-              throw new Error("Failed pattern match at Main line 154, column 3 - line 163, column 58: " + [ state.currPage.constructor.name ]);
+              throw new Error("Failed pattern match at Main line 155, column 3 - line 164, column 58: " + [ state.currPage.constructor.name ]);
           };
-          throw new Error("Failed pattern match at Main line 126, column 1 - line 127, column 81: " + [ v.constructor.name, state.constructor.name ]);
+          throw new Error("Failed pattern match at Main line 127, column 1 - line 128, column 81: " + [ v.constructor.name, state.constructor.name ]);
       };
   };
   var main = function __do() {

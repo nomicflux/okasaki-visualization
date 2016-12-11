@@ -6,12 +6,11 @@ import Pux.Html.Events as HE
 import Structures.Purs.Stack as S
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error, EXCEPTION)
-import Data.Array ((:), concatMap, fromFoldable)
+import Data.Array ((:))
 import Data.Foldable (class Foldable, foldr)
 import Data.Int (fromString, toNumber)
 import Data.Map as M
 import Data.Maybe (Maybe(..))
-import Data.Show (show)
 import Data.Tuple (Tuple(..), snd)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure)
 import Pux (EffModel, noEffects)
@@ -19,33 +18,27 @@ import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (now)
 
-import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, getPhase, updateAnimation)
-import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius)
+import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, updateAnimation)
+import Views.Node (NodeMap, Node(..), maxWidth, maxHeight, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius, NodeData, blankNodes, getNextId, updateNodes, incId, getInput, setInput)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 
 type Model = { stack :: S.Stack Node
-             , currId :: NodeID
-             , currInput :: Maybe NodeValue
-             , currNodes :: NodeMap
-             , prevNodes :: NodeMap
+             , nodes :: NodeData
              , animation :: Animation
              , code :: SourceCodeInfo
              }
 
 initModel :: Model
 initModel = { stack : S.empty
-            , currId : 0
-            , currInput : Nothing
-            , currNodes : M.empty
-            , prevNodes : M.empty
+            , nodes : blankNodes
             , animation : defaultAnimation
             , code : blankSourceCode
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
 mkNode model =
-  case model.currInput of
+  case getInput model.nodes of
     Nothing -> Nothing
     Just val ->
       let
@@ -56,10 +49,10 @@ mkNode model =
             Just (Node n) -> [n.id]
         newNode = Node { value : val
                        , classes : "cons"
-                       , id : model.currId
+                       , id : getNextId model.nodes
                        , connections : connections
                        }
-        newModel = model { currId = model.currId + 1 }
+        newModel = model { nodes = incId model.nodes }
       in
        Just $ Tuple newNode newModel
 
@@ -102,8 +95,7 @@ updateStack model stack fn =
     newMap = getNodeMap ct stack
     newSource = changeFn model.code fn
   in
-   { state: model { prevNodes = model.currNodes
-                  , currNodes = newMap
+   { state: model { nodes = updateNodes model.nodes newMap
                   , stack = stack
                   , animation = resetAnimation model.animation
                   , code = newSource
@@ -178,7 +170,7 @@ update Insert model =
      Just (Tuple node newModel) ->
        updateStack newModel (S.cons node cleanStack) "cons"
 update (CurrentInput s) model =
-  noEffects $ model { currInput = fromString s }
+  noEffects $ model { nodes = setInput model.nodes (fromString s) }
 update ShowStructure model =
   noEffects $ model { code = changeFn model.code "Stack" }
 
@@ -226,15 +218,3 @@ viewCtrl model =
               , popBtn
               , consSpan
               ]
-
-viewModel :: Model -> H.Html Action
-viewModel model =
-  let
-    keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos (getPhase model.animation) model.prevNodes model.currNodes
-    nodes = concatMap showNodes (fromFoldable keys)
-  in
-    H.div [ ]
-          [ H.svg [HA.height (show maxHeight)
-                  , HA.width (show maxWidth)  ] nodes
-          ]

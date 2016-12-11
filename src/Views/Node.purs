@@ -2,17 +2,20 @@ module Views.Node where
 
 import Pux.Html as H
 import Pux.Html.Attributes as HA
-import Data.Array ((:))
+import Data.Array ((:), concatMap, fromFoldable)
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
 import Data.Function.Uncurried (runFn3)
 import Data.Functor (class Functor, map)
+import Data.List (List)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Ord (class Ord, compare)
 import Data.Show (show)
 import Math (atan, sin, cos)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), (<$>), negate, min)
+
+import Views.Animation (Animation, getPhase)
 
 type Classes = String
 type NodeID = Int
@@ -31,6 +34,39 @@ type NodePos = { x :: Number
                , classes :: Classes
                }
 type NodeMap = M.Map NodeID NodePos
+
+type NodeData = { currId :: NodeID
+                , currInput :: Maybe NodeValue
+                , currNodes :: NodeMap
+                , prevNodes :: NodeMap
+                }
+
+getInput :: NodeData -> Maybe NodeValue
+getInput nodes = nodes.currInput
+
+setInput :: NodeData -> Maybe NodeValue -> NodeData
+setInput nodes minput = nodes { currInput = minput }
+
+blankNodes :: NodeData
+blankNodes = { currId : 0
+             , currInput : Nothing
+             , currNodes : M.empty
+             , prevNodes : M.empty
+             }
+
+getNextId :: NodeData -> NodeID
+getNextId nodes = nodes.currId
+
+incId :: NodeData -> NodeData
+incId nodes = nodes { currId = nodes.currId + 1 }
+
+updateNodes :: NodeData -> NodeMap -> NodeData
+updateNodes nodes newNodes = nodes { prevNodes = nodes.currNodes
+                                   , currNodes = newNodes
+                                   }
+
+getAllNodeKeys :: NodeData -> List NodeID
+getAllNodeKeys nodes = M.keys $ M.union nodes.prevNodes nodes.currNodes
 
 instance eqNode :: Eq Node where
   eq (Node a) (Node b) = eq a.value b.value
@@ -100,9 +136,11 @@ interpolateNodes phase old new =
        , r = intphase old.r new.r
        }
 
-viewNodePos :: forall action. Number -> NodeMap -> NodeMap -> NodeID -> Array (H.Html action)
-viewNodePos phase prevmap currmap nid =
+viewNodePos :: forall action. Number -> NodeData -> NodeID -> Array (H.Html action)
+viewNodePos phase nodes nid =
   let
+    prevmap = nodes.prevNodes
+    currmap = nodes.currNodes
     interphase = interpolateNodes phase
     prev = fromMaybe (initialNode nid) (M.lookup nid prevmap)
     curr = fromMaybe (finalNode nid) (M.lookup nid currmap)
@@ -138,3 +176,15 @@ viewNodePos phase prevmap currmap nid =
                                             , HA.className "edge"] [ ]) node.connections
   in
    circ : val : edges
+
+viewModel :: forall action. Animation -> NodeData -> H.Html action
+viewModel anim nodes =
+  let
+    keys = getAllNodeKeys nodes
+    showNodes = viewNodePos (getPhase anim) nodes
+    svgNodes = concatMap showNodes (fromFoldable keys)
+  in
+    H.div [ ]
+          [ H.svg [ HA.height (show maxHeight)
+                  , HA.width (show maxWidth)  ] svgNodes
+          ]

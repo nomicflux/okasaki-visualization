@@ -7,10 +7,9 @@ import Pux.Html.Events as HE
 import Structures.Purs.Leftist as L
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
-import Data.Array ((:), concatMap, fromFoldable)
+import Data.Array ((:))
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..))
-import Data.Show (show)
 import Data.Tuple (Tuple(..))
 import Math (pow)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
@@ -18,41 +17,35 @@ import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now)
 
-import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, getPhase, updateAnimation)
-import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeClass, buffer, maxRadius, getID, NodePos, Classes)
+import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, updateAnimation)
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, wipeClasses, changeClass, buffer, maxRadius, getID, NodePos, Classes, NodeData, blankNodes, getNextId, updateNodes, incId, getInput, setInput)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { heap :: L.Leftist Node
-             , currId :: NodeID
-             , currInput :: Maybe NodeValue
-             , currNodes :: NodeMap
-             , prevNodes :: NodeMap
+             , nodes :: NodeData
              , animation :: Animation
              , code :: SourceCodeInfo
              }
 
 initModel :: Model
 initModel = { heap : L.empty
-            , currId : 0
-            , currInput : Nothing
-            , currNodes : M.empty
-            , prevNodes : M.empty
+            , nodes : blankNodes
             , animation : defaultAnimation
             , code : blankSourceCode
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
 mkNode model =
-  case model.currInput of
+  case getInput model.nodes of
     Nothing -> Nothing
     Just val ->
       let
         newNode = Node { value : val
                        , classes : "cons"
-                       , id : model.currId
+                       , id : getNextId model.nodes
                        , connections : []
                        }
-        newModel = model { currId = model.currId + 1 }
+        newModel = model { nodes = incId model.nodes }
       in
        Just $ Tuple newNode newModel
 
@@ -63,9 +56,7 @@ type Position = { x :: Int
 mkNodePos :: Int -> Position -> Node -> Array NodeID -> NodePos
 mkNodePos depth pos (Node node) conns =
   let
-    -- fwidth = toNumber (dim.width + 1)
     fheight = toNumber depth
-    -- ftotal = max fwidth fheight
     rY = maxWidth / 1.0 / (pow 2.0 (toNumber pos.y))
     rH = maxWidth / 1.0 / (pow 2.0 fheight)
     r = min maxRadius (min rY rH)
@@ -119,8 +110,7 @@ updateHeap model heap fn =
     newMap = getNodeMap depth heap
     newSource = changeFn model.code fn
   in
-   { state: model { prevNodes = model.currNodes
-                  , currNodes = newMap
+   { state: model { nodes = updateNodes model.nodes newMap
                   , heap = heap
                   , animation = resetAnimation model.animation
                   , code = newSource
@@ -183,7 +173,7 @@ update DeleteMin model =
      Nothing -> noEffects $ model { code = changeFn model.code "deleteMin" }
      Just heap -> updateHeap model heap "deleteMin"
 update (CurrentInput s) model =
-  noEffects $ model { currInput = fromString s }
+  noEffects $ model { nodes = setInput model.nodes (fromString s) }
 update ShowStructure model =
   noEffects $ model { code = changeFn model.code "LeftistHeap" }
 
@@ -223,13 +213,3 @@ viewCtrl model =
               , minSpan
               , insertSpan
               ]
-
-viewModel :: Model -> H.Html Action
-viewModel model =
-  let
-    keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos (getPhase model.animation) model.prevNodes model.currNodes
-    nodes = concatMap showNodes (fromFoldable keys)
-  in
-    H.div [ ] [ H.svg [ HA.height (show maxHeight)
-                      , HA.width (show maxWidth)  ] nodes ]

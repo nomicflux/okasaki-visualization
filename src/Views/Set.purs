@@ -7,10 +7,9 @@ import Pux.Html.Events as HE
 import Structures.Purs.Set as S
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
-import Data.Array ((:), concatMap, fromFoldable)
+import Data.Array ((:))
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..))
-import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
 import Math (pow)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
@@ -18,41 +17,35 @@ import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now)
 
-import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, getPhase, updateAnimation)
-import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, buffer, maxRadius, getID, Classes, NodePos)
+import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, updateAnimation)
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, wipeClasses, buffer, maxRadius, getID, Classes, NodePos, NodeData, blankNodes, getNextId, updateNodes, incId, getInput, setInput)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { set :: S.Set Node
-             , currId :: NodeID
-             , currInput :: Maybe NodeValue
-             , currNodes :: NodeMap
-             , prevNodes :: NodeMap
+             , nodes :: NodeData
              , animation :: Animation
              , code :: SourceCodeInfo
              }
 
 initModel :: Model
 initModel = { set : S.empty
-            , currId : 0
-            , currInput : Nothing
-            , currNodes : M.empty
-            , prevNodes : M.empty
+            , nodes : blankNodes
             , animation : defaultAnimation
             , code : blankSourceCode
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
 mkNode model =
-  case model.currInput of
+  case getInput model.nodes of
     Nothing -> Nothing
     Just val ->
       let
         newNode = Node { value : val
                        , classes : "cons"
-                       , id : model.currId
+                       , id : getNextId model.nodes
                        , connections : []
                        }
-        newModel = model { currId = model.currId + 1 }
+        newModel = model { nodes = incId model.nodes }
       in
        Just $ Tuple newNode newModel
 
@@ -119,8 +112,7 @@ updateSet model set fn =
     newMap = getNodeMap {width : width, depth : depth} set
     newSource = changeFn model.code fn
   in
-   { state: model { prevNodes = model.currNodes
-                  , currNodes = newMap
+   { state: model { nodes = updateNodes model.nodes newMap
                   , set = set
                   , animation = resetAnimation model.animation
                   , code = newSource
@@ -152,7 +144,7 @@ update (Code action) model =
 update Empty model =
   updateSet model S.empty "empty"
 update Member model =
-  case model.currInput of
+  case getInput model.nodes of
     Nothing ->
       updateSet model (wipeClasses model.set) "member"
     Just val ->
@@ -184,7 +176,7 @@ update Insert model =
          in
           updateSet newModel finalSet "insert"
 update (CurrentInput s) model =
-  noEffects $ model { currInput = fromString s }
+  noEffects $ model { nodes = setInput model.nodes (fromString s) }
 update ShowStructure model =
   noEffects $ model { code = changeFn model.code "Set" }
 
@@ -217,13 +209,3 @@ viewCtrl model =
               , emptyBtn
               , insertSpan
               ]
-
-viewModel :: Model -> H.Html Action
-viewModel model =
-  let
-    keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos (getPhase model.animation) model.prevNodes model.currNodes
-    nodes = concatMap showNodes (fromFoldable keys)
-  in
-    H.div [ ] [ H.svg [HA.height (show maxHeight)
-                      , HA.width (show maxWidth)  ] nodes ]

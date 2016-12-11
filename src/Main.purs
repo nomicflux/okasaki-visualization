@@ -26,6 +26,7 @@ import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time)
 
 import Views.Animation as A
+import Views.Node as N
 import Views.SourceCode as SC
 
 data Page = StackPage
@@ -235,10 +236,10 @@ view state =
     modelRendered =
       case state.currPage of
         Nothing -> blank
-        Just StackPage -> StackAction <$> Stack.viewModel state.stackModel
-        Just QueuePage -> QueueAction <$> Queue.viewModel state.queueModel
-        Just SetPage -> SetAction <$> Set.viewModel state.setModel
-        Just LeftistPage -> LeftistAction <$> Leftist.viewModel state.leftistModel
+        Just StackPage -> StackAction <$> N.viewModel state.stackModel.animation state.stackModel.nodes
+        Just QueuePage -> QueueAction <$> N.viewModel state.queueModel.animation state.queueModel.nodes
+        Just SetPage -> SetAction <$> N.viewModel state.setModel.animation state.setModel.nodes
+        Just LeftistPage -> LeftistAction <$> N.viewModel state.leftistModel.animation state.leftistModel.nodes
     codeSnippets =
       case state.currPage of
         Nothing -> blank
