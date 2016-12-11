@@ -24747,13 +24747,16 @@ var PS = {};
       };
       return Data_Maybe.Nothing.value;
   }; 
+  var getLanguage = function (v) {
+      return v.value0.language;
+  };
   var getFile = function (fname) {
       return function (lang) {
           var extension = suffix(lang);
           var fullname = "/src/Structures/" + (extension + ("/" + (fname + ("." + extension))));
           return Control_Bind.bind(Control_Monad_Aff.bindAff)(Data_Function.apply(Control_Monad_Aff.attempt)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(fullname)))(function (v) {
-              return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($44) {
-                  return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($44));
+              return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($49) {
+                  return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($49));
               })(function (r) {
                   if (r.status === 200) {
                       return Data_Function.apply(Data_Either.Right.create)(new SourceCode({
@@ -24910,6 +24913,33 @@ var PS = {};
   var endComment = function (lang) {
       return Text_Parsing_Simple.string(comment(lang) + " .end");
   };
+  var codeClass = function (v) {
+      if (v instanceof Purescript) {
+          return "haskell";
+      };
+      if (v instanceof Elm) {
+          return "elm";
+      };
+      if (v instanceof Haskell) {
+          return "haskell";
+      };
+      if (v instanceof Idris) {
+          return "haskell";
+      };
+      if (v instanceof Clojure) {
+          return "clojure";
+      };
+      if (v instanceof Scheme) {
+          return "scheme";
+      };
+      if (v instanceof Elixir) {
+          return "elixir";
+      };
+      if (v instanceof Scala) {
+          return "scala";
+      };
+      throw new Error("Failed pattern match at CodeSnippet line 67, column 1 - line 68, column 1: " + [ v.constructor.name ]);
+  };
   var anyChar = Control_Alt.alt(Text_Parsing_Simple.altParser)(Control_Alt.alt(Text_Parsing_Simple.altParser)(Control_Alt.alt(Text_Parsing_Simple.altParser)(Text_Parsing_Simple.alphanum)(Text_Parsing_Simple.space))(Text_Parsing_Simple.newline))(Text_Parsing_Simple.anyOf("=:-+*!@$%^(){}[]\"'`~|/.,;?<>_#&"));
   var notBeginning = function (lang) {
       return Text_Parsing_Simple.manyChar(Text_Parsing_Simple.applyR(Data_Function.apply(Text_Parsing_Simple["isn't"])(docComment(lang)))(anyChar));
@@ -24961,14 +24991,14 @@ var PS = {};
       return Text_Parsing_Simple.manyChar(Text_Parsing_Simple.applyR(Data_Function.apply(Text_Parsing_Simple.notFollowedBy)(someComment(lang)))(anyChar));
   };
   var getUncommentedCode = function (v) {
-      var $40 = Text_Parsing_Simple.parse(Text_Parsing_Simple.sepBy(uncommented(v.value0.language))(someComment(v.value0.language)))(v.value0.getSourceCode);
-      if ($40 instanceof Data_Either.Left) {
+      var $45 = Text_Parsing_Simple.parse(Text_Parsing_Simple.sepBy(uncommented(v.value0.language))(someComment(v.value0.language)))(v.value0.getSourceCode);
+      if ($45 instanceof Data_Either.Left) {
           return "";
       };
-      if ($40 instanceof Data_Either.Right) {
-          return Data_Foldable.fold(Data_List.foldableList)(Data_Monoid.monoidString)($40.value0);
+      if ($45 instanceof Data_Either.Right) {
+          return Data_Foldable.fold(Data_List.foldableList)(Data_Monoid.monoidString)($45.value0);
       };
-      throw new Error("Failed pattern match at CodeSnippet line 148, column 3 - line 150, column 26: " + [ $40.constructor.name ]);
+      throw new Error("Failed pattern match at CodeSnippet line 161, column 3 - line 163, column 26: " + [ $45.constructor.name ]);
   };
   var allLangs = [ Purescript.value, Elm.value, Haskell.value, Idris.value, Clojure.value, Scheme.value, Elixir.value, Scala.value ];
   exports["FunctionBlock"] = FunctionBlock;
@@ -24983,6 +25013,7 @@ var PS = {};
   exports["SourceCode"] = SourceCode;
   exports["allLangs"] = allLangs;
   exports["anyChar"] = anyChar;
+  exports["codeClass"] = codeClass;
   exports["comment"] = comment;
   exports["docComment"] = docComment;
   exports["endComment"] = endComment;
@@ -24991,6 +25022,7 @@ var PS = {};
   exports["functionTag"] = functionTag;
   exports["functions"] = functions;
   exports["getFile"] = getFile;
+  exports["getLanguage"] = getLanguage;
   exports["getUncommentedCode"] = getUncommentedCode;
   exports["notBeginning"] = notBeginning;
   exports["notEnd"] = notEnd;
@@ -25197,19 +25229,23 @@ var PS = {};
   var size = $foreign.attr("size");            
   var r = $foreign.attr("r");                  
   var name = $foreign.attr("name");  
-  var maxLength = $foreign.attr("maxLength");
+  var maxLength = $foreign.attr("maxLength");    
+  var id_ = $foreign.attr("id");             
   var htmlFor = $foreign.attr("htmlFor");
   var height = $foreign.attr("height");                
   var fontSize = $foreign.attr("fontSize");
+  var dangerouslySetInnerHTML = $foreign.attr("dangerouslySetInnerHTML");
   var cy = $foreign.attr("cy");
   var cx = $foreign.attr("cx");    
   var className = $foreign.attr("className");
   exports["className"] = className;
   exports["cx"] = cx;
   exports["cy"] = cy;
+  exports["dangerouslySetInnerHTML"] = dangerouslySetInnerHTML;
   exports["fontSize"] = fontSize;
   exports["height"] = height;
   exports["htmlFor"] = htmlFor;
+  exports["id_"] = id_;
   exports["maxLength"] = maxLength;
   exports["name"] = name;
   exports["r"] = r;
@@ -25511,16 +25547,28 @@ var PS = {};
   exports["ordNode"] = ordNode;
 })(PS["Views.Node"] = PS["Views.Node"] || {});
 (function(exports) {
+    "use strict";
+
+  exports.highlightCode = function(data) {
+      var hlCode = hljs.highlight(data.value0, data.value1);
+      return hlCode.value;
+  };
+})(PS["Views.SourceCode"] = PS["Views.SourceCode"] || {});
+(function(exports) {
   // Generated by psc version 0.9.3
   "use strict";
+  var $foreign = PS["Views.SourceCode"];
   var Prelude = PS["Prelude"];
   var Pux_Html = PS["Pux.Html"];
   var Pux_Html_Attributes = PS["Pux.Html.Attributes"];
   var Pux_Html_Events = PS["Pux.Html.Events"];
   var CodeSnippet = PS["CodeSnippet"];
   var Data_Either = PS["Data.Either"];
+  var Data_Functor = PS["Data.Functor"];
   var Data_Map = PS["Data.Map"];
   var Data_Maybe = PS["Data.Maybe"];
+  var Data_Tuple = PS["Data.Tuple"];
+  var Debug_Trace = PS["Debug.Trace"];
   var Pux_Html_Elements = PS["Pux.Html.Elements"];
   var Data_Function = PS["Data.Function"];
   var Data_Ord = PS["Data.Ord"];        
@@ -25563,38 +25611,49 @@ var PS = {};
       DisplaySource.value = new DisplaySource();
       return DisplaySource;
   })();
+  var transformCode = function (v) {
+      return function (v1) {
+          if (v instanceof Data_Maybe.Nothing) {
+              return Pux_Html_Elements.text("");
+          };
+          if (v instanceof Data_Maybe.Just) {
+              return Pux_Html_Elements.div([ Pux_Html_Attributes.dangerouslySetInnerHTML($foreign.highlightCode(new Data_Tuple.Tuple(CodeSnippet.codeClass(v.value0), v1))) ])([  ]);
+          };
+          throw new Error("Failed pattern match at Views.SourceCode line 66, column 1 - line 67, column 1: " + [ v.constructor.name, v1.constructor.name ]);
+      };
+  };
   var viewCode = function (code) {
-      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.code([  ])([ Pux_Html_Elements.pre([  ])([ (function () {
+      return Pux_Html_Elements.div([  ])([ Pux_Html_Elements.pre([  ])([ Pux_Html_Elements.code([ Pux_Html_Attributes.className(Data_Maybe.fromMaybe("")(Data_Functor.map(Data_Maybe.functorMaybe)(CodeSnippet.codeClass)(code.language))), Pux_Html_Attributes.id_("code-snippet") ])([ (function () {
           if (code.currFn instanceof None) {
               return Pux_Html_Elements.i([  ])([ Pux_Html_Elements.text("No implementation given or no function selected") ]);
           };
           if (code.currFn instanceof Name) {
-              return Pux_Html_Elements.text(code.currFn.value0);
+              return transformCode(code.language)(code.currFn.value0);
           };
           if (code.currFn instanceof All) {
               if (code.fullSource instanceof Data_Maybe.Nothing) {
                   return Pux_Html_Elements.i([  ])([ Pux_Html_Elements.text("Full source not loaded yet") ]);
               };
               if (code.fullSource instanceof Data_Maybe.Just) {
-                  return Pux_Html_Elements.text(code.fullSource.value0);
+                  return transformCode(code.language)(code.fullSource.value0);
               };
-              throw new Error("Failed pattern match at Views.SourceCode line 66, column 20 - line 69, column 33: " + [ code.fullSource.constructor.name ]);
+              throw new Error("Failed pattern match at Views.SourceCode line 82, column 26 - line 85, column 60: " + [ code.fullSource.constructor.name ]);
           };
-          throw new Error("Failed pattern match at Views.SourceCode line 60, column 15 - line 69, column 33: " + [ code.currFn.constructor.name ]);
+          throw new Error("Failed pattern match at Views.SourceCode line 76, column 21 - line 85, column 60: " + [ code.currFn.constructor.name ]);
       })() ]) ]) ]);
   };
   var sourceBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-success"), Pux_Html_Events.onClick(Data_Function["const"](DisplaySource.value)) ])([ Pux_Html_Elements.text("Show Full Source Code") ]) ]);
   var changeFn = function (code) {
       return function (fn) {
-          var $6 = {};
-          for (var $7 in code) {
-              if (code.hasOwnProperty($7)) {
-                  $6[$7] = code[$7];
+          var $11 = {};
+          for (var $12 in code) {
+              if (code.hasOwnProperty($12)) {
+                  $11[$12] = code[$12];
               };
           };
-          $6.currFn = Data_Maybe.maybe(None.value)(Name.create)(Data_Map.lookup(Data_Ord.ordString)(fn)(code.sourceCode));
-          $6.currFnName = new Data_Maybe.Just(fn);
-          return $6;
+          $11.currFn = Data_Maybe.maybe(None.value)(Name.create)(Data_Map.lookup(Data_Ord.ordString)(fn)(code.sourceCode));
+          $11.currFnName = new Data_Maybe.Just(fn);
+          return $11;
       };
   };
   var updateCode = function (v) {
@@ -25604,15 +25663,16 @@ var PS = {};
           };
           if (v instanceof LoadCode && v.value0 instanceof Data_Either.Right) {
               var code = (function () {
-                  var $13 = {};
-                  for (var $14 in v1) {
-                      if (v1.hasOwnProperty($14)) {
-                          $13[$14] = v1[$14];
+                  var $18 = {};
+                  for (var $19 in v1) {
+                      if (v1.hasOwnProperty($19)) {
+                          $18[$19] = v1[$19];
                       };
                   };
-                  $13.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
-                  $13.fullSource = new Data_Maybe.Just(CodeSnippet.getUncommentedCode(v.value0.value0));
-                  return $13;
+                  $18.sourceCode = CodeSnippet.parseFunctions(v.value0.value0);
+                  $18.fullSource = new Data_Maybe.Just(CodeSnippet.getUncommentedCode(v.value0.value0));
+                  $18.language = new Data_Maybe.Just(CodeSnippet.getLanguage(v.value0.value0));
+                  return $18;
               })();
               if (code.currFnName instanceof Data_Maybe.Nothing) {
                   return code;
@@ -25620,26 +25680,27 @@ var PS = {};
               if (code.currFnName instanceof Data_Maybe.Just) {
                   return changeFn(code)(code.currFnName.value0);
               };
-              throw new Error("Failed pattern match at Views.SourceCode line 45, column 4 - line 47, column 33: " + [ code.currFnName.constructor.name ]);
+              throw new Error("Failed pattern match at Views.SourceCode line 54, column 4 - line 56, column 33: " + [ code.currFnName.constructor.name ]);
           };
           if (v instanceof DisplaySource) {
-              var $20 = {};
-              for (var $21 in v1) {
-                  if (v1.hasOwnProperty($21)) {
-                      $20[$21] = v1[$21];
+              var $25 = {};
+              for (var $26 in v1) {
+                  if (v1.hasOwnProperty($26)) {
+                      $25[$26] = v1[$26];
                   };
               };
-              $20.currFn = All.value;
-              return $20;
+              $25.currFn = All.value;
+              return $25;
           };
-          throw new Error("Failed pattern match at Views.SourceCode line 38, column 1 - line 38, column 43: " + [ v.constructor.name, v1.constructor.name ]);
+          throw new Error("Failed pattern match at Views.SourceCode line 46, column 1 - line 46, column 43: " + [ v.constructor.name, v1.constructor.name ]);
       };
   };
   var blankSourceCode = {
       sourceCode: Data_Map.empty, 
       fullSource: Data_Maybe.Nothing.value, 
       currFnName: Data_Maybe.Nothing.value, 
-      currFn: None.value
+      currFn: None.value, 
+      language: Data_Maybe.Nothing.value
   };
   exports["LoadCode"] = LoadCode;
   exports["DisplaySource"] = DisplaySource;
@@ -25649,6 +25710,7 @@ var PS = {};
   exports["blankSourceCode"] = blankSourceCode;
   exports["changeFn"] = changeFn;
   exports["sourceBtn"] = sourceBtn;
+  exports["transformCode"] = transformCode;
   exports["updateCode"] = updateCode;
   exports["viewCode"] = viewCode;
 })(PS["Views.SourceCode"] = PS["Views.SourceCode"] || {});

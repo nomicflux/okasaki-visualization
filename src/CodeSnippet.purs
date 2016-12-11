@@ -63,6 +63,16 @@ suffix Scheme = "scm"
 suffix Elixir = "ex"
 suffix Scala = "scala"
 
+codeClass :: Language -> String
+codeClass Purescript = "haskell"
+codeClass Elm = "elm"
+codeClass Haskell = "haskell"
+codeClass Idris = "haskell"
+codeClass Clojure = "clojure"
+codeClass Scheme = "scheme"
+codeClass Elixir = "elixir"
+codeClass Scala = "scala"
+
 stringToLang :: String -> Maybe Language
 stringToLang str =
   case str of
@@ -88,6 +98,9 @@ instance showSourceCode :: Show SourceCode where
 
 instance showFunctionBlock :: Show FunctionBlock where
   show (FunctionBlock f) = show f.names <> ": " <> f.body
+
+getLanguage :: SourceCode -> Language
+getLanguage (SourceCode code) = code.language
 
 getFile :: forall eff. String -> Language -> Aff (ajax :: AJAX | eff) (Either String SourceCode)
 getFile fname lang = do

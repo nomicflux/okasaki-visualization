@@ -1,6 +1,6 @@
 module Views.SourceCode where
 
-import Prelude (const)
+import Prelude (const, Unit)
 
 import Pux.Html as H
 import Pux.Html.Attributes as HA
@@ -8,8 +8,14 @@ import Pux.Html.Events as HE
 
 import CodeSnippet as CS
 import Data.Either (Either(..))
+import Data.Functor (map)
 import Data.Map as M
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.Tuple (Tuple(..))
+
+import Debug.Trace (spy)
+
+foreign import highlightCode :: Tuple String String -> String
 
 data CurrentFunction = None | Name String | All
 
@@ -17,6 +23,7 @@ type SourceCodeInfo = { sourceCode :: M.Map String String
                       , fullSource ::  Maybe String
                       , currFnName :: Maybe String
                       , currFn :: CurrentFunction
+                      , language :: Maybe CS.Language
                       }
 
 blankSourceCode :: SourceCodeInfo
@@ -24,6 +31,7 @@ blankSourceCode = { sourceCode : M.empty
                   , fullSource : Nothing
                   , currFnName : Nothing
                   , currFn : None
+                  , language : Nothing
                   }
 
 data CodeAction = LoadCode (Either String CS.SourceCode)
@@ -40,6 +48,7 @@ updateCode (LoadCode (Right newCode)) oldCode =
   let
     code = oldCode { sourceCode = CS.parseFunctions newCode
                    , fullSource = Just (CS.getUncommentedCode newCode)
+                   , language = Just (CS.getLanguage newCode)
                    }
   in
    case code.currFnName of
@@ -50,23 +59,30 @@ updateCode DisplaySource code = code { currFn = All }
 sourceBtn :: H.Html CodeAction
 sourceBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-success"
                                  , HE.onClick (const DisplaySource)
-                                 ] [ H.text "Show Full Source Code"]]
+                                 ] [ H.text "Show Full Source Code"]
+                      ]
+
+transformCode :: Maybe CS.Language -> String -> H.Html CodeAction
+transformCode Nothing _ = H.text ""
+transformCode (Just lang) code = H.div [ HA.dangerouslySetInnerHTML (highlightCode (Tuple (CS.codeClass lang) code)) ] [ ]
 
 viewCode :: SourceCodeInfo -> H.Html CodeAction
 viewCode code =
-  H.div [ ]
-        [ H.code [ ]
-          [ H.pre [ ]
-            [ case code.currFn of
-                 None ->
-                   H.i []
-                       [ H.text "No implementation given or no function selected"]
-                 Name fn -> H.text fn
-                 All ->
-                   case code.fullSource of
-                     Nothing -> H.i [] [ H.text "Full source not loaded yet" ]
-                     Just fs ->
-                       H.text fs
+      H.div [ ]
+            [ H.pre []
+              [ H.code [ HA.className (fromMaybe "" (map CS.codeClass code.language))
+                       , HA.id_ "code-snippet"
+                       ]
+                  [ case code.currFn of
+                       None ->
+                         H.i []
+                             [ H.text "No implementation given or no function selected"]
+                       Name fn -> transformCode code.language fn
+                       All ->
+                         case code.fullSource of
+                           Nothing -> H.i [] [ H.text "Full source not loaded yet" ]
+                           Just fs ->
+                             transformCode code.language fs
+                  ]
+              ]
             ]
-          ]
-        ]
