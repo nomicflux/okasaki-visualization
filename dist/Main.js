@@ -25642,7 +25642,7 @@ var PS = {};
           throw new Error("Failed pattern match at Views.SourceCode line 76, column 21 - line 85, column 60: " + [ code.currFn.constructor.name ]);
       })() ]) ]) ]);
   };
-  var sourceBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-success"), Pux_Html_Events.onClick(Data_Function["const"](DisplaySource.value)) ])([ Pux_Html_Elements.text("Show Full Source Code") ]) ]);
+  var sourceBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-success"), Pux_Html_Events.onClick(Data_Function["const"](DisplaySource.value)) ])([ Pux_Html_Elements.text("(Experimental) Full Source") ]) ]);
   var changeFn = function (code) {
       return function (fn) {
           var $11 = {};
