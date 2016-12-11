@@ -59,7 +59,7 @@ updateCode DisplaySource code = code { currFn = All }
 sourceBtn :: H.Html CodeAction
 sourceBtn = H.div [ ] [ H.button [ HA.className "pure-button pure-button-success"
                                  , HE.onClick (const DisplaySource)
-                                 ] [ H.text "Show Full Source Code"]
+                                 ] [ H.text "(Experimental) Full Source"]
                       ]
 
 transformCode :: Maybe CS.Language -> String -> H.Html CodeAction
