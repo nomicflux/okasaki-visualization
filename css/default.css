@@ -60,3 +60,8 @@ input[type=number] {
 .code-snippet {
     padding: 10px;
 }
+
+code {
+    border-radius: 15px;
+    border: 1px solid grey;
+}

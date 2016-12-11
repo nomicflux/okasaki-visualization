@@ -21,7 +21,6 @@ import Data.Show (show, class Show)
 import Network.HTTP.Affjax (AJAX)
 import Prelude (bind, (/), ($), (<$>), pure, (<<<), (==), (<>), Unit)
 import Pux (start, renderToDOM, EffModel, noEffects, mapState, mapEffects)
-import Pux.Html.Attributes (offset)
 import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time)
@@ -122,7 +121,7 @@ checkSources page =
   map (\lang -> PageCheck lang <$> CS.getFile (fileName page) lang) CS.allLangs
 
 update :: Action -> State
-       -> EffModel State Action _
+       -> EffModel State Action (ajax :: AJAX)
 update (PageCheck lang (Right code)) state =
   noEffects $ state { availableLanguages = insert lang state.availableLanguages}
 update (PageCheck lang (Left err)) state =

@@ -7,20 +7,18 @@ import Pux.Html.Events as HE
 import Structures.Purs.Set as S
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
-import Data.Array (foldM, (:), concatMap, fromFoldable)
-import Data.Either (Either(..))
+import Data.Array ((:), concatMap, fromFoldable)
 import Data.Int (fromString, toNumber)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
-import Debug.Trace (spy)
 import Math (sin, pi, pow)
-import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, max, (<$>), bind, pure, negate)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
-import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius, getID, Classes, NodePos)
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, buffer, maxRadius, getID, Classes, NodePos)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { set :: S.Set Node

@@ -3,6 +3,7 @@ module CodeSnippet where
 -- import Data.Array as A
 import Control.Monad.Aff (Aff, attempt)
 import Control.Alternative ((<|>))
+import Data.Array (filter)
 import Data.Either (either, Either(..))
 import Data.Eq (class Eq)
 import Data.Foldable (fold)
@@ -12,11 +13,12 @@ import Data.Map (Map, fromFoldableWith)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord)
 import Data.Show (class Show)
+import Data.String (joinWith, split, contains)
 import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (get, AJAX)
 import Network.HTTP.StatusCode (StatusCode(..))
-import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit)
-import Text.Parsing.Simple (Parser, parse, string, alphanum, sepBy, space, eof, char, word, manyChar, notFollowedBy, (>>), (<<), newline, isn't, anyOf, ParseError, many, skip, lookahead)
+import Prelude (bind, pure, (<>), (<<<), show, ($), (*>), (<*), const, id, (<$>), unit, not)
+import Text.Parsing.Simple (Parser, parse, string, alphanum, sepBy, space, eof, char, word, manyChar, notFollowedBy, (>>), (<<), newline, isn't, anyOf, ParseError)
 
 type ParserS = Parser String
 
@@ -145,22 +147,14 @@ functionBody lang = do
                        , body : body
                        }
 
-someComment :: Language -> ParserS String
-someComment lang = do
-  com <- string (comment lang)
-  body <- manyChar ((notFollowedBy newline) >> anyChar)
-  end <- newline
-  pure (com <> body)
-
-uncommented :: Language -> ParserS String
-uncommented lang =
-  manyChar ((notFollowedBy $ someComment lang) >> anyChar)
-
 getUncommentedCode :: SourceCode -> String
 getUncommentedCode (SourceCode code) =
-  case parse (sepBy (uncommented code.language) (someComment code.language)) code.getSourceCode of
-    Left _ -> ""
-    Right res -> fold res
+  let
+    lines = split "\n" code.getSourceCode
+    com = comment code.language
+    uncomment = filter (\line -> not (contains com line)) lines
+  in
+   joinWith "\n" uncomment
 
 functions :: Language -> ParserS (List FunctionBlock)
 functions lang = sepBy (functionBody lang) (notBeginning lang)

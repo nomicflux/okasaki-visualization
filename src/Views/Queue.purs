@@ -5,19 +5,16 @@ import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Purs.Queue as Q
-import CodeSnippet as CS
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
-import Debug.Trace (spy)
 import Data.Array ((:), concatMap, fromFoldable)
-import Data.Either (Either(..))
 import Data.Foldable (foldr)
 import Data.Int (fromString, toNumber)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
 import Math (sin, pi)
-import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, max, (<$>), bind, pure)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)

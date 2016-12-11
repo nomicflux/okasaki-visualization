@@ -5,24 +5,24 @@ import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Purs.Stack as S
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (Error)
+import Control.Monad.Eff.Exception (Error, EXCEPTION)
 import Data.Array ((:), concatMap, fromFoldable)
-import Data.Either (Either(..))
 import Data.Foldable (class Foldable, foldr)
 import Data.Int (fromString, toNumber)
 import Data.Map as M
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Show (show)
 import Data.Tuple (Tuple(..), snd)
-import Debug.Trace (spy)
 import Math (sin, pi)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
+import Signal.Channel (CHANNEL)
 import Signal.Time (now, Time, millisecond)
 
 import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
+
 
 type Model = { stack :: S.Stack Node
              , currId :: NodeID
@@ -101,7 +101,7 @@ data Action = Empty
             | Failure Error
             | Tick Time
 
-updateStack :: Model -> S.Stack Node -> String -> EffModel Model Action _
+updateStack :: forall eff. Model -> S.Stack Node -> String -> EffModel Model Action _
 updateStack model stack fn =
   let
     ct = S.count stack
@@ -120,7 +120,7 @@ updateStack model stack fn =
               ]
    }
 
-update :: Action -> Model -> EffModel Model Action _
+update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
 update (Failure err) model =
    noEffects $ model
 update (Code action) model =

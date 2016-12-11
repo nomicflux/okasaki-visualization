@@ -1,6 +1,6 @@
 module Views.SourceCode where
 
-import Prelude (const, Unit)
+import Prelude (const, (<>))
 
 import Pux.Html as H
 import Pux.Html.Attributes as HA
@@ -12,8 +12,6 @@ import Data.Functor (map)
 import Data.Map as M
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Data.Tuple (Tuple(..))
-
-import Debug.Trace (spy)
 
 foreign import highlightCode :: Tuple String String -> String
 
@@ -70,7 +68,7 @@ viewCode :: SourceCodeInfo -> H.Html CodeAction
 viewCode code =
       H.div [ ]
             [ H.pre []
-              [ H.code [ HA.className (fromMaybe "" (map CS.codeClass code.language))
+              [ H.code [ HA.className ("hljs " <> (fromMaybe "" (map CS.codeClass code.language)))
                        , HA.id_ "code-snippet"
                        ]
                   [ case code.currFn of

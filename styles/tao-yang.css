@@ -1,0 +1,79 @@
+/*
+
+Original style Copyright (C) 2014 Peter Kosov <11111000000 at email.com>
+at https://github.com/11111000000/tao-theme-emacs/blob/master/tao-yang-theme.el
+
+*/
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  background: #F0F0F0; /* #DADADA; */
+  color: #262626;
+}
+
+.hljs-string {
+    color: #3D3D3D;
+}
+
+.hljs-symbol,
+.hljs-template-variable,
+.hljs-variable {
+    color: #171717;
+}
+
+.hljs-addition {
+    color: #0F0F0F;
+}
+
+.hljs-bullet,
+.hljs-attribute,
+.hljs-link {
+  color: #3D3D3D;
+  font-style: italic;
+}
+
+.hljs-comment {
+    color: #575757;
+}
+.hljs-quote {
+    color: #3D3D3D;
+}
+
+.hljs-meta {
+    color: #171717;
+}
+
+.hljs-deletion {
+    color: #575757;
+    font-weight: bold;
+}
+
+.hljs-type {
+    color: #171717;
+    text-decoration: underline;
+}
+
+.hljs-strong,
+.hljs-literal,
+.hljs-keyword {
+    color: #070707;
+    font-weight: bold;
+}
+
+.hljs-selector-tag,
+.hljs-section {
+    color: #070707;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.hljs-name {
+    color: #0F0F0F;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+    text-decoration: underline;
+}
