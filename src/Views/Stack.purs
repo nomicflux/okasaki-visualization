@@ -5,7 +5,8 @@ import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Purs.Stack as S
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (Error, EXCEPTION)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Control.Monad.Eff.Timer (TIMER)
 import Data.Array ((:))
 import Data.Foldable (class Foldable, foldr)
 import Data.Int (fromString, toNumber)
@@ -14,7 +15,6 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), snd)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure)
 import Pux (EffModel, noEffects)
-import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (now)
 
@@ -88,7 +88,7 @@ data Action = Empty
             | Animate AnimationAction
             | Code CodeAction
 
-updateStack :: forall eff. Model -> S.Stack Node -> String -> EffModel Model Action _
+updateStack :: Model -> S.Stack Node -> String -> EffModel Model Action _
 updateStack model stack fn =
   let
     ct = S.count stack

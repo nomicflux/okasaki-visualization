@@ -6,7 +6,7 @@ import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
 import Structures.Purs.Leftist as L
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (Error)
+import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array ((:))
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..))
@@ -14,7 +14,7 @@ import Data.Tuple (Tuple(..))
 import Math (pow)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
-import Signal ((~>))
+import Signal.Channel (CHANNEL)
 import Signal.Time (now)
 
 import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, updateAnimation)
@@ -134,7 +134,7 @@ blankNode val = Node { value : val
 changeClasses :: Node -> Classes -> Node
 changeClasses (Node node) classes = Node $ node { classes = classes }
 
-update :: Action -> Model -> EffModel Model Action _
+update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
 update (Animate action) model =
   noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =
