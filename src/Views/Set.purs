@@ -11,7 +11,7 @@ import Control.Monad.Eff.Exception (Error)
 import Data.Array (foldM, (:), concatMap, fromFoldable)
 import Data.Either (Either(..))
 import Data.Int (fromString, toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
 import Debug.Trace (spy)
@@ -22,6 +22,7 @@ import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
 import Views.Node
+import Views.SourceCode
 
 type Model = { set :: S.Set Node
              , currId :: NodeID
@@ -31,9 +32,7 @@ type Model = { set :: S.Set Node
              , startAnimation :: Maybe Time
              , animationPhase :: Number
              , delay :: Number
-             , sourceCode :: M.Map String String
-             , currFnName :: Maybe String
-             , currFn :: Maybe String
+             , code :: SourceCodeInfo
              }
 
 initModel :: Model
@@ -45,9 +44,7 @@ initModel = { set : S.empty
             , startAnimation : Nothing
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
-            , sourceCode : M.empty
-            , currFnName : Nothing
-            , currFn : Nothing
+            , code : blankSourceCode
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
@@ -118,29 +115,23 @@ data Action = Empty
             | CurrentInput String
             | ShowStructure
             | StartTimer Time
-            | LoadCode (Either String CS.SourceCode)
+            | Code CodeAction
             | Failure Error
             | Tick Time
-
-changeFn :: Model -> String -> Model
-changeFn model fn = model { currFn = M.lookup fn model.sourceCode
-                          , currFnName = Just fn}
 
 updateSet :: Model -> S.Set Node -> String -> EffModel Model Action _
 updateSet model set fn =
   let
     depth = S.depth set
     width = S.maxWidth set
-    -- leftWidth = S.leftMaxWidth set
-    -- rightWidth = S.rightMaxWidth set
     newMap = getNodeMap {width : width, depth : depth} set
+    newSource = changeFn model.code fn
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
                   , set = set
                   , animationPhase = 0.0
-                  , currFnName = Just fn
-                  , currFn = M.lookup fn model.sourceCode
+                  , code = newSource
                   }
    , effects: [ do
       time <- liftEff now
@@ -163,16 +154,8 @@ changeClasses (Node node) classes = Node $ node { classes = classes }
 
 update :: Action -> Model -> EffModel Model Action _
 update (Failure err) model = noEffects model
-update (LoadCode (Left err)) model = noEffects model
-update (LoadCode (Right code)) model =
-  let
-    sourceCodeModel = model { sourceCode = CS.parseFunctions code }
-    newModel =
-      case model.currFnName of
-        Nothing -> sourceCodeModel
-        Just fn -> changeFn sourceCodeModel fn
-  in
-   noEffects newModel
+update (Code action) model =
+  noEffects $ model { code = updateCode action model.code }
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
@@ -207,7 +190,7 @@ update Insert model =
     mnode = mkNode model
   in
    case mnode of
-     Nothing -> noEffects $ changeFn model "insert"
+     Nothing -> noEffects $ model { code = changeFn model.code "insert" }
      Just (Tuple node newModel) ->
        if S.member model.set node
        then noEffects model
@@ -223,7 +206,7 @@ update Insert model =
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =
-  noEffects $ changeFn model "Set"
+  noEffects $ model { code = changeFn model.code "Set" }
 
 viewCtrl :: Model -> H.Html Action
 viewCtrl model =
@@ -249,23 +232,11 @@ viewCtrl model =
                                                   ] [ ]]
                          ]
   in
-    H.div [ ] [ dataBtn
+    H.div [ ] [ Code <$> sourceBtn
+              , dataBtn
               , emptyBtn
               , insertSpan
               ]
-
-viewCode :: Model -> H.Html Action
-viewCode model =
-    H.div [ ]
-          [ H.code [ ]
-            [ H.pre [ ]
-              [ case model.currFn of
-                   Nothing ->
-                     H.i []
-                     [ H.text "No implementation given or no function selected"]
-                   Just fn -> H.text fn ]
-            ]
-          ]
 
 viewModel :: Model -> H.Html Action
 viewModel model =

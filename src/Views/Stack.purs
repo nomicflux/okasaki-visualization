@@ -1,6 +1,5 @@
 module Views.Stack where
 
-import CodeSnippet as CS
 import Pux.Html as H
 import Pux.Html.Attributes as HA
 import Pux.Html.Events as HE
@@ -12,7 +11,7 @@ import Data.Either (Either(..))
 import Data.Foldable (class Foldable, foldr)
 import Data.Int (fromString, toNumber)
 import Data.Map as M
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Show (show)
 import Data.Tuple (Tuple(..), snd)
 import Debug.Trace (spy)
@@ -23,6 +22,7 @@ import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
 import Views.Node
+import Views.SourceCode
 
 type Model = { stack :: S.Stack Node
              , currId :: NodeID
@@ -32,9 +32,7 @@ type Model = { stack :: S.Stack Node
              , startAnimation :: Maybe Time
              , animationPhase :: Number
              , delay :: Number
-             , sourceCode :: M.Map String String
-             , currFnName :: Maybe String
-             , currFn :: Maybe String
+             , code :: SourceCodeInfo
              }
 
 initModel :: Model
@@ -46,9 +44,7 @@ initModel = { stack : S.empty
             , startAnimation : Nothing
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
-            , sourceCode : M.empty
-            , currFnName : Nothing
-            , currFn : Nothing
+            , code : blankSourceCode
             }
 
 mkNode :: Model -> Maybe (Tuple Node Model)
@@ -101,27 +97,22 @@ data Action = Empty
             | CurrentInput String
             | ShowStructure
             | StartTimer Time
-            | LoadCode (Either String CS.SourceCode)
+            | Code CodeAction
             | Failure Error
             | Tick Time
-
-changeFn :: Model -> String -> Model
-changeFn model fn = model { currFn = M.lookup fn model.sourceCode
-                          , currFnName = Just fn
-                          }
 
 updateStack :: Model -> S.Stack Node -> String -> EffModel Model Action _
 updateStack model stack fn =
   let
     ct = S.count stack
     newMap = getNodeMap ct stack
+    newSource = changeFn model.code fn
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
                   , stack = stack
                   , animationPhase = 0.0
-                  , currFnName = Just fn
-                  , currFn = M.lookup fn model.sourceCode
+                  , code = newSource
                   }
    , effects: [ do
       time <- liftEff now
@@ -132,17 +123,11 @@ updateStack model stack fn =
 update :: Action -> Model -> EffModel Model Action _
 update (Failure err) model =
    noEffects $ model
-update (LoadCode (Left err)) model =
-   noEffects $ model
-update (LoadCode (Right code)) model =
+update (Code action) model =
   let
-    sourceCodeModel = model { sourceCode = CS.parseFunctions code }
-    newModel =
-      case model.currFnName of
-        Nothing -> sourceCodeModel
-        Just fn -> changeFn sourceCodeModel fn
+    newCode = updateCode action model.code
   in
-   noEffects newModel
+   noEffects $ model { code = newCode }
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
@@ -164,8 +149,8 @@ update Head model =
     mtail = S.tail model.stack
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ changeFn model "head"
-     Tuple _ Nothing -> noEffects $ changeFn model "head"
+     Tuple Nothing _ -> noEffects $ model { code = changeFn model.code "head" }
+     Tuple _ Nothing -> noEffects $ model { code = changeFn model.code "head" }
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
@@ -179,8 +164,8 @@ update Tail model =
     mtail = S.tail model.stack
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ changeFn model "tail"
-     Tuple _ Nothing -> noEffects $ changeFn model "tail"
+     Tuple Nothing _ -> noEffects $ model { code = changeFn model.code "tail" }
+     Tuple _ Nothing -> noEffects $ model { code = changeFn model.code "tail" }
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "" h
@@ -193,7 +178,7 @@ update Pop model =
     mtail = S.tail model.stack
   in
    case mtail of
-     Nothing -> noEffects $ changeFn model "tail"
+     Nothing -> noEffects $ model { code = changeFn model.code "tail" }
      Just t ->
        let
          newTail = changeAllClasses "tail" t
@@ -208,13 +193,13 @@ update Insert model =
     cleanStack = wipeClasses model.stack
   in
    case mnode of
-     Nothing -> noEffects $ changeFn model "cons"
+     Nothing -> noEffects $ model { code = changeFn model.code "cons" }
      Just (Tuple node newModel) ->
        updateStack newModel (S.cons node cleanStack) "cons"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =
-  noEffects $ changeFn model "Stack"
+  noEffects $ model { code = changeFn model.code "Stack" }
 
 viewCtrl :: Model -> H.Html Action
 viewCtrl model =
@@ -252,26 +237,14 @@ viewCtrl model =
                                                 ] [ ]]
                          ]
    in
-    H.div [ ] [ dataBtn
+    H.div [ ] [ Code <$> sourceBtn
+              , dataBtn
               , emptyBtn
               , viewsDiv
               , revBtn
               , popBtn
               , consSpan
               ]
-
-viewCode :: Model -> H.Html Action
-viewCode model =
-  H.div [ ]
-        [ H.code [ ]
-          [ H.pre [ ]
-            [ case model.currFn of
-                 Nothing ->
-                   H.i []
-                       [ H.text "No implementation given or no function selected"]
-                 Just fn -> H.text fn ]
-            ]
-          ]
 
 viewModel :: Model -> H.Html Action
 viewModel model =

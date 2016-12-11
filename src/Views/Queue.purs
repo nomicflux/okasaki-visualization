@@ -13,7 +13,7 @@ import Data.Array ((:), concatMap, fromFoldable)
 import Data.Either (Either(..))
 import Data.Foldable (foldr)
 import Data.Int (fromString, toNumber)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
 import Math (sin, pi)
@@ -23,6 +23,7 @@ import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
 import Views.Node
+import Views.SourceCode
 
 type Model = { queue :: Q.Queue Node
              , currId :: NodeID
@@ -32,9 +33,7 @@ type Model = { queue :: Q.Queue Node
              , startAnimation :: Maybe Time
              , animationPhase :: Number
              , delay :: Number
-             , sourceCode :: M.Map String String
-             , currFnName :: Maybe String
-             , currFn :: Maybe String
+             , code :: SourceCodeInfo
              }
 
 initModel :: Model
@@ -46,9 +45,7 @@ initModel = { queue : Q.empty
             , startAnimation : Nothing
             , animationPhase : 1.0
             , delay : 750.0 * millisecond
-            , sourceCode : M.empty
-            , currFnName : Nothing
-            , currFn : Nothing
+            , code : blankSourceCode
             }
 
 data Direction = Front | Back
@@ -113,29 +110,22 @@ data Action = Empty
             | CurrentInput String
             | ShowStructure
             | StartTimer Time
-            | LoadCode (Either String CS.SourceCode)
+            | Code CodeAction
             | Failure Error
             | Tick Time
-
-changeFn :: Model -> String -> Model
-changeFn model fn = model { currFn = M.lookup fn model.sourceCode
-                          , currFnName = Just fn
-                          }
 
 updateQueue :: Model -> Q.Queue Node -> String -> EffModel Model Action _
 updateQueue model queue fn =
   let
     bict = Q.biCount queue
-    -- ct = max (fst bict) (snd bict)
-    -- ct = (fst bict) + (snd bict)
     newMap = getNodeMap (fst bict) (snd bict) queue
+    newSource = changeFn model.code fn
   in
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
                   , queue = queue
                   , animationPhase = 0.0
-                  , currFnName = Just fn
-                  , currFn = M.lookup fn model.sourceCode
+                  , code = newSource
                   }
    , effects: [ do
       time <- liftEff now
@@ -145,16 +135,8 @@ updateQueue model queue fn =
 
 update :: Action -> Model -> EffModel Model Action _
 update (Failure err) model = noEffects model
-update (LoadCode (Left err)) model = noEffects model
-update (LoadCode (Right code)) model =
-  let
-    sourceCodeModel = model { sourceCode = CS.parseFunctions code }
-    newModel =
-      case model.currFnName of
-        Nothing -> sourceCodeModel
-        Just fn -> changeFn sourceCodeModel fn
-  in
-   noEffects newModel
+update (Code action) model =
+  noEffects $ model { code = updateCode action model.code }
 update (Tick time) model =
   case model.startAnimation of
     Nothing -> noEffects model
@@ -178,8 +160,8 @@ update Top model =
     mtail = Q.pop model.queue
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ changeFn model "top"
-     Tuple _ Nothing -> noEffects $ changeFn model "top"
+     Tuple Nothing _ -> noEffects $ model { code = changeFn model.code "top" }
+     Tuple _ Nothing -> noEffects $ model { code = changeFn model.code "top" }
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
@@ -192,7 +174,7 @@ update Pop model =
     mtail = Q.pop model.queue
   in
    case mtail of
-     Nothing -> noEffects $ changeFn model "pop"
+     Nothing -> noEffects $ model { code = changeFn model.code "pop" }
      Just t ->
        let
          newTail = changeAllClasses "tail" t
@@ -205,8 +187,8 @@ update Bottom model =
     mtail = Q.eject model.queue
   in
    case Tuple mhead mtail of
-     Tuple Nothing _ -> noEffects $ changeFn model "back"
-     Tuple _ Nothing -> noEffects $ changeFn model "back"
+     Tuple Nothing _ -> noEffects $ model { code = changeFn model.code "back" }
+     Tuple _ Nothing -> noEffects $ model { code = changeFn model.code "back" }
      Tuple (Just h) (Just t) ->
        let
          newHead = changeClass "head" h
@@ -219,7 +201,7 @@ update Eject model =
     mtail = Q.eject model.queue
   in
    case mtail of
-     Nothing -> noEffects $ changeFn model "eject"
+     Nothing -> noEffects $ model { code = changeFn model.code "eject" }
      Just t ->
        let
          newTail = changeAllClasses "tail" t
@@ -232,7 +214,7 @@ update Inject model =
     cleanQueue = wipeClasses model.queue
   in
    case mnode of
-     Nothing -> noEffects $ changeFn model "inject"
+     Nothing -> noEffects $ model { code = changeFn model.code "inject" }
      Just (Tuple node newModel) ->
        updateQueue newModel (Q.inject node cleanQueue) "inject"
 update Push model =
@@ -241,26 +223,13 @@ update Push model =
     cleanQueue = wipeClasses model.queue
   in
    case mnode of
-     Nothing -> noEffects $ changeFn model "push"
+     Nothing -> noEffects $ model { code = changeFn model.code "push" }
      Just (Tuple node newModel) ->
        updateQueue newModel (Q.push node cleanQueue) "push"
 update (CurrentInput s) model =
   noEffects $ model { currInput = fromString s }
 update ShowStructure model =
-  noEffects $ changeFn model "Queue"
-
-viewCode :: Model -> H.Html Action
-viewCode model =
-  H.div [ ]
-        [ H.code [ ]
-          [ H.pre [ ]
-            [ case model.currFn of
-                 Nothing ->
-                   H.i []
-                   [ H.text "No implementation given or no function selected"]
-                 Just fn -> H.text fn ]
-          ]
-        ]
+  noEffects $ model { code = changeFn model.code "Queue" }
 
 viewModel :: Model -> H.Html Action
 viewModel model =
@@ -314,7 +283,8 @@ viewCtrl model =
                                                 ] [ ]]
                          ]
   in
-    H.div [ ] [ dataBtn
+    H.div [ ] [ Code <$> sourceBtn
+              , dataBtn
               , emptyBtn
               , rotateBtn
               , frontDiv

@@ -27,6 +27,8 @@ import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time)
 
+import Views.SourceCode as SC
+
 data Page = StackPage
           | QueuePage
           | SetPage
@@ -100,11 +102,11 @@ updateLeftist state laction =
   in
    mapEffects LeftistAction $ mapState (\s -> state { leftistModel = s}) $ updated
 
-loadAction :: Page -> (Either String CS.SourceCode -> Action)
-loadAction StackPage = StackAction <<< Stack.LoadCode
-loadAction QueuePage = QueueAction <<< Queue.LoadCode
-loadAction SetPage = SetAction <<< Set.LoadCode
-loadAction LeftistPage = LeftistAction <<< Leftist.LoadCode
+loadAction :: Page -> (SC.CodeAction -> Action)
+loadAction StackPage = StackAction <<< Stack.Code
+loadAction QueuePage = QueueAction <<< Queue.Code
+loadAction SetPage = SetAction <<< Set.Code
+loadAction LeftistPage = LeftistAction <<< Leftist.Code
 
 fileName :: Page -> String
 fileName StackPage = "Stack"
@@ -114,7 +116,7 @@ fileName LeftistPage = "Leftist"
 
 getSource :: forall eff. Page -> CS.Language -> Aff (ajax :: AJAX | eff) Action
 getSource page lang =
-  (loadAction page) <$> CS.getFile (fileName page) lang
+  (loadAction page <<< SC.LoadCode) <$> CS.getFile (fileName page) lang
 
 checkSources :: forall eff. Page -> Array (Aff (ajax :: AJAX | eff) Action)
 checkSources page =
@@ -248,10 +250,10 @@ view state =
     codeSnippets =
       case state.currPage of
         Nothing -> blank
-        Just StackPage -> StackAction <$> Stack.viewCode state.stackModel
-        Just QueuePage -> QueueAction <$> Queue.viewCode state.queueModel
-        Just SetPage -> SetAction <$> Set.viewCode state.setModel
-        Just LeftistPage -> LeftistAction <$> Leftist.viewCode state.leftistModel
+        Just StackPage -> (StackAction <<< Stack.Code) <$> SC.viewCode state.stackModel.code
+        Just QueuePage -> (QueueAction <<< Queue.Code) <$> SC.viewCode state.queueModel.code
+        Just SetPage -> (SetAction <<< Set.Code) <$> SC.viewCode state.setModel.code
+        Just LeftistPage -> (LeftistAction <<< Leftist.Code) <$> SC.viewCode state.leftistModel.code
     sideBar = H.div [ HA.className "pure-u-1-4" ] [ H.div [ HA.className "sidebar" ]
                                                     [ dataDiv
                                                     , langDiv
