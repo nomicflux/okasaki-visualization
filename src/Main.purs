@@ -25,6 +25,7 @@ import Signal ((~>))
 import Signal.Channel (CHANNEL)
 import Signal.Time (every, second, Time)
 
+import Views.Animation as A
 import Views.SourceCode as SC
 
 data Page = StackPage
@@ -153,28 +154,21 @@ update (Tick time) state =
   case state.currPage of
     Nothing -> noEffects state
     Just StackPage ->
-      updateStack state (Stack.Tick time)
+      updateStack state (Stack.Animate $ A.Tick time)
     Just QueuePage ->
-      updateQueue state (Queue.Tick time)
+      updateQueue state (Queue.Animate $ A.Tick time)
     Just SetPage ->
-      updateSet state (Set.Tick time)
+      updateSet state (Set.Animate $ A.Tick time)
     Just LeftistPage ->
-      updateLeftist state (Leftist.Tick time)
+      updateLeftist state (Leftist.Animate $ A.Tick time)
 
 dsOption :: State -> String -> Maybe Page -> H.Html Action
 dsOption state name token =
   let
-    -- baseClasses = "pure-button pure-button-primary"
     value =
       case token of
         Nothing -> ""
         Just page -> show page
-    -- allClasses =
-    --   case state.currPage of
-    --     Nothing -> baseClasses
-    --     Just page -> if page == token
-    --                  then baseClasses <> " pure-button-active"
-    --                  else baseClasses
   in
    H.option [ HA.value value
             ] [ H.text name ]

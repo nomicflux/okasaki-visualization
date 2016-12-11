@@ -12,12 +12,13 @@ import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Show (show)
 import Data.Tuple (Tuple(..), fst, snd)
-import Math (sin, pi, pow)
+import Math (pow)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
-import Signal.Time (now, Time, millisecond)
+import Signal.Time (now)
 
+import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, getPhase, updateAnimation)
 import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, buffer, maxRadius, getID, Classes, NodePos)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
@@ -26,9 +27,7 @@ type Model = { set :: S.Set Node
              , currInput :: Maybe NodeValue
              , currNodes :: NodeMap
              , prevNodes :: NodeMap
-             , startAnimation :: Maybe Time
-             , animationPhase :: Number
-             , delay :: Number
+             , animation :: Animation
              , code :: SourceCodeInfo
              }
 
@@ -38,9 +37,7 @@ initModel = { set : S.empty
             , currInput : Nothing
             , currNodes : M.empty
             , prevNodes : M.empty
-            , startAnimation : Nothing
-            , animationPhase : 1.0
-            , delay : 750.0 * millisecond
+            , animation : defaultAnimation
             , code : blankSourceCode
             }
 
@@ -111,10 +108,8 @@ data Action = Empty
             | Insert
             | CurrentInput String
             | ShowStructure
-            | StartTimer Time
             | Code CodeAction
-            | Failure Error
-            | Tick Time
+            | Animate AnimationAction
 
 updateSet :: Model -> S.Set Node -> String -> EffModel Model Action _
 updateSet model set fn =
@@ -127,12 +122,12 @@ updateSet model set fn =
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
                   , set = set
-                  , animationPhase = 0.0
+                  , animation = resetAnimation model.animation
                   , code = newSource
                   }
    , effects: [ do
       time <- liftEff now
-      pure $ StartTimer time
+      pure $ Animate (StartTimer time)
               ]
    }
 
@@ -150,22 +145,10 @@ changeClasses :: Node -> Classes -> Node
 changeClasses (Node node) classes = Node $ node { classes = classes }
 
 update :: Action -> Model -> EffModel Model Action _
-update (Failure err) model = noEffects model
+update (Animate action) model =
+  noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =
   noEffects $ model { code = updateCode action model.code }
-update (Tick time) model =
-  case model.startAnimation of
-    Nothing -> noEffects model
-    Just start ->
-      let
-        timeDiff = time - start
-      in
-       if model.delay < timeDiff
-       then noEffects $ model { animationPhase = 1.0 }
-       else noEffects $ model { animationPhase = sin (timeDiff / model.delay * pi / 2.0) }
-update (StartTimer time) model = noEffects $ model { startAnimation = Just time
-                                                   , animationPhase = 0.0
-                                                   }
 update Empty model =
   updateSet model S.empty "empty"
 update Member model =
@@ -239,7 +222,7 @@ viewModel :: Model -> H.Html Action
 viewModel model =
   let
     keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
+    showNodes = viewNodePos (getPhase model.animation) model.prevNodes model.currNodes
     nodes = concatMap showNodes (fromFoldable keys)
   in
     H.div [ ] [ H.svg [HA.height (show maxHeight)

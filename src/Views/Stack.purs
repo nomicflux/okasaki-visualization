@@ -13,13 +13,13 @@ import Data.Map as M
 import Data.Maybe (Maybe(..))
 import Data.Show (show)
 import Data.Tuple (Tuple(..), snd)
-import Math (sin, pi)
 import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Channel (CHANNEL)
-import Signal.Time (now, Time, millisecond)
+import Signal.Time (now)
 
+import Views.Animation (Animation, AnimationAction(..), defaultAnimation, resetAnimation, getPhase, updateAnimation)
 import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius)
 import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
@@ -29,9 +29,7 @@ type Model = { stack :: S.Stack Node
              , currInput :: Maybe NodeValue
              , currNodes :: NodeMap
              , prevNodes :: NodeMap
-             , startAnimation :: Maybe Time
-             , animationPhase :: Number
-             , delay :: Number
+             , animation :: Animation
              , code :: SourceCodeInfo
              }
 
@@ -41,9 +39,7 @@ initModel = { stack : S.empty
             , currInput : Nothing
             , currNodes : M.empty
             , prevNodes : M.empty
-            , startAnimation : Nothing
-            , animationPhase : 1.0
-            , delay : 750.0 * millisecond
+            , animation : defaultAnimation
             , code : blankSourceCode
             }
 
@@ -96,10 +92,8 @@ data Action = Empty
             | Insert
             | CurrentInput String
             | ShowStructure
-            | StartTimer Time
+            | Animate AnimationAction
             | Code CodeAction
-            | Failure Error
-            | Tick Time
 
 updateStack :: forall eff. Model -> S.Stack Node -> String -> EffModel Model Action _
 updateStack model stack fn =
@@ -111,36 +105,23 @@ updateStack model stack fn =
    { state: model { prevNodes = model.currNodes
                   , currNodes = newMap
                   , stack = stack
-                  , animationPhase = 0.0
+                  , animation = resetAnimation model.animation
                   , code = newSource
                   }
    , effects: [ do
       time <- liftEff now
-      pure $ StartTimer time
+      pure $ Animate (StartTimer time)
               ]
    }
 
 update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
-update (Failure err) model =
-   noEffects $ model
+update (Animate action) model =
+  noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =
   let
     newCode = updateCode action model.code
   in
    noEffects $ model { code = newCode }
-update (Tick time) model =
-  case model.startAnimation of
-    Nothing -> noEffects model
-    Just start ->
-      let
-        timeDiff = time - start
-      in
-       if model.delay < timeDiff
-       then noEffects $ model { animationPhase = 1.0 }
-       else noEffects $ model { animationPhase = sin (timeDiff / model.delay * pi / 2.0) }
-update (StartTimer time) model = noEffects $ model { startAnimation = Just time
-                                                   , animationPhase = 0.0
-                                                   }
 update Empty model =
   updateStack model S.empty "empty"
 update Head model =
@@ -250,7 +231,7 @@ viewModel :: Model -> H.Html Action
 viewModel model =
   let
     keys = M.keys $ M.union model.prevNodes model.currNodes
-    showNodes = viewNodePos model.animationPhase model.prevNodes model.currNodes
+    showNodes = viewNodePos (getPhase model.animation) model.prevNodes model.currNodes
     nodes = concatMap showNodes (fromFoldable keys)
   in
     H.div [ ]
