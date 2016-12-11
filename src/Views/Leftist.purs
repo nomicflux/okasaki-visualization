@@ -1,8 +1,5 @@
 module Views.Leftist where
 
-import Views.Node
-import Views.SourceCode
-import CodeSnippet as CS
 import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
@@ -10,18 +7,19 @@ import Pux.Html.Events as HE
 import Structures.Purs.Leftist as L
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
-import Data.Array (foldM, (:), concatMap, fromFoldable)
-import Data.Either (Either(..))
+import Data.Array ((:), concatMap, fromFoldable)
 import Data.Int (fromString, toNumber)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Show (show)
-import Data.Tuple (Tuple(..), fst, snd)
-import Debug.Trace (spy)
+import Data.Tuple (Tuple(..))
 import Math (sin, pi, pow)
-import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, max, (<$>), bind, pure, negate)
+import Prelude (($), (+), (/), (-), (*), (<), (<>), (<<<), const, min, (<$>), bind, pure, negate)
 import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
+
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeClass, buffer, maxRadius, getID, NodePos, Classes)
+import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { heap :: L.Leftist Node
              , currId :: NodeID

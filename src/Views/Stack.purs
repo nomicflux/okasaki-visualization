@@ -21,8 +21,8 @@ import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
-import Views.Node
-import Views.SourceCode
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius)
+import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { stack :: S.Stack Node
              , currId :: NodeID

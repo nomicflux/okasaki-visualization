@@ -1,6 +1,5 @@
 module Views.Set where
 
-import CodeSnippet as CS
 import Data.Map as M
 import Pux.Html as H
 import Pux.Html.Attributes as HA
@@ -21,8 +20,8 @@ import Pux (EffModel, noEffects)
 import Signal ((~>))
 import Signal.Time (now, Time, millisecond)
 
-import Views.Node
-import Views.SourceCode
+import Views.Node (NodeMap, NodeValue, NodeID, Node(..), maxWidth, maxHeight, viewNodePos, wipeClasses, changeAllClasses, changeClass, buffer, maxRadius, getID, Classes, NodePos)
+import Views.SourceCode (CodeAction, SourceCodeInfo, sourceBtn, changeFn, updateCode, blankSourceCode)
 
 type Model = { set :: S.Set Node
              , currId :: NodeID
