@@ -206,6 +206,7 @@ viewCtrl model =
                                       , H.input [ HA.type_ "number"
                                                 , HA.maxLength "3"
                                                 , HA.size 3
+                                                , HA.placeholder "1"
                                                 , HE.onChange $ \t -> CurrentInput t.target.value
                                                 ] [ ]]
                          ]

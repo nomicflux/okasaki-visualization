@@ -25221,7 +25221,8 @@ var PS = {};
   var type_ = $foreign.attr("type");                   
   var textAnchor = $foreign.attr("textAnchor");
   var size = $foreign.attr("size");            
-  var r = $foreign.attr("r");                  
+  var r = $foreign.attr("r");                        
+  var placeholder = $foreign.attr("placeholder");
   var name = $foreign.attr("name");  
   var maxLength = $foreign.attr("maxLength");    
   var id_ = $foreign.attr("id");             
@@ -25242,6 +25243,7 @@ var PS = {};
   exports["id_"] = id_;
   exports["maxLength"] = maxLength;
   exports["name"] = name;
+  exports["placeholder"] = placeholder;
   exports["r"] = r;
   exports["size"] = size;
   exports["textAnchor"] = textAnchor;
@@ -26665,7 +26667,7 @@ var PS = {};
       return Animate;
   })();
   var viewCtrl = function (model) {
-      var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.placeholder("1"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
       var findMinBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](FindMin.value)) ])([ Pux_Html_Elements.text("Find Min") ]);
@@ -27298,7 +27300,7 @@ var PS = {};
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
       var ejectBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Eject.value)) ])([ Pux_Html_Elements.text("Eject") ]);
       var dataBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-warning"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](ShowStructure.value)) ])([ Pux_Html_Elements.text("Queue Structure") ]) ]);
-      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject / Shift") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Inject.value)) ])([ Pux_Html_Elements.text("Inject / Shift") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Push.value)) ])([ Pux_Html_Elements.text("Push") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Pux_Html_Attributes.placeholder("1"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
       var backBtn = Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Bottom.value)) ])([ Pux_Html_Elements.text("Back") ]);
@@ -28038,7 +28040,7 @@ var PS = {};
       return Animate;
   })();
   var viewCtrl = function (model) {
-      var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Member.value)) ])([ Pux_Html_Elements.text("Member") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var insertSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Insert") ]), Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Member.value)) ])([ Pux_Html_Elements.text("Member") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.placeholder("1"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
@@ -28466,7 +28468,7 @@ var PS = {};
       var viewsDiv = Pux_Html_Elements.div([  ])([ headBtn, tailBtn ]);
       var emptyBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Empty.value)) ])([ Pux_Html_Elements.text("Empty") ]) ]);
       var dataBtn = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button pure-button-warning"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](ShowStructure.value)) ])([ Pux_Html_Elements.text("Stack Structure") ]) ]);
-      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Cons") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
+      var consSpan = Pux_Html_Elements.div([  ])([ Pux_Html_Elements.span([  ])([ Pux_Html_Elements.button([ Pux_Html_Attributes.className("pure-button"), Data_Function.apply(Pux_Html_Events.onClick)(Data_Function["const"](Insert.value)) ])([ Pux_Html_Elements.text("Cons") ]), Pux_Html_Elements.input([ Pux_Html_Attributes.type_("number"), Pux_Html_Attributes.maxLength("3"), Pux_Html_Attributes.size(3), Pux_Html_Attributes.placeholder("1"), Data_Function.apply(Pux_Html_Events.onChange)(function (t) {
           return new CurrentInput(t.target.value);
       }) ])([  ]) ]) ]);
       return Pux_Html_Elements.div([  ])([ Data_Functor.map(Pux_Html_Elements.functorHtml)(Code.create)(Views_SourceCode.sourceBtn), dataBtn, consSpan, emptyBtn, viewsDiv, revBtn, popBtn ]);
