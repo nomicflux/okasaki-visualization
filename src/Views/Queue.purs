@@ -246,9 +246,9 @@ viewCtrl model =
   in
     H.div [ ] [ Code <$> sourceBtn
               , dataBtn
+              , consSpan
               , emptyBtn
               , rotateBtn
               , frontDiv
               , backDiv
-              , consSpan
               ]

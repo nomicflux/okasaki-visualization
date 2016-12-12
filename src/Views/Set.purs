@@ -206,6 +206,6 @@ viewCtrl model =
   in
     H.div [ ] [ Code <$> sourceBtn
               , dataBtn
-              , emptyBtn
               , insertSpan
+              , emptyBtn
               ]
