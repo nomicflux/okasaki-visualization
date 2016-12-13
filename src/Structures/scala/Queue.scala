@@ -1,4 +1,4 @@
-package okasaki;
+package okasaki.stack;
 
 // | *Queue empty
 object Queue

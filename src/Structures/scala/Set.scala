@@ -1,4 +1,4 @@
-package okasaki;
+package okasaki.set;
 
 // | *Set insert member
 sealed abstract class Set[+A <% Ordered[A]]
@@ -34,23 +34,21 @@ case class Node[A <% Ordered[A]](left: Set[A],
 {
   // | *insert
   def insert[B >: A <% Ordered[B]](newVal: B): Set[B] =
-    if(newVal < value) {
+    if(newVal < value)
       new Node(left.insert(newVal), value, right)
-    } else if(newVal > value) {
+    else if(newVal > value)
       new Node(left, value, right.insert(newVal))
-    } else {
+    else
       this
-    }
   // .end
 
   // | *member
   def member[B >: A <% Ordered[B]](valToCheck: B): Boolean =
-    if(valToCheck < value) {
+    if(valToCheck < value)
       left.member(valToCheck)
-    } else if(valToCheck > value) {
+    else if(valToCheck > value)
       right.member(valToCheck)
-    } else {
+    else
       true
-    }
   // .end
 }
