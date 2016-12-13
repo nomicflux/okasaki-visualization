@@ -1,7 +1,7 @@
-package okasaki
+package okasaki;
 
 // | *Stack head tail reverse cons
-abstract class Stack[+A]
+sealed abstract class Stack[+A]
 // .end
 {
   // | *head

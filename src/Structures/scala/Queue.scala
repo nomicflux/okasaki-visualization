@@ -1,4 +1,4 @@
-package okasaki
+package okasaki;
 
 // | *Queue empty
 object Queue
@@ -10,7 +10,7 @@ object Queue
 }
 
 // | *Queue isEmpty rotate top back pop push inject eject
-class Queue[+A](front: Stack[A], back: Stack[A])
+sealed class Queue[+A](front: Stack[A], back: Stack[A])
 // .end
 {
   // | *isEmpty
