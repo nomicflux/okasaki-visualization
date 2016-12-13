@@ -1,7 +1,7 @@
 package okasaki.leftist;
 
 // | *LeftistHeap empty merge insert deleteMin findMin
-sealed abstract class Leftist[+A <% Ordered[A]]
+sealed trait Leftist[+A <% Ordered[A]]
 // .end
 {
   // | *merge insert deleteMin
@@ -69,13 +69,14 @@ case class Node[A <% Ordered[A]](left: Leftist[A],
   def deleteMin: Leftist[A] = left.merge(right)
   // .end
   // | *merge insert deleteMin
-  def merge[B >: A <% Ordered[B]](other: Leftist[B]): Leftist[B] = other match {
-    case Leaf => other
-    case Node(l,v,r,n) =>
-      if(value <= v)
-        makeNode(value, left, right.merge(other))
-      else
-        makeNode(v, l, this.merge(r))
-  }
+  def merge[B >: A <% Ordered[B]](other: Leftist[B]): Leftist[B] =
+    other match {
+      case Leaf => this
+      case Node(l,v,r,n) =>
+        if(value <= v)
+          makeNode(value, left, right.merge(other))
+        else
+          makeNode(v, l, this.merge(r))
+    }
   // .end
 }
