@@ -20,7 +20,7 @@ object Leftist
   // .end
 }
 
-// | *LeftistHeap empty merge insert deleteMin findMin
+// | *LeftistHeap
 sealed abstract class Leftist[+A <% Ordered[A]]
 // .end
 {
