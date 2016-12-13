@@ -5,9 +5,11 @@ sealed abstract class Set[+A <% Ordered[A]]
 // .end
 {
   // | *insert
+  // Class
   def insert[B >: A <% Ordered[B]](value: B): Set[B]
   // .end
   // | *member
+  // Class
   def member[B >: A <% Ordered[B]](value: B): Boolean
   // .end
 }
@@ -17,10 +19,12 @@ case object Leaf extends Set[Nothing]
 // .end
 {
   // | *insert
+  // Leaf
   def insert[A <% Ordered[A]](value: A): Set[A] =
     new Node(Leaf, value, Leaf)
   // .end
   // | *member
+  // Leaf
   def member[A <% Ordered[A]](anyVal: A) = false
   // .end
 }
@@ -33,6 +37,7 @@ case class Node[A <% Ordered[A]](left: Set[A],
 // .end
 {
   // | *insert
+  // Node
   def insert[B >: A <% Ordered[B]](newVal: B): Set[B] =
     if(newVal < value)
       new Node(left.insert(newVal), value, right)
@@ -43,6 +48,7 @@ case class Node[A <% Ordered[A]](left: Set[A],
   // .end
 
   // | *member
+  // Node
   def member[B >: A <% Ordered[B]](valToCheck: B): Boolean =
     if(valToCheck < value)
       left.member(valToCheck)
