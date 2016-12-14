@@ -40,11 +40,11 @@ case object Nil extends Stack[Nothing]
   // .end
   // | *reverse
   // Nil
-  def reverse = this
+  val reverse = this
   // .end
   // | *isEmpty
   // Nil
-  def isEmpty = true
+  val isEmpty = true
   // .end
   override def toString = "[]"
 }

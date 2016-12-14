@@ -65,7 +65,7 @@ case object Leaf extends Leftist[Nothing]
   // .end
   // | *rank
   // Leaf
-  def rank = 0
+  val rank = 0
   // .end
 }
 
