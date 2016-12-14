@@ -5,56 +5,39 @@ sealed abstract class Set[+A <% Ordered[A]]
 // .end
 {
   // | *insert
-  // Class
-  def insert[B >: A <% Ordered[B]](value: B): Set[B]
+  def insert[B >: A <% Ordered[B]](newVal: B): Set[B] = this match {
+    case Leaf =>
+      new Node(Leaf, newVal, Leaf)
+    case Node(l, v, r) =>
+      if(newVal < v)
+        new Node(l.insert(newVal), v, r)
+      else if(newVal > v)
+        new Node(l, v, r.insert(newVal))
+      else
+        this
+  }
   // .end
   // | *member
-  // Class
-  def member[B >: A <% Ordered[B]](value: B): Boolean
+  def member[B >: A <% Ordered[B]](valToCheck: B): Boolean = this match {
+    case Leaf => false
+    case Node(l, v, r) =>
+      if(valToCheck < v)
+        l.member(valToCheck)
+      else if(valToCheck > v)
+        r.member(valToCheck)
+      else
+        true
+  }
   // .end
 }
 
 // | *Set empty
 case object Leaf extends Set[Nothing]
 // .end
-{
-  // | *insert
-  // Leaf
-  def insert[A <% Ordered[A]](value: A): Set[A] =
-    new Node(Leaf, value, Leaf)
-  // .end
-  // | *member
-  // Leaf
-  def member[A <% Ordered[A]](anyVal: A) = false
-  // .end
-}
 
 // | *Set
-case class Node[A <% Ordered[A]](left: Set[A],
-                                 value: A,
-                                 right: Set[A])
+case class Node[+A <% Ordered[A]](left: Set[A],
+                                  value: A,
+                                  right: Set[A])
     extends Set[A]
 // .end
-{
-  // | *insert
-  // Node
-  def insert[B >: A <% Ordered[B]](newVal: B): Set[B] =
-    if(newVal < value)
-      new Node(left.insert(newVal), value, right)
-    else if(newVal > value)
-      new Node(left, value, right.insert(newVal))
-    else
-      this
-  // .end
-
-  // | *member
-  // Node
-  def member[B >: A <% Ordered[B]](valToCheck: B): Boolean =
-    if(valToCheck < value)
-      left.member(valToCheck)
-    else if(valToCheck > value)
-      right.member(valToCheck)
-    else
-      true
-  // .end
-}

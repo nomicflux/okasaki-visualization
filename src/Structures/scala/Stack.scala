@@ -1,61 +1,21 @@
 package okasaki.stack;
 
-// | *Stack head tail reverse cons
-sealed abstract class Stack[+A]
+// | *Stack
+sealed trait Stack[+A]
 // .end
 {
   // | *head
-  // Class
-  def head: A
+  // Nil case
+  def head: A = throw new NoSuchElementException("Nil.head")
   // .end
-  // | *tail
-  // Class
-  def tail: Stack[A]
-  // .end
-  // | *reverse
-  // Class
-  def reverse: Stack[A]
-  // .end
-  // | *cons
-  // Class
-  def cons[B >: A](x : B): Stack[B] = Cons(x, this)
-  // .end
-  // | *isEmpty
-  // Class
-  def isEmpty: Boolean
-  // .end
-}
 
-// | *Stack empty head tail reverse
-case object Nil extends Stack[Nothing]
-// .end
-{
-  // | *head
-  // Nil
-  def head = throw new NoSuchElementException("Nil.head")
-  // .end
   // | *tail
-  // Nil
-  def tail = throw new NoSuchElementException("Nil.tail")
+  // Nil case
+  def tail: Stack[A] =  throw new NoSuchElementException("Nil.tail")
   // .end
-  // | *reverse
-  // Nil
-  val reverse = this
-  // .end
-  // | *isEmpty
-  // Nil
-  val isEmpty = true
-  // .end
-  override def toString = "[]"
-}
 
-// | *Stack head tail reverse
-case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
-// .end
-{
   // | *reverse
-  // Cons
-  def reverse = {
+  def reverse: Stack[A] = {
     def reverseHelp(curr: Stack[A], acc: Stack[A]): Stack[A] = curr match {
       case Nil => acc
       case Cons(h, t) => reverseHelp(t, Cons(h, acc))
@@ -63,10 +23,28 @@ case class Cons[A](head: A, tail: Stack[A]) extends Stack[A]
     reverseHelp(this, Nil)
   }
   // .end
-  // | *isEmpty
-  // Cons
-  def isEmpty = false
+
+  // | *cons
+  def cons[B >: A](x : B): Stack[B] = Cons(x, this)
   // .end
 
-  override def toString = head.toString ++ " : " ++ tail.toString
+  // | *isEmpty
+  def isEmpty: Boolean = this match {
+    case Nil => false
+    case Cons(_, _) => true
+  }
+  // .end
+
+  override def toString = this match {
+    case Nil => "[]"
+    case Cons(head,tail) => head.toString ++ " : " ++ tail.toString
+  }
 }
+
+// | *Stack empty
+case object Nil extends Stack[Nothing]
+  // .end
+// | *Stack head tail
+case class Cons[+A](override val head: A,
+                    override val tail: Stack[A]) extends Stack[A]
+// .end
