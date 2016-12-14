@@ -25,18 +25,19 @@ sealed abstract class Leftist[+A <% Ordered[A]]
 // .end
 {
   // | *merge insert deleteMin
-  def merge[B >: A <% Ordered[B]](other: Leftist[B]): Leftist[B] = this match {
-    case Leaf => other
-    case Node(left,value,right,rank) =>
-      other match {
-        case Leaf => this
-        case Node(l,v,r,n) =>
-          if(value <= v)
-            Leftist.makeNode(value, left, right.merge(other))
-          else
-            Leftist.makeNode(v, l, this.merge(r))
-      }
- }
+  def merge[B >: A <% Ordered[B]](other: Leftist[B]): Leftist[B] =
+    this match {
+      case Leaf => other
+      case Node(left,value,right,rank) =>
+        other match {
+          case Leaf => this
+          case Node(l,v,r,n) =>
+            if(value <= v)
+              Leftist.makeNode(value, left, right.merge(other))
+            else
+              Leftist.makeNode(v, l, this.merge(r))
+        }
+    }
   // .end
   // | *insert
   def insert[B >: A <% Ordered[B]](value: B): Leftist[B] =
