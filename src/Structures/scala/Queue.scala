@@ -7,6 +7,12 @@ object Queue
   // | *empty
   def empty[A]: Queue[A] = new Queue(Stack.empty, Stack.empty)
   // .end
+
+  def apply[A](as: A*): Queue[A] =
+    if(as.isEmpty)
+      empty
+    else
+      new Queue(Stack.empty, Stack(as: _*))
 }
 
 // | *Queue isEmpty rotate top back pop push inject eject

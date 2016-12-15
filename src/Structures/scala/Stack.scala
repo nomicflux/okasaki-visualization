@@ -56,4 +56,10 @@ object Stack
   // | *empty
   def empty[A]: Stack[A] = Nil
   // .end
+
+  def apply[A](as: A*): Stack[A] =
+    if(as.isEmpty)
+      empty
+    else
+      Cons(as.head, apply(as.tail: _*))
 }
