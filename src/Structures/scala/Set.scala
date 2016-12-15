@@ -49,4 +49,7 @@ object Set
   // | *empty
   def empty[A <% Ordered[A]]: Set[A] = Leaf
   // .end
+
+  def apply[A <% Ordered[A]](as: A*): Set[A] =
+    as.foldLeft(Leaf: Set[A])(_ insert _)
 }

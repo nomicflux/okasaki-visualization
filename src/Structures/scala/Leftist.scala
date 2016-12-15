@@ -23,6 +23,9 @@ object Leftist
     else
       new Node(bHeap, newVal, aHeap, aHeap.rank + 1)
   // .end
+
+  def apply[A <% Ordered[A]](as: A*): Leftist[A] =
+    as.foldLeft(Leaf: Leftist[A])(_ insert _)
 }
 
 // | *LeftistHeap
