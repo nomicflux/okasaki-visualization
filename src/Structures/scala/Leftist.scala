@@ -1,7 +1,12 @@
 package okasaki.leftist;
 
+// | *LeftistHeap
 object Leftist
+// .end
 {
+  // | *empty
+  def empty[A <% Ordered[A]]: Leftist[A] = Leaf
+  // .end
   // | *merge insert deleteMin
   // Static
   def singleton[A <% Ordered[A]](value: A): Leftist[A] =

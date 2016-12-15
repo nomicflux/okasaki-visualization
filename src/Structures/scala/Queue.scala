@@ -5,7 +5,7 @@ object Queue
 // .end
 {
   // | *empty
-  def empty = new Queue(Nil, Nil)
+  def empty[A]: Queue[A] = new Queue(Nil, Nil)
   // .end
 }
 

@@ -41,10 +41,19 @@ sealed trait Stack[+A]
   }
 }
 
-// | *Stack empty
+// | *Stack
 case object Nil extends Stack[Nothing]
   // .end
 // | *Stack head tail
 case class Cons[+A](override val head: A,
                     override val tail: Stack[A]) extends Stack[A]
 // .end
+
+// | *Stack
+object Stack
+// .end
+{
+  // | *empty
+  def empty[A]: Stack[A] = Nil
+  // .end
+}

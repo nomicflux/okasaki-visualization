@@ -31,7 +31,7 @@ sealed abstract class Set[+A <% Ordered[A]]
   // .end
 }
 
-// | *Set empty
+// | *Set
 case object Leaf extends Set[Nothing]
 // .end
 
@@ -41,3 +41,12 @@ case class Node[+A <% Ordered[A]](left: Set[A],
                                   right: Set[A])
     extends Set[A]
 // .end
+
+// | *Set
+object Set
+// .end
+{
+  // | *empty
+  def empty[A <% Ordered[A]]: Set[A] = Leaf
+  // .end
+}
