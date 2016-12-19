@@ -14,6 +14,11 @@ data Queue : Type -> Nat -> Nat -> Nat -> Type where
 %name Queue queue
 -- .end
 
+-- | *empty
+empty : Queue ty Z Z Z
+empty = MkQueue Stack.empty Stack.empty
+-- .end
+
 -- | *rotate
 rotate : Queue ty m n k -> Queue ty n m k
 rotate {m} {n} (MkQueue front back) =
@@ -38,4 +43,15 @@ bottom {m = S m'} {n = Z} (MkQueue _ back) =
 bottom {m = Z} {n = S j} (MkQueue front _) =
        Stack.head $ Stack.reverse front
 bottom {m = Z} {n = Z} (MkQueue _ _) impossible
+-- .end
+
+-- | *inject
+inject : (a : ty) -> Queue ty n m k -> Queue ty n (S m) (S k)
+inject {n} {m} newVal (MkQueue front back) =
+       rewrite (plusSuccRightSucc n m) in MkQueue front (Stack.cons newVal back)
+-- .end
+
+-- | *push
+push : (a : ty) -> Queue ty n m k -> Queue ty (S n) m (S k)
+push newVal (MkQueue front back) = MkQueue (Stack.cons newVal front) back
 -- .end
