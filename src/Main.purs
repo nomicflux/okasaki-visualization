@@ -8,7 +8,7 @@ import Views.Leftist as Leftist
 import Views.Queue as Queue
 import Views.Set as Set
 import Views.Stack as Stack
-import Effect.Aff (Aff)
+import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
 import Data.Array ((:), catMaybes)
 import Data.Either (Either(..))
