@@ -22,7 +22,8 @@
     "purescript-affjax": "^5.0.0",
     "purescript-simple-parser": "^7.0.0",
     "purescript-filterable": "^2.0.1",
-    "purescript-sets": "^3.0.0"
+    "purescript-sets": "^3.0.0",
+    "purescript-generics": "^4.0.0"
   },
   "devDependencies": {}
 }

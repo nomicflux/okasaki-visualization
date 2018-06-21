@@ -103,10 +103,10 @@ width :: forall a. Ord a => Set a -> Int
 width Leaf = 0
 width (Node set) =
   let
-    leftWidth = width set.left
-    rightWidth = width set.right
+    lWidth = width set.left
+    rWidth = width set.right
   in
-   1 + leftWidth + rightWidth
+   1 + lWidth + rWidth
 
 fan :: forall a. Ord a => Set a -> Int
 fan Leaf = 0
