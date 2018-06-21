@@ -7,7 +7,16 @@
     "output"
   ],
   "dependencies": {
+    "purescript-pux": "^12.0.0",
+    "purescript-signal": "^10.1.0",
+    "purescript-prelude": "^4.0.0",
+    "purescript-filterable": "^3.0.0",
+    "purescript-aff": "^5.0.0",
+    "purescript-exceptions": "^4.0.0",
+    "purescript-affjax": "^6.0.0",
+    "purescript-eff": "^3.2.1",
+    "purescript-js-timers": "^4.0.0",
+    "purescript-maps": "^3.6.0"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

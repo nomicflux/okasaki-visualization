@@ -1,9 +1,9 @@
 module Main where
 
 import CodeSnippet as CS
-import Pux.Html as H
-import Pux.Html.Attributes as HA
-import Pux.Html.Events as HE
+import Pux.DOM.HTML as H
+import Pux.DOM.HTML.Attributes as HA
+import Pux.DOM.Events as HE
 import Views.Leftist as Leftist
 import Views.Queue as Queue
 import Views.Set as Set

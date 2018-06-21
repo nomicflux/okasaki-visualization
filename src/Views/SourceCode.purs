@@ -2,9 +2,9 @@ module Views.SourceCode where
 
 import Prelude (const, (<>))
 
-import Pux.Html as H
-import Pux.Html.Attributes as HA
-import Pux.Html.Events as HE
+import Pux.DOM.HTML as H
+import Pux.DOM.HTML.Attributes as HA
+import Pux.DOM.Events as HE
 
 import CodeSnippet as CS
 import Data.Either (Either(..))

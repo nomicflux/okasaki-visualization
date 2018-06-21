@@ -1,7 +1,7 @@
 module Views.Node where
 
-import Pux.Html as H
-import Pux.Html.Attributes as HA
+import Pux.DOM.HTML as H
+import Pux.DOM.HTML.Attributes as HA
 import Data.Array ((:), concatMap, fromFoldable)
 import Data.Eq (class Eq, eq)
 import Data.Filterable (filterMap)
