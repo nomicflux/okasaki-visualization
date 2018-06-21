@@ -6,7 +6,6 @@ import Pux.DOM.HTML.Attributes as HA
 import Pux.DOM.Events as HE
 import Structures.Purs.Queue as Q
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array ((:))
 import Data.Foldable (foldr)
 import Data.Int (fromString, toNumber)
@@ -116,7 +115,7 @@ updateQueue model queue fn =
               ]
    }
 
-update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
+update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL | eff)
 update (Animate action) model =
   noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =

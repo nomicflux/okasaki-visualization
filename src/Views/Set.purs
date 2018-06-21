@@ -6,7 +6,6 @@ import Pux.DOM.HTML.Attributes as HA
 import Pux.DOM.Events as HE
 import Structures.Purs.Set as S
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array ((:))
 import Data.Int (fromString, toNumber)
 import Data.Maybe (Maybe(..))
@@ -136,7 +135,7 @@ blankNode val = Node { value : val
 changeClasses :: Node -> Classes -> Node
 changeClasses (Node node) classes = Node $ node { classes = classes }
 
-update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
+update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL | eff)
 update (Animate action) model =
   noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =

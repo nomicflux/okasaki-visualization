@@ -8,9 +8,8 @@ import Views.Leftist as Leftist
 import Views.Queue as Queue
 import Views.Set as Set
 import Views.Stack as Stack
-import Control.Monad.Aff (Aff)
+import Effect.Aff (Aff)
 import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array ((:), catMaybes)
 import Data.Either (Either(..))
 import Data.Eq (class Eq)
@@ -71,7 +70,7 @@ data Action = ChangePage (Maybe Page)
             | Tick Time
 
 updateStack :: State -> Stack.Action
-            -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+            -> EffModel State Action (channel :: CHANNEL, ajax :: AJAX)
 updateStack state staction =
   let
     updated = Stack.update staction state.stackModel
@@ -79,7 +78,7 @@ updateStack state staction =
    mapEffects StackAction $ mapState (\s -> state { stackModel = s}) $ updated
 
 updateQueue :: State -> Queue.Action
-            -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+            -> EffModel State Action (channel :: CHANNEL, ajax :: AJAX)
 updateQueue state quaction =
   let
     updated = Queue.update quaction state.queueModel
@@ -87,7 +86,7 @@ updateQueue state quaction =
    mapEffects QueueAction $ mapState (\s -> state { queueModel = s}) $ updated
 
 updateSet :: State -> Set.Action
-          -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+          -> EffModel State Action (channel :: CHANNEL, ajax :: AJAX)
 updateSet state saction =
   let
     updated = Set.update saction state.setModel
@@ -95,7 +94,7 @@ updateSet state saction =
    mapEffects SetAction $ mapState (\s -> state { setModel = s}) $ updated
 
 updateLeftist :: State -> Leftist.Action
-          -> EffModel State Action (channel :: CHANNEL, err :: EXCEPTION, ajax :: AJAX)
+          -> EffModel State Action (channel :: CHANNEL, ajax :: AJAX)
 updateLeftist state laction =
   let
     updated = Leftist.update laction state.leftistModel
@@ -262,7 +261,7 @@ view state =
                                                   , render
                                                   ]
 
-main :: Eff (channel :: CHANNEL, ajax :: AJAX, err :: EXCEPTION) Unit
+main :: Eff (channel :: CHANNEL, ajax :: AJAX) Unit
 main = do
   app <- start
     { initialState: initialState

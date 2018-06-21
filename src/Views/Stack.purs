@@ -5,7 +5,6 @@ import Pux.DOM.HTML.Attributes as HA
 import Pux.DOM.Events as HE
 import Structures.Purs.Stack as S
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Timer (TIMER)
 import Data.Array ((:))
 import Data.Foldable (class Foldable, foldr)
@@ -106,7 +105,7 @@ updateStack model stack fn =
               ]
    }
 
-update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL, err :: EXCEPTION | eff)
+update :: forall eff. Action -> Model -> EffModel Model Action (channel :: CHANNEL | eff)
 update (Animate action) model =
   noEffects $ model { animation = updateAnimation action model.animation }
 update (Code action) model =
