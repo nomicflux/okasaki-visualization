@@ -1,6 +1,6 @@
 # Visualization of Okasaki's Purely Functional Data Structures
 
-Demo found here: [http://52.88.174.202:8080](http://52.88.174.202:8080)
+Demo found here: [https://nomicflux.github.io/okasaki-visualization/](https://nomicflux.github.io/okasaki-visualization/)
 
 The goal of this project is to provide interactive visualizations for the data
 strutures in Okasaki's Purely Functional Data Structures, plus other interesting
