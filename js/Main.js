@@ -1,1 +1,1 @@
-dist/Main.js
+../dist/Main.js
