@@ -23323,7 +23323,7 @@ var PS = {};
       platformSpecific.fixupUrl = function (url) {
         var urllib = module.require("url");
         var u = urllib.parse(url);
-        u.protocol = u.protocol || "http:";
+        u.protocol = u.protocol || "https:";
         u.hostname = u.hostname || "localhost";
         return urllib.format(u);
       };
