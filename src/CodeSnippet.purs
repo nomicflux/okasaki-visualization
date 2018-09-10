@@ -107,7 +107,7 @@ getLanguage (SourceCode code) = code.language
 getFile :: forall eff. String -> Language -> Aff (ajax :: AJAX | eff) (Either String SourceCode)
 getFile fname lang = do
   let extension = suffix lang
-      fullname = "/src/Structures/" <> extension <> "/" <> fname <> "." <> extension
+      fullname = "src/Structures/" <> extension <> "/" <> fname <> "." <> extension
   res <- attempt $ get fullname
   pure $ either (Left <<< show)
     (\r -> case r.status of

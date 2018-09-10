@@ -24763,7 +24763,7 @@ var PS = {};
   var getFile = function (fname) {
       return function (lang) {
           var extension = suffix(lang);
-          var fullname = "/src/Structures/" + (extension + ("/" + (fname + ("." + extension))));
+          var fullname = "src/Structures/" + (extension + ("/" + (fname + ("." + extension))));
           return Control_Bind.bind(Control_Monad_Aff.bindAff)(Data_Function.apply(Control_Monad_Aff.attempt)(Network_HTTP_Affjax.get(Network_HTTP_Affjax_Response.responsableString)(fullname)))(function (v) {
               return Data_Function.apply(Control_Applicative.pure(Control_Monad_Aff.applicativeAff))(Data_Either.either(function ($40) {
                   return Data_Either.Left.create(Data_Show.show(Control_Monad_Eff_Exception.showError)($40));
